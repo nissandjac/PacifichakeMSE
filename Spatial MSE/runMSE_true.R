@@ -1,10 +1,13 @@
 ## Run a simple MSE based on subfunctions ###### Run the HAKE MSE ####### 
-direc <- "C:/Users/Nis/Dropbox/NOAA/Hake MSE/Hake MSE true/"
+direc <- "C:/Users/Nis/Dropbox/NOAA/Hake MSE/Hake MSE space/"
 setwd(direc)
 ###### Initialize the operating model ###### 
 library(TMB)
-compile("runHakeassessment.cpp")
-dyn.load(dynlib("runHakeassessment"))
+compile("runHakeassessment2.cpp")
+
+seedz <- 123
+set.seed(seedz)
+dyn.load(dynlib("runHakeassessment2"))
 # Run the simulation model
 source('run_agebased_model_true.R')
 source('ylimits.R')
@@ -13,6 +16,11 @@ source('getUncertainty.R')
 source('SSB0calc.R')
 source('getSelec.R')
 source('load_data.R')
+source('create_TMB_data.R')
+source('SSB0calc.R')
+source('getRefpoint.R')
+assessment <- read.csv('asssessment_MLE.csv')
+assessment <- assessment[assessment$year > 1965 &assessment$year < 2018 ,]
 
 df <- load_data()
 time <- 1
@@ -20,9 +28,10 @@ yrinit <- df$tEnd
 ### Run the OM and the EM for x number of years in the MSE 
 ### Set targets for harvesting etc 
 
-simyears <- 10 # Project 30 years into the future  
+simyears <- 50 # Project 30 years into the future  
+year.future <- c(df$years,(df$years[length(df$years)]+1):(df$years[length(df$years)]+simyears))
 N0 <- NA
-sim.data <- run.agebased.true(df, N0 = N0)
+sim.data <- run.agebased.true(df)
 simdata0 <- sim.data # The other one is gonna get overwritten. 
 
 F40.save<- array(NA,simyears)
@@ -30,7 +39,8 @@ F40.save<- array(NA,simyears)
 # Save some stuff
 SSB.save <- list()
 R.save <- list()
-
+Catch.save <- list()
+S.year.future <- seq(2019,2019+simyears, by = 2)
 # Save som OM stuff 
 SSB.save.om <- array(NA, df$tEnd+simyears)
 R.save.om <- array(NA, df$tEnd+simyears)
@@ -40,61 +50,86 @@ SSB.save.om[1:df$tEnd] <- sim.data$SSB
 R.save.om[1:df$tEnd] <- sim.data$N.save[1,]
 Catch.save.om[1:df$tEnd] <- sim.data$Catch
 F0.save <- df$fmort
+years <- df$years
+df$F0 <- assessment$F0
 
 for (time in 1:simyears){
   
   year <- yrinit+(time-1)
-  
-  if (time > 1){
-    
-    sim.data.tmp <- run.agebased(df, N0 = Ntmp)
-    
-    # Add to the original data frame 
-    
-    # 1 measurement per year
-    sim.data$SSB <- c(sim.data$SSB, sim.data.tmp$SSB[df$tEnd])
-    sim.data$Catch<- c(sim.data$Catch, sim.data.tmp$Catch[df$tEnd])
-    sim.data$Catch.obs <- c(sim.data$Catch.obs, sim.data.tmp$Catch.obs[df$tEnd])
-    
-    # Measurement per age 
-    sim.data$N.save <- cbind(sim.data$N.save,sim.data.tmp$N.save[,df$tEnd])
-    sim.data$survey <- cbind(sim.data$survey,sim.data.tmp$survey[,df$tEnd])
-    sim.data$Catch.age <- cbind(sim.data$Catch.age,sim.data.tmp$Catch.age[,df$tEnd])
-    
-  }
-  U <- matrix(0, 2 , df$tEnd-1)
-  PSEL <- matrix(0,5, length(1991:df$years[length(df$years)]))
-  
-  
-  # First run the operating model with current \
 
   
-  if (time ==1){
-    parms <- list( # Just start all the simluations with the same initial conditions 
-      logRinit = 14.8354,
-      logh = log(0.8122),
-      logMinit = log(0.2229),
-      logSDsurv = log(0.3048),
-      logphi_catch = log(0.3),
-      logSDF = log(0.1),
-      # Selectivity parameters 
-      psel_fish = c(2.8476, 0.973,0.3861,0.1775,0.5048),
-      psel_surv = c(0.5919,-0.2258,0.2876,0.3728),
-      initN = rep(0,nage-1),
-      Rin = U[1,],
-      F0 = U[2,],
-      PSEL = PSEL
-    )}else{
-      parms <- as.list(rep$par.fixed)
-      parms$U <- U
-    }
   
-  obj <-MakeADFun(df,parms,DLL="runHakeassessment", random = 'U') # Run the assessment 
+  if (time > 1){
+
+    if(sum(year.future[year] == S.year.future)>0){
+      df$flag_survey <- c(df$flag_survey,1)
+      df$survey_x <- c(df$survey_x,2)
+      df$ss_catch <- c(df$ss_catch,ceiling(mean(df$ss_catch[df$ss_catch > 0])))
+      df$ss_survey <- 5#c(df$ss_survey,ceiling(mean(df$ss_survey[df$ss_survey > 0])))
+      df$survey_err <- c(df$survey_err,mean(df$survey_err[df$survey_err < 1]))+0.5
+      
+    }else{
+      df$flag_survey <- c(df$flag_survey,-1)
+      df$survey_x <- c(df$survey_x,-2)
+      df$ss_catch <- c(df$ss_catch,-1)
+      df$ss_survey <- c(df$ss_survey,-1)
+      df$survey_err <- c(df$survey_err,1)
+    }
+    
+    df$flag_catch <- c(df$flag_catch,1)
+    df$years <- year.future[1:year]
+    
+    
+    sim.data <- run.agebased.true(df, seedz)
+    
+    # # Add to the original data frame 
+    # 
+    # # 1 measurement per year
+    # sim.data$SSB <- c(sim.data$SSB, sim.data.tmp$SSB[df.tmp$tEnd])
+    # sim.data$Catch<- c(sim.data$Catch, sim.data.tmp$Catch[df.tmp$tEnd])
+    # sim.data$Catch.obs <- c(sim.data$Catch.obs, sim.data.tmp$Catch.obs[df.tmp$tEnd])
+    # 
+    # # Measurement per age 
+    # sim.data$N.save <- cbind(sim.data$N.save,sim.data.tmp$N.save)
+    # sim.data$survey <- cbind(sim.data$survey,sim.data.tmp$survey[df.tmp$tEnd])
+    # sim.data$Catch.age <- cbind(sim.data$Catch.age,sim.data.tmp$Catch.age)
+    # 
+    
+  }
+ 
+  PSEL <- matrix(0,5, length(1991:years[length(years)]))
+  initN <- rep(0,df$nage-1)
+  F0 <- rep(0.01, df$tEnd)
+  Rdev <- rep(0, df$tEnd)
+  
+  parms <- list( # Just start all the simluations with the same initial conditions 
+    logRinit = 15,
+    logh = log(0.9),
+    logMinit = log(0.3),
+    logSDsurv = log(0.3),
+    #  logSDR = log(1.4),
+    logphi_catch = log(0.8276),
+    logphi_survey = log(11.33),
+    # logSDF = log(0.1),
+    # Selectivity parameters 
+    psel_fish = c(2.486490, 0.928255,0.392144,0.214365,0.475473),
+    psel_surv = c(0.568618,-0.216172,0.305286 ,0.373829),
+    initN = initN,
+    Rin = Rdev,
+    # F0 = F0,
+    PSEL = PSEL
+  )
+  ##  Create a data frame to send to runHakeassessment 
+  
+  df.new <- create_TMB_data(sim.data, df)
+  
+  obj <-MakeADFun(df.new,parms,DLL="runHakeassessment2", silent = TRUE) # Run the assessment 
+  
+  reps <- obj$report()
   
   lower <- obj$par-Inf
-  #lower['logFinit'] <- log(0.1)
   upper <- obj$par+Inf
-  #upper['logQ'] <- log(0.01) # Sometimes Q goes over 1 
+
   
   system.time(opt<-nlminb(obj$par,obj$fn,obj$gr,lower=lower,upper=upper)) # If error one of the random effects is unused
   
@@ -111,74 +146,86 @@ for (time in 1:simyears){
   N$age <- rep(seq(1,df$nage), length.out = year*df$nage)
   N$year <- rep(1:year, each = df$nage)
   
-  surveyest <- getUncertainty('surveyest',df)
+  Biomass <- getUncertainty('Biomass',df)
   R <- getUncertainty('R',df)
   
   ## Plots 
-  plotUncertainty(SSB, sim.data$SSB) 
   
-  # Calculate the fishing mortality needed to reach F40  
+  yl <- ylimits(SSB$name,sim.data$SSB)
+  plot(df.new$years,SSB$name, type = 'l', ylim = yl, xlab = 'year')
+  lines(df.new$years,sim.data$SSB, col = 'red')
+  # # Calculate the fishing mortality needed to reach F40  
   
-  F40 <- SSB0calc()
+  # Fsel <- getSelec(df$age,rep$par.fixed[names(rep$par.fixed) == 'psel_fish'], df$Smin, df$Smax)
+  # F40 <- referencepoints(SSB$name[length(SSB$name)])
+  # 
+  Fnew <- getRefpoint(rep$par.fixed, df,SSB)
   
   
-  df$fmort <- c(df$fmort[df$tEnd], F40$Fnext)
-  Ntmp <- N$name[N$year == year]
+  # Update the data data frame
+  df$F0 <- c(df$F0,Fnew)
+  Ntmp <- sim.data$Nout
+  df$tEnd <- df$tEnd+1 # Just run one more year in subsequent runs
+  df$wage_catch <- df.new$wage_catch
+  df$wage_survey <- df.new$wage_survey
+  df$wage_mid <- df.new$wage_mid
+  df$wage_ssb <- df.new$wage_ssb
   
-  df$tEnd <- 2
   
   
   # Save some EM stuff in the last year 
   SSB.save[[time]] <- SSB
   R.save[[time]] <- R
-  F40.save[time] <- F40$Fnext
+  F40.save[time] <- Fnew
+  Catch.save[[time]] <- Catch
   
   # And the fishing mortality
-  F0.save <- c(F0.save,F40$Fnext)
+  F0.save <- Fnew
+  
+  print(year.future[year])
   
 }
 
+library(scales)
 # Plot the SSB over time and see if it changed 
-plot(SSB.save[[1]]$name, xlim = c(8, df$tEnd), ylim = c(2e12,3e13), type ='l')
+plot(SSB.save[[1]]$name*1e-5, xlim = c(8, df$tEnd), type ='l', ylim =c(0.5,7))
 for (i in 2:simyears){
   
   if (i == simyears){
-    lines(SSB.save[[i]]$name, col = alpha('green', alpha = 0.6))
-    lines(SSB.save[[i]]$min, col = alpha('green', alpha = 0.6))
-    lines(SSB.save[[i]]$max, col = alpha('green', alpha = 0.6))
+    lines(SSB.save[[i]]$name*1e-5, col = alpha('green', alpha = 0.6))
+
   }else{
-    lines(SSB.save[[i]]$name, col = alpha('black', alpha = 0.3))
+    lines(SSB.save[[i]]$name*1e-5, col = alpha('black', alpha = 0.3))
     
     
   }
 }
-lines(sim.data$SSB, col = 'red')
+lines(sim.data$SSB*1e-5, col = 'red')
+
+# Plot the standard error
+SSB.mean <- matrix(NA,simyears)
+
+for (i in 1:year){
+  for (j in 1:year){
+  SSB.mean[i] <- SSB.save
+  }
+}
+
 
 ### Plot the estimated variance parameters vs the true ones after the last 
+SSB.end <- SSB.save[[simyears]]
+R.end <- R.save[[simyears]]
+# F0.end <- F0.save[[simyears]]
+Catch.end <- Catch.save[[simyears]]
 
-library(ggplot2)
+SE.SSB <- ((SSB.end$name-sim.data$SSB)/SSB.end$name)*100
+SE.R <- ((R.end$name-sim.data$N.save[1,])/R.end$name)*100
+SE.Catch <- ((Catch.end$name-sim.data$Catch)/Catch.end$name)*100
 
-se <- summary(rep, "fixed")[, "Std. Error"]
-
-SDR <- exp(rep$par.fixed['logSDR'])
-SDF <- exp(rep$par.fixed['logSDF'])
-se <- rep[par, "Std. Error"]
-
-par(mfrow = c(1, 1), mar = c(3, 3, 0, 0), oma = c(.5, .5, .5, .5),
-    mgp = c(2, 0.5, 0), cex = 1, tck = -0.02)
-plot(1, 1, xlim = c(0, 2), ylim = c(0, 3), type = "n",
-     xlab = "Coefficient value", ylab = "", yaxt = "n")
-axis(2, at = c(1,2), labels = c("SDR", "SDF"),
-     las = 1)
-
-points(SDR,1, pch = 19)
-lines(seq(SDR-2*se['logSDR'],SDR+2*se['logSDR'], length.out = 10),rep(1,10))
-points(df$sd.rec,1, col = 'red')
-
-points(SDF,2, pch = 19)
-lines(seq(SDF-2*se['logSDF'],SDF+2*se['logSDF'], length.out = 10),rep(2,10))
-points(0.05,2, col = 'red')
-
-
-
-
+par(mfrow = c(2,2), mar = c(4,3,1,1))
+plot(df$years,SE.SSB, ylim = c(-100,100), type = 'l', xlab = 'year', ylab = 'SSB SE')
+lines(df$years,rep(1,length(df$years)), lty = 2)
+plot(df$years, SE.R, ylim = c(-100,100), type = 'l', xlab = 'year', ylab = 'R SE')
+lines(df$years,rep(1,length(df$years)), lty = 2)
+plot(df$years, SE.Catch,ylim= c(-10,10) ,type = 'l', xlab = 'year', ylab = 'R SE')
+lines(df$years,rep(1,length(df$years)), lty = 2)
