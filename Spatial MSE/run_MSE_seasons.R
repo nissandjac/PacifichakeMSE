@@ -1,5 +1,5 @@
 ## Run a simple MSE based on subfunctions ###### Run the HAKE MSE ####### 
-direc <- "C:/Users/Nis/Dropbox/NOAA/Hake MSE/Hake MSE space/"
+direc <- "~/GitHub/PacifichakeMSE/Spatial MSE"
 setwd(direc)
 ###### Initialize the operating model ###### 
 library(TMB)
@@ -129,7 +129,7 @@ for (time in 1:simyears){
   
   df.new <- create_TMB_data(sim.data, df)
   
-  obj <-MakeADFun(df.new,parms,DLL="runHakeassessment2", random = 'Rin') # Run the assessment 
+  obj <-MakeADFun(df.new,parms,DLL="runHakeassessment2") # Run the assessment 
   
   reps <- obj$report()
   
