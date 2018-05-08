@@ -4,12 +4,38 @@ load_data <- function(){
   
   
   years <- 1966:2017
-  tEnd <- length(years)
+  nseason <- 1
+  nyear <- length(years)
+  tEnd <- length(years)*nseason
   age <- 0:20
-
   
+  ## Age stuff
   nage <- length(age)
   msel <- rep(1,nage)
+  
+  # Spatial stuff
+  
+  nspace <- 2 # number of grid cells 
+  recruitmat <- matrix(0, nspace) # 4 is seasonality 
+  recruitmat[1] <- 0.1 # 10 percent change of spawning north
+  recruitmat[2] <- 0.9 # 90 percent of spawning south
+  
+  # Movement matrix 
+  movemat <- array(0, dim = c(nspace, nage)) # Chances of moving in to the other grid cell 
+  movemat[,3] <- 0.3
+  movemat[,4] <- 0.4
+  movemat[,5] <- 0.4
+  movemat[,6] <- 0.4
+  movemat[,7:nage] <- 0.5
+  
+  # Initial size distribution (make sure they add up to 1) 
+  move.init <- array(0.5, dim = c(nspace, nage))
+  move.init[1,1] <- 0.1
+  move.init[2,1] <- 0.9
+  move.init[1,2] <- 0.7
+  move.init[2,2] <- 0.3
+  move.init[1,3] <- 0.6
+  move.init[2,3] <- 0.4
   # Maturity
   mat <- read.csv('maturity.csv')
   
@@ -69,7 +95,7 @@ load_data <- function(){
   Rdev <- read.csv('Rdev.csv')[,2]
   initN <- read.csv('initN.csv', header = F)[,2]
 
-  Fin <- read.csv('Fin.csv')[,1]
+  Fin <- assessment$F0
   PSEL <- as.matrix(read.csv('p_estimated.csv'))
   
   df <-list(      #### Parameters #####
@@ -84,7 +110,9 @@ load_data <- function(){
                   age = age,
                   year_sel = length(1991:2010), # Years to model time varying sel
                   selYear = 26,
-                  tEnd = length(years), # The extra year is to initialize 
+                  nseason = nseason,
+                  nyear = nyear,
+                  tEnd = tEnd, # The extra year is to initialize 
                   logQ = log(1),   # Analytical solution
                   # Selectivity 
                   Smin = 1,
@@ -94,6 +122,7 @@ load_data <- function(){
                   # survey
                   survey = c(rep(1,df.survey$Year[1]-years[1]),df.survey$obs), # Make sure the survey has the same length as the catch time series
                   survey_x = c(rep(-2,df.survey$Year[1]-years[1]),df.survey$fleet), # Is there a survey in that year?
+                  survey_err = c(rep(1,df.survey$Year[1]-years[1]),df.survey$se.log.), # Make sure the survey has the same length as the catch time series
                   ss_survey = age_survey$nTrips,
                   flag_survey =age_survey$flag,
                   age_survey = t(as.matrix(age_survey[,3:17])*0.01),
@@ -105,10 +134,16 @@ load_data <- function(){
                   age_catch = t(as.matrix(age_catch[,3:17])*0.01),
                   # variance parameters
                   logSDcatch = log(0.01),
-                  logSDR = log(1.4), # Fixed in stock assessment ,
+                  logSDR = log(1), # Fixed in stock assessment ,
                   logphi_survey = log(0.91),
                   sigma_psel = 0.04,
                   years = years,
+                  # Space parameters 
+                  nspace = nspace,
+                  movemat = movemat,
+                  recruitmat = recruitmat,
+                  move.init = move.init,
+                  F0 = Fin,
                   # Parameters from the estimation model 
                   parms =  list( # Just start all the simluations with the same initial conditions 
                     logRinit = 14.8354,
@@ -121,7 +156,7 @@ load_data <- function(){
                     psel_surv = c(0.5919,-0.2258,0.2876,0.3728),
                     initN = initN,
                     Rin = Rdev,
-                    F0 = Fin,
+                 #   F0 = Fin,
                     PSEL = PSEL
                   )
   )
