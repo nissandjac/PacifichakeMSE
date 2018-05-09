@@ -181,11 +181,11 @@ run.agebased.true_seasons <- function(df, seed = 100){
         
         N.save.age[2:(nage-1),idx,space,season] <- N.save.age[1:(nage-2), idx-1,space, nseason]*exp(-Z[1:(nage-2)])*(1-movemat[space,1:(nage-2),season])-
           N.save.age[1:(nage-2), idx-1,space,nseason]*exp(-Z[1:(nage-2)])*(movemat[space,1:(nage-2),season])+ # Remove the ones that leave``
-          rowSums(N.save.age[1:(nage-2), idx-1,spaceidx,nseason]*exp(-Z[1:(nage-2)])*t(movemat[spaceidx,1:(nage-2),season]))# add the ones come to the surrounding areas
+          N.save.age[1:(nage-2), idx-1,spaceidx,nseason]*exp(-Z[1:(nage-2)])*t(movemat[spaceidx,1:(nage-2),season])# add the ones come to the surrounding areas
         
         N.save.age[nage, idx,space,season] <-  (N.save.age[nage-1, idx-1,space, nseason]*exp(-Z[nage-1])+N.save.age[nage, idx-1,space, nseason]*exp(-Z[nage]))*(1-movemat[space,nage, season])-
           (N.save.age[nage-1, idx-1,space,nseason]*exp(-Z[nage-1])+N.save.age[nage, idx-1,space, nseason]*exp(-Z[nage]))*(movemat[spaceidx,nage, season])+# Plus group
-          sum((N.save.age[nage-1, idx-1,spaceidx,nseason]*exp(-Z[nage-1])+N.save.age[nage, idx-1,spaceidx,nseason]*exp(-Z[nage]))*(movemat[spaceidx,nage, season]))# Plus group
+          (N.save.age[nage-1, idx-1,spaceidx,nseason]*exp(-Z[nage-1])+N.save.age[nage, idx-1,spaceidx,nseason]*exp(-Z[nage])*(movemat[spaceidx,nage, season]))# Plus group
         
         }else{
         N.save.age[,idx,space,season] <- N.save.age[,idx,space,season-1]*exp(-Z)-
