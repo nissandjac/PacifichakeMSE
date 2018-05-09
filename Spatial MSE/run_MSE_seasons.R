@@ -34,9 +34,9 @@ N0 <- NA
 sim.data <- run.agebased.true_seasons(df)
 simdata0 <- sim.data # The other one is gonna get overwritten. 
 
-
-save(sim.data,file = 'simulated_space_OM.Rdata')
-save(df,file = 'sim_data_parms.Rdata')
+# 
+# save(sim.data,file = 'simulated_space_OM.Rdata')
+# save(df,file = 'sim_data_parms.Rdata')
 
 
 F40.save<- array(NA,simyears)
@@ -45,7 +45,7 @@ F40.save<- array(NA,simyears)
 SSB.save <- list()
 R.save <- list()
 Catch.save <- list()
-S.year.future <- seq(2019,2019+simyears, by = 4)
+S.year.future <- seq(2019,2019+simyears, by = 2)
 # Save som OM stuff 
 SSB.save.om <- array(NA, df$tEnd+simyears)
 R.save.om <- array(NA, df$tEnd+simyears)
@@ -71,7 +71,7 @@ for (time in 1:simyears){
       df$survey_x <- c(df$survey_x,2)
       df$ss_catch <- c(df$ss_catch,ceiling(mean(df$ss_catch[df$ss_catch > 0])))
       df$ss_survey <- c(df$ss_survey,ceiling(mean(df$ss_survey[df$ss_survey > 0])))
-      df$survey_err <- c(df$survey_err,mean(df$survey_err[df$survey_err < 1]))+0.2
+      df$survey_err <- c(df$survey_err,mean(df$survey_err[df$survey_err < 1]))
       
     }else{
       df$flag_survey <- c(df$flag_survey,-1)
@@ -129,7 +129,7 @@ for (time in 1:simyears){
   
   df.new <- create_TMB_data(sim.data, df)
   
-  obj <-MakeADFun(df.new,parms,DLL="runHakeassessment2", random = 'Rin') # Run the assessment 
+  obj <-MakeADFun(df.new,parms,DLL="runHakeassessment2", silent = TRUE) # Run the assessment 
   
   reps <- obj$report()
   
