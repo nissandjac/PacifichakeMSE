@@ -58,6 +58,10 @@ F0.save <- df$fmort
 years <- df$years
 df$F0 <- assessment$F0
 
+## 
+#SSB.test.om <- list() # Test if SSB is the same in the OM
+
+
 for (time in 1:simyears){
   
   year <- yrinit+(time-1)
@@ -76,11 +80,11 @@ for (time in 1:simyears){
     }else{
       df$flag_survey <- c(df$flag_survey,-1)
       df$survey_x <- c(df$survey_x,-2)
-      df$ss_catch <- c(df$ss_catch,-1)
       df$ss_survey <- c(df$ss_survey,-1)
       df$survey_err <- c(df$survey_err,1)
     }
     
+    df$ss_catch <- c(df$ss_catch,-1)
     df$flag_catch <- c(df$flag_catch,1)
     df$years <- year.future[1:year]
     df$nyear <- length(df$years)
@@ -192,6 +196,7 @@ for (time in 1:simyears){
   F0.save <- Fnew
   
   print(year.future[year])
+  #SSB.test.om[[time]] <- rowSums(sim.data$SSB)
   
 }
 
@@ -243,5 +248,4 @@ plot(df$years, SE.R, ylim = c(-200,200), type = 'l', xlab = 'year', ylab = 'R SE
 lines(df$years,rep(1,length(df$years)), lty = 2)
 plot(df$years, SE.Catch,ylim= c(-100,100) ,type = 'l', xlab = 'year', ylab = 'Catch SE')
 lines(df$years,rep(1,length(df$years)), lty = 2)
-
 
