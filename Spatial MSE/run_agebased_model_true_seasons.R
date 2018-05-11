@@ -50,7 +50,7 @@ run.agebased.true_seasons <- function(df, seed = 100){
   
   R0 <- exp(df$parms$logRinit)
   
-  Mage <- cumsum(M)
+  Mage <- c(0,cumsum(M[1:(nage-1)]))
   
   # Calculate N0 based on R0
   mage <- max(df$age) # Max age
@@ -60,13 +60,27 @@ run.agebased.true_seasons <- function(df, seed = 100){
   N0tmp <- rep(NA,nagetmp)
   
   N0tmp[1:(nagetmp-1)] = R0*exp(-agetmp[1:(nagetmp-1)]*M0)
-  N0tmp[nagetmp] =  N0tmp[nagetmp-1]*exp(-agetmp[nagetmp-1]*M0)/(1-exp(-M0))
+  N0tmp[nagetmp] =  N0tmp[nagetmp-1]*exp(-M0)/(1-exp(-M0))
   
   N0 <- matrix(NA,nage)
   N0[1:(nage-1)] <- N0tmp[1:(nage-1)]
   N0[nage] <- sum(N0tmp[nage:nagetmp])
   
-  SSB_0 <- rowSums(matrix(rep(N0,each =nspace),nrow = nspace)*matrix(rep(df$Matsel,each =nspace),nrow = nspace)*move.init)*0.5
+  # N0test <- rep(NA,nage)
+  # 
+  # N0test[1:(nage-1)] = R0*exp(-age[1:(nage-1)]*M0)
+  # N0test[nage] =  N0test[nage-1]*exp(-M0)/(1-exp(-M0))
+  # 
+  # plot(N0test/N0)
+  # 
+  
+  #SSB_0 <- rowSums(matrix(rep(N0,each =nspace),nrow = nspace)*matrix(rep(df$Matsel,each =nspace),nrow = nspace)*move.init)*0.5
+  SSB_0 <- NA
+  
+  for(i in 1:nspace){
+    SSB_0[i] <- sum(df$Matsel*N0*move.init[i,])*0.5
+  }
+  
   R_0 <- R0*move.init[,1]
   # Used the inital recruitment devs to get a start
   
@@ -74,12 +88,18 @@ run.agebased.true_seasons <- function(df, seed = 100){
   Ninit <- rep(NA,nage)
   Ninit_dev <- rev(df$parms$initN)
   
-  Ninit[2:(nage-1)] <-R0 * exp(-Mage[1:(nage-2)])*exp(-0.5*SDR^2*1+Ninit_dev[1:(nage-2)])
-  Ninit[nage] <- R0*exp(-(Mage[nage-1]))/(1-exp(-M[nage]))*exp(-0.5*SDR^2*1+Ninit_dev[nage-1])# Plus group (ignore recruitment dev's in first year )
+  Ninit[2:(nage-1)] <-R0 * exp(-Mage[2:(nage-1)])*exp(-0.5*SDR^2*0+Ninit_dev[1:(nage-2)])
+  Ninit[nage] <- Ninit[nage-1]*exp(-(M[nage-1]))/(1-exp(-M[nage]))*exp(-0.5*SDR^2*1+Ninit_dev[nage-1])# Plus group (ignore recruitment dev's in first year )
   
   # Create containers to save the data
-  SSB_init <- rowSums(matrix(rep(Ninit,each =nspace),nrow = nspace)*matrix(rep(df$Matsel,each =nspace),nrow = nspace)*move.init, na.rm = T)*0.5
-  Ninit[1] <- sum((4*h*R_0*SSB_init/(SSB_0*(1-h)+ SSB_init*(5*h-1)))*exp(-0.5*0*SDR^2+df$parms$Rin[1]))
+  SSB_init <- NA
+  
+  for(i in 1:nspace){
+    SSB_init[i] <- sum(df$Matsel*Ninit*move.init[i,], na.rm =T)*0.5
+  }
+  
+  
+  Ninit[1] <- sum((4*h*R_0*SSB_init/(SSB_0*(1-h)+ SSB_init*(5*h-1)))*exp(-0.5*1*SDR^2+df$parms$Rin[1]))
   
   
   SSB <- matrix(NA,nyear+1, nspace)
@@ -175,18 +195,37 @@ run.agebased.true_seasons <- function(df, seed = 100){
         
         # Recruitment only in season 1  
         R <- ((4*h*R_0[space]*SSB[idx-1,space])/
-                (SSB_0[space]*(1-h)+ SSB[idx-1,space]*(5*h-1)))*exp(-0.5*1*SDR^2+Ry)*recruitmat[space]
+                (SSB_0[space]*(1-h)+ SSB[idx-1,space]*(5*h-1)))*exp(-0.5*1*SDR^2+Ry)#*recruitmat[space]
         N.save.age[1,idx,space,season] <- R
         
         
-        N.save.age[2:(nage-1),idx,space,season] <- N.save.age[1:(nage-2), idx-1,space, nseason]*exp(-Z[1:(nage-2)])*(1-movemat[space,1:(nage-2),season])+
-          N.save.age[1:(nage-2), idx-1,spaceidx,nseason]*exp(-Z[1:(nage-2)])*t(movemat[spaceidx,1:(nage-2),season])# add the ones come to the surrounding areas
+        Nsurvive <- N.save.age[1:(nage-2), idx-1,space, nseason]*exp(-Z[1:(nage-2)])
+        
+        Nout <- Nsurvive*(movemat[space,1:(nage-2),season]) # Remove the ones that migrate
+        Nin <-  N.save.age[1:(nage-2), idx-1,spaceidx,nseason]*exp(-Z[1:(nage-2)])*movemat[spaceidx,1:(nage-2),season]# add the ones come to the surrounding areas
+        
+        Ntot <- Nsurvive - Nout + Nin # Total number that stays in the areas
+        
+        # N.save.age[2:(nage-1),idx,space,season] <- N.save.age[1:(nage-2), idx-1,space, nseason]*exp(-Z[1:(nage-2)])*(1-movemat[space,1:(nage-2),season])+
+        #   N.save.age[1:(nage-2), idx-1,spaceidx,nseason]*exp(-Z[1:(nage-2)])*t(movemat[spaceidx,1:(nage-2),season])# add the ones come to the surrounding areas
           #N.save.age[1:(nage-2), idx-1,space,nseason]*exp(-Z[1:(nage-2)])*(movemat[space,1:(nage-2),season])+ # Remove the ones that leave``
           
         
-        N.save.age[nage, idx,space,season] <-  (N.save.age[nage-1, idx-1,space, nseason]*exp(-Z[nage-1])+N.save.age[nage, idx-1,space, nseason]*exp(-Z[nage]))*(1-movemat[space,nage, season])+
-          (N.save.age[nage-1, idx-1,spaceidx,nseason]*exp(-Z[nage-1])+N.save.age[nage, idx-1,spaceidx,nseason]*exp(-Z[nage])*(movemat[spaceidx,nage, season]))# Plus group
-         #(N.save.age[nage-1, idx-1,space,nseason]*exp(-Z[nage-1])+N.save.age[nage, idx-1,space, nseason]*exp(-Z[nage]))*(movemat[spaceidx,nage, season])+# Plus group
+        # N.save.age[nage, idx,space,season] <-  (N.save.age[nage-1, idx-1,space, nseason]*exp(-Z[nage-1])+N.save.age[nage, idx-1,space, nseason]*exp(-Z[nage]))*(1-movemat[space,nage, season])+
+        #   (N.save.age[nage-1, idx-1,spaceidx,nseason]*exp(-Z[nage-1])+N.save.age[nage, idx-1,spaceidx,nseason]*exp(-Z[nage])*(movemat[spaceidx,nage, season]))# Plus group
+        #  #(N.save.age[nage-1, idx-1,space,nseason]*exp(-Z[nage-1])+N.save.age[nage, idx-1,space, nseason]*exp(-Z[nage]))*(movemat[spaceidx,nage, season])+# Plus group
+        Nsurvive.plus <- (N.save.age[nage-1, idx-1,space, nseason]*exp(-Z[nage-1])+N.save.age[nage, idx-1,space, nseason]*exp(-Z[nage]))
+        Nout.plus <- Nsurvive.plus*(movemat[space,nage, season]) # Leaving
+        
+        Nin.plus <- (N.save.age[nage-1, idx-1,spaceidx,nseason]*exp(-Z[nage-1])+
+                       N.save.age[nage, idx-1,spaceidx,nseason]*exp(-Z[nage]))*
+                        (movemat[spaceidx,nage, season]) # Incoming
+        
+        Ntot.plus <- Nsurvive.plus- Nout.plus - Nin.plus 
+        
+        # Save for the season and year
+        N.save.age[2:(nage-1),idx,space,season] <-Ntot
+        N.save.age[nage, idx,space,season] <- Ntot.plus
           
         }else{
         N.save.age[,idx,space,season] <- N.save.age[,idx,space,season-1]*exp(-Z)-
@@ -204,9 +243,6 @@ run.agebased.true_seasons <- function(df, seed = 100){
       }
       
     }
-    
-
-  
     
     Catch.age[,idx]  <- (Fyear/(Fyear+Myear))*(1-exp(-(Fyear+Myear)))*rowSums(N.save.age[,idx,,1])*w_catch # Calculate the catch in kg 
     Catch[idx] <- sum(Catch.age[,idx]) 
