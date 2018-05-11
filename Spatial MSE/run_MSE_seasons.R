@@ -1,5 +1,5 @@
 ## Run a simple MSE based on subfunctions ###### Run the HAKE MSE ####### 
-direc <- "C:/Users/Nis/Dropbox/NOAA/Hake MSE/Hake MSE space/"
+direc <- "~/GitHub/PacifichakeMSE/Spatial MSE"
 setwd(direc)
 ###### Initialize the operating model ###### 
 library(TMB)
@@ -27,6 +27,9 @@ time <- 1
 yrinit <- df$nyear
 ### Run the OM and the EM for x number of years in the MSE 
 ### Set targets for harvesting etc 
+# df$parms$initN <- df$parms$initN*0
+# df$parms$Rin <- df$parms$Rin*0
+# df$F0 <- 0*df$F0
 
 simyears <- 50 # Project 30 years into the future  
 year.future <- c(df$years,(df$years[length(df$years)]+1):(df$years[length(df$years)]+simyears))
@@ -34,6 +37,7 @@ N0 <- NA
 sim.data <- run.agebased.true_seasons(df)
 simdata0 <- sim.data # The other one is gonna get overwritten. 
 
+plot(rowSums(sim.data$SSB)/sum(sim.data$SSB_0), type = 'l')
 # 
 # save(sim.data,file = 'simulated_space_OM.Rdata')
 # save(df,file = 'sim_data_parms.Rdata')
@@ -126,7 +130,7 @@ for (time in 1:simyears){
     psel_surv = c(0.568618,-0.216172,0.305286 ,0.373829),
     initN = initN,
     Rin = Rdev,
-    # F0 = F0,
+    F0 = F0,
     PSEL = PSEL
   )
   ##  Create a data frame to send to runHakeassessment 
@@ -140,6 +144,7 @@ for (time in 1:simyears){
   lower <- obj$par-Inf
   upper <- obj$par+Inf
   
+  upper[names(upper) == 'logh']<- log(1) # h can't be over 1 
   
   system.time(opt<-nlminb(obj$par,obj$fn,obj$gr,lower=lower,upper=upper)) # If error one of the random effects is unused
   
@@ -165,8 +170,9 @@ for (time in 1:simyears){
   # plot(df.new$years,SSB$name, type = 'l', ylim = yl, xlab = 'year')
   # lines(df.new$years,rowSums(sim.data$SSB), col = 'red')
   # polygon()
+  par(mfrow = c(2,1), mar = c(4,4,1,1))
   plotUncertainty(SSB,rowSums(sim.data$SSB))
-  
+  plotUncertainty(Biomass, df.new$survey)
   # # Calculate the fishing mortality needed to reach F40  
   
   # Fsel <- getSelec(df$age,rep$par.fixed[names(rep$par.fixed) == 'psel_fish'], df$Smin, df$Smax)
@@ -207,7 +213,7 @@ lines(rowSums(sim.data$SSB), col = 'red')
 
 library(scales)
 # Plot the SSB over time and see if it changed 
-plot(SSB.save[[1]]$name*1e-5, xlim = c(0, df$tEnd/df$nseason), type ='l', ylim =c(0.5,7))
+plot(SSB.save[[1]]$name*1e-5, xlim = c(0, df$tEnd/df$nseason), type ='l', ylim =c(4,30))
 for (i in 2:simyears){
   
   if (i == simyears){

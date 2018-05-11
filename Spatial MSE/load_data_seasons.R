@@ -37,12 +37,14 @@ load_data_seasons <- function(){
   
   # Initial size distribution (make sure they add up to 1) 
   move.init <- array(0.5, dim = c(nspace, nage))
+  move.init <- movemat[,,4]
   move.init[1,1] <- 0.1
   move.init[2,1] <- 0.9
-  move.init[1,2] <- 0.7
-  move.init[2,2] <- 0.3
-  move.init[1,3] <- 0.6
-  move.init[2,3] <- 0.4
+  move.init[1,2] <- 0.1
+  move.init[2,2] <- 0.9
+  # move.init[1,3] <- 0.6
+  # move.init[2,3] <- 0.4
+
 
   
   # weight at age 

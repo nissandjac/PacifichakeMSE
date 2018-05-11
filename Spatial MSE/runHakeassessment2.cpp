@@ -31,7 +31,7 @@ Type objective_function<Type>::operator() ()
   DATA_VECTOR(survey_err);
   DATA_VECTOR(ss_survey); // Age comp sample size
   DATA_VECTOR(flag_survey); // Were ages sampled this year
-  DATA_VECTOR(F0);
+  // DATA_VECTOR(F0);
   DATA_ARRAY(age_survey); // Age compositions
   DATA_INTEGER(age_maxage); // Last age included in age comps
  // Catches
@@ -67,6 +67,8 @@ Type objective_function<Type>::operator() ()
   PARAMETER_VECTOR(Rin); // Time varying stuff
   //PARAMETER_VECTOR(F0);
   PARAMETER_ARRAY(PSEL); // Time varying selectivity
+  PARAMETER_VECTOR(F0);
+
 //  PARAMETER(a);
 
   // Transform out of log space
@@ -187,7 +189,7 @@ for(int i=0;i<(nage);i++){ // Loop over other ages
 
 
 for(int time=1;time<nage;time++){ // Start time loop
-      Ninit(0,time) = (4*h*Rinit*SSBinit(time-1)/(SSBzero*(1-h)+ SSBinit(time-1)*(5*h-1)))*exp(-0.5*0*SDR*SDR+initN(time-1)); // First one is recruits
+      Ninit(0,time) = (4*h*Rinit*SSBinit(time-1)/(SSBzero*(1-h)+ SSBinit(time-1)*(5*h-1)))*exp(-0.5*1*SDR*SDR+initN(time-1)); // First one is recruits
 
       for(int i=1;i<(nage-1);i++){ // Loop over other ages
       Ninit(i,time) = Ninit(i-1, time-1)*exp(-Zzero(i-1));
