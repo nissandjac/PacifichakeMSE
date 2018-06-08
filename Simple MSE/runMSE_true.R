@@ -1,5 +1,5 @@
 ## Run a simple MSE based on subfunctions ###### Run the HAKE MSE ####### 
-direc <- "C:/Users/Nis/Dropbox/NOAA/Hake MSE/Hake MSE true/"
+direc <- "~/GitHub/PacifichakeMSE/Simple MSE"
 setwd(direc)
 ###### Initialize the operating model ###### 
 library(TMB)
@@ -23,7 +23,9 @@ yrinit <- df$tEnd
 simyears <- 10 # Project 30 years into the future  
 N0 <- NA
 sim.data <- run.agebased.true(df, N0 = N0)
+plot(sim.data$SSB/sim.data$SSB_0)
 simdata0 <- sim.data # The other one is gonna get overwritten. 
+
 
 F40.save<- array(NA,simyears)
 

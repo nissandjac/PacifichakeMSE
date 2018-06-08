@@ -106,6 +106,33 @@ load_data_seasons <- function(){
   Fin <- assessment$F0
   PSEL <- as.matrix(read.csv('p_estimated.csv'))
   
+  # b[1] <- 0
+  # for(j in 2:length(Yr)){
+  #   
+  #   if (Yr[j] <= yb_1){
+  #     b[j] = 0}
+  #   
+  #   if(Yr[j] > yb_1 & Yr[j]< yb_2){
+  #     b[j] = b_max*((Yr[j]-yb_1)/(yb_2-yb_1));
+  #   }
+  #   
+  #   if(Yr[j] >= yb_2 & Yr[j] <= yb_3){
+  #     b[j] = b_max}
+  #   
+  #   if(Yr[j] > yb_3 & Yr[j] < yb_4){
+  #     b[j] = b_max*(1-(yb_3-Yr[j])/(yb_4-yb_3))
+  #   }
+  #   
+  #   if(Yr[j] >= yb_4){
+  #     b[j] = 0
+  #   }
+  #   # if (b[j]<b[j-1]){
+  #   #   stop('why')
+  #   # }
+  # }  
+  b <- matrix(1, tEnd)
+  
+  
   df <-list(      #### Parameters #####
                   wage_ssb = t(wage_ssb),
                   wage_catch = t(wage_catch),
@@ -142,10 +169,11 @@ load_data_seasons <- function(){
                   age_catch = t(as.matrix(age_catch[,3:17])*0.01),
                   # variance parameters
                   logSDcatch = log(0.1),
-                  logSDR = log(1), # Fixed in stock assessment ,
+                  logSDR = log(1.4), # Fixed in stock assessment ,
                   logphi_survey = log(0.91),
                   sigma_psel = 0.04,
                   years = years,
+                  b = b,
                   # Space parameters 
                   nspace = nspace,
                   movemat = movemat,

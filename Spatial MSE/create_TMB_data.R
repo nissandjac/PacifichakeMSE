@@ -115,7 +115,8 @@ create_TMB_data <- function(sim.data, df){
                   logSDR = log(1.4), # Fixed in stock assessment ,
                   logphi_survey = log(0.91),
                   sigma_psel = 0.04,
-                 # F0 = c(df$F0,sim.data$F0),
+                  logh = log(0.8),
+                  F0 = c(df$F0,sim.data$F0),
                   survey_err = df$survey_err
                 
   )
