@@ -4,14 +4,18 @@ load_data <- function(){
   
   
   years <- 1966:2017
+  nyear <- length(years)
   tEnd <- length(years)
   age <- 0:20
-
   
+  ## Age stuff
   nage <- length(age)
   msel <- rep(1,nage)
+  
   # Maturity
   mat <- read.csv('maturity.csv')
+  # Spatial stuff
+  
   
   # weight at age 
   wage <- read.csv('waa.csv')
@@ -45,10 +49,10 @@ load_data <- function(){
   age_catch.df$flag <- 1
   # Insert dummy years
   
-  age_survey <- as.data.frame(matrix(-1, tEnd,dim(age_survey.df)[2]))
+  age_survey <- as.data.frame(matrix(-1, nyear,dim(age_survey.df)[2]))
   names(age_survey) <- names(age_survey.df)
   age_survey$year <- years
-  age_catch <- as.data.frame(matrix(-1, tEnd,dim(age_catch.df)[2]))
+  age_catch <- as.data.frame(matrix(-1, nyear,dim(age_catch.df)[2]))
   names(age_catch) <- names(age_catch.df)
   age_catch$year <- years
   
@@ -64,12 +68,51 @@ load_data <- function(){
     
   }
   
+  # bias adjustment parameter 
+  # Bias adjustment factor 
+  # Calculate the bias adjustment 
+  b <- matrix(0, tEnd)
+  Yr <- 1946:max(years)
+  # Parameters 
+  yb_1 <- 1965 #_last_early_yr_nobias_adj_in_MPD
+  yb_2 <- 1971 #_first_yr_fullbias_adj_in_MPD
+  yb_3 <- 2016 #_last_yr_fullbias_adj_in_MPD
+  yb_4 <- 2017 #_first_recent_yr_nobias_adj_in_MPD
+  b_max <- 0.87 #_max_bias_adj_in_MPD
+  b[1] <- 0
+  for(j in 2:length(Yr)){
+    
+    if (Yr[j] <= yb_1){
+      b[j] = 0}
+    
+    if(Yr[j] > yb_1 & Yr[j]< yb_2){
+      b[j] = b_max*((Yr[j]-yb_1)/(yb_2-yb_1));
+    }
+    
+    if(Yr[j] >= yb_2 & Yr[j] <= yb_3){
+      b[j] = b_max}
+    
+    if(Yr[j] > yb_3 & Yr[j] < yb_4){
+      b[j] = b_max*(1-(yb_3-Yr[j])/(yb_4-yb_3))
+    }
+    
+    if(Yr[j] >= yb_4){
+      b[j] = 0
+    }
+    # if (b[j]<b[j-1]){
+    #   stop('why')
+    # }
+  }  
+  #b <- matrix(1, tEnd)
+  
+  
+  
   # Load parameters from the assessment 
   
   Rdev <- read.csv('Rdev.csv')[,2]
   initN <- read.csv('initN.csv', header = F)[,2]
-
-  Fin <- read.csv('Fin.csv')[,1]
+  
+  Fin <- assessment$F0
   PSEL <- as.matrix(read.csv('p_estimated.csv'))
   
   df <-list(      #### Parameters #####
@@ -84,7 +127,8 @@ load_data <- function(){
                   age = age,
                   year_sel = length(1991:2010), # Years to model time varying sel
                   selYear = 26,
-                  tEnd = length(years), # The extra year is to initialize 
+                  nyear = nyear,
+                  tEnd = tEnd, # The extra year is to initialize 
                   logQ = log(1),   # Analytical solution
                   # Selectivity 
                   Smin = 1,
@@ -94,21 +138,26 @@ load_data <- function(){
                   # survey
                   survey = c(rep(1,df.survey$Year[1]-years[1]),df.survey$obs), # Make sure the survey has the same length as the catch time series
                   survey_x = c(rep(-2,df.survey$Year[1]-years[1]),df.survey$fleet), # Is there a survey in that year?
+                  survey_err = c(rep(1,df.survey$Year[1]-years[1]),df.survey$se.log.), # Make sure the survey has the same length as the catch time series
                   ss_survey = age_survey$nTrips,
                   flag_survey =age_survey$flag,
                   age_survey = t(as.matrix(age_survey[,3:17])*0.01),
                   age_maxage = 15, # Max age for age comps 
                   # Catch
-  #                Catchobs = catch$Fishery, # Convert to kg
+                  #                Catchobs = catch$Fishery, # Convert to kg
                   ss_catch = age_catch$nTrips,
                   flag_catch =age_catch$flag,
                   age_catch = t(as.matrix(age_catch[,3:17])*0.01),
                   # variance parameters
-                  logSDcatch = log(0.01),
+                  logSDcatch = log(0.1),
                   logSDR = log(1.4), # Fixed in stock assessment ,
                   logphi_survey = log(0.91),
                   sigma_psel = 0.04,
                   years = years,
+                  b = b,
+                
+                  # Space parameters 
+                  F0 = Fin,
                   # Parameters from the estimation model 
                   parms =  list( # Just start all the simluations with the same initial conditions 
                     logRinit = 14.8354,
@@ -121,7 +170,7 @@ load_data <- function(){
                     psel_surv = c(0.5919,-0.2258,0.2876,0.3728),
                     initN = initN,
                     Rin = Rdev,
-                    F0 = Fin,
+                    #   F0 = Fin,
                     PSEL = PSEL
                   )
   )

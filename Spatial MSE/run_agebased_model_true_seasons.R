@@ -114,7 +114,7 @@ run.agebased.true_seasons <- function(df, seed = 100){
   
   age_comps_surv <- array(NA, dim = c(df$age_maxage,nyear)) # Fix the max ages later
   age_comps_catch <- array(NA, dim = c(df$age_maxage,nyear))
-  
+  age_comps_OM <- array(NA, dim = c(df$nage,nyear+1, nspace,nseason))
   
   # Distribute over space 
   for (space in 1:nspace){
@@ -226,11 +226,16 @@ run.agebased.true_seasons <- function(df, seed = 100){
         # Save for the season and year
         N.save.age[2:(nage-1),idx,space,season] <-Ntot
         N.save.age[nage, idx,space,season] <- Ntot.plus
+        
+        age_comps_OM[,idx,space,season] <- N.save.age[, idx,space,season]/sum(N.save.age[, idx,space,season])
           
         }else{
         N.save.age[,idx,space,season] <- N.save.age[,idx,space,season-1]*exp(-Z)-
           N.save.age[, idx,space,season-1]*exp(-Z)*(movemat[space,,season])+ # Remove the ones that leave
           N.save.age[, idx,spaceidx,season-1]*exp(-Z)*(movemat[spaceidx,,season])# add the ones come to the surrounding areas
+        
+        age_comps_OM[,idx,space,season] <- N.save.age[, idx,space,season]/sum(N.save.age[, idx,space,season])
+        
         }
         
         if (season==nseason){
@@ -286,7 +291,8 @@ run.agebased.true_seasons <- function(df, seed = 100){
     
     df.out   <- list(N.save = Nsave[,2:(nyear+1)], SSB = SSB[2:(nyear+1),], 
                      Catch = Catch[2:(nyear+1)], Catch.age = Catch.age[,2:(nyear+1)], 
-                     survey = survey, age_comps_catch = age_comps_catch, age_comps_surv= age_comps_surv, Nout = N.save.age[,nyear+1,,1],
+                     survey = survey, age_comps_catch = age_comps_catch, age_comps_surv= age_comps_surv, 
+                     Nout = N.save.age[,nyear+1,,1], age_comps_OM = age_comps_OM,
                      SSB_0 = SSB_0, Nsave.all = N.save.age)
     
   return(df.out)

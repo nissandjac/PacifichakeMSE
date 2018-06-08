@@ -3,11 +3,11 @@ direc <- "~/GitHub/PacifichakeMSE/Spatial MSE"
 setwd(direc)
 ###### Initialize the operating model ###### 
 library(TMB)
-compile("runHakeassessment2.cpp")
+compile("runHakeassessment4.cpp")
 
-seedz <- 123
+seedz <- 125
 set.seed(seedz)
-dyn.load(dynlib("runHakeassessment2"))
+dyn.load(dynlib("runHakeassessment4"))
 # Run the simulation model
 source('run_agebased_model_true_seasons.R')
 source('ylimits.R')
@@ -19,6 +19,7 @@ source('load_data_seasons.R')
 source('create_TMB_data.R')
 source('SSB0calc.R')
 source('getRefpoint.R')
+source('Check_Identifiable_vs2.R')
 assessment <- read.csv('asssessment_MLE.csv')
 assessment <- assessment[assessment$year > 1965 &assessment$year < 2018 ,]
 
@@ -31,17 +32,16 @@ yrinit <- df$nyear
 # df$parms$Rin <- df$parms$Rin*0
 # df$F0 <- 0*df$F0
 
-simyears <- 50 # Project 30 years into the future  
+simyears <- 32 # Project 30 years into the future (2048 that year)
 year.future <- c(df$years,(df$years[length(df$years)]+1):(df$years[length(df$years)]+simyears))
 N0 <- NA
 sim.data <- run.agebased.true_seasons(df)
 simdata0 <- sim.data # The other one is gonna get overwritten. 
 
-plot(rowSums(sim.data$SSB)/sum(sim.data$SSB_0), type = 'l')
+plot(rowSums(sim.data$SSB)/sum(sim.data$SSB_0), type = 'l', ylab = 'SSB/SSB_0')
 # 
 # save(sim.data,file = 'simulated_space_OM.Rdata')
 # save(df,file = 'sim_data_parms.Rdata')
-
 
 F40.save<- array(NA,simyears)
 
@@ -77,7 +77,7 @@ for (time in 1:simyears){
     if(sum(year.future[year] == S.year.future)>0){
       df$flag_survey <- c(df$flag_survey,1)
       df$survey_x <- c(df$survey_x,2)
-      df$ss_catch <- c(df$ss_catch,ceiling(mean(df$ss_catch[df$ss_catch > 0])))
+     # df$ss_catch <- c(df$ss_catch,ceiling(mean(df$ss_catch[df$ss_catch > 0])))
       df$ss_survey <- c(df$ss_survey,ceiling(mean(df$ss_survey[df$ss_survey > 0])))
       df$survey_err <- c(df$survey_err,mean(df$survey_err[df$survey_err < 1]))
       
@@ -88,7 +88,7 @@ for (time in 1:simyears){
       df$survey_err <- c(df$survey_err,1)
     }
     
-    df$ss_catch <- c(df$ss_catch,-1)
+    df$ss_catch <- c(df$ss_catch,ceiling(mean(df$ss_catch[df$ss_catch > 0])))
     df$flag_catch <- c(df$flag_catch,1)
     df$years <- year.future[1:year]
     df$nyear <- length(df$years)
@@ -113,15 +113,15 @@ for (time in 1:simyears){
   
   PSEL <- matrix(0,5, length(1991:years[length(years)]))
   initN <- rep(0,df$nage-1)
-#  F0 <- rep(0.01, df$tEnd)
+  #F0 <- rep(0.01, df$tEnd)
   Rdev <- rep(0, df$nyear)
   
   parms <- list( # Just start all the simluations with the same initial conditions 
     logRinit = 15,
-    logh = log(0.9),
+    logh = log(0.5),
     logMinit = log(0.3),
     logSDsurv = log(0.3),
-    logSDR = log(1.4),
+    #logSDR = log(1.4),
     logphi_catch = log(0.8276),
     logphi_survey = log(11.33),
     # logSDF = log(0.1),
@@ -130,14 +130,15 @@ for (time in 1:simyears){
     psel_surv = c(0.568618,-0.216172,0.305286 ,0.373829),
     initN = initN,
     Rin = Rdev,
-    F0 = F0,
+   # F0 = F0,
     PSEL = PSEL
   )
+  
   ##  Create a data frame to send to runHakeassessment 
   
   df.new <- create_TMB_data(sim.data, df)
   
-  obj <-MakeADFun(df.new,parms,DLL="runHakeassessment2", silent = TRUE) # Run the assessment 
+  obj <-MakeADFun(df.new,parms,DLL="runHakeassessment4") # Run the assessment 
   
   reps <- obj$report()
   
@@ -149,10 +150,12 @@ for (time in 1:simyears){
   system.time(opt<-nlminb(obj$par,obj$fn,obj$gr,lower=lower,upper=upper)) # If error one of the random effects is unused
   
   rep<-sdreport(obj)
+  
   #Uncertainty 
   sdrep <- summary(rep)
   rep.values<-rownames(sdrep)
   nyear <- df$tEnd
+  
   
   SSB <- getUncertainty('SSB',df)
   F0 <- getUncertainty('Fyear',df)
@@ -164,7 +167,9 @@ for (time in 1:simyears){
   Biomass <- getUncertainty('Biomass',df)
   R <- getUncertainty('R',df)
   
-  ## Plots 
+  ## Plots   
+  #tt <- Check_Identifiable_vs2(obj)
+
   
   yl <- ylimits(SSB$name,sim.data$SSB)
   # plot(df.new$years,SSB$name, type = 'l', ylim = yl, xlab = 'year')
@@ -172,13 +177,16 @@ for (time in 1:simyears){
   # polygon()
   par(mfrow = c(2,1), mar = c(4,4,1,1))
   plotUncertainty(SSB,rowSums(sim.data$SSB))
-  plotUncertainty(Biomass, df.new$survey)
-  # # Calculate the fishing mortality needed to reach F40  
   
+  df.plot <- df.new
+  df.plot$survey[df.plot$survey == 1] <- NA
+  plotUncertainty(Biomass, df.plot$survey)
+  # # Calculate the fishing mortality needed to reach F40  
+  Check_Identifiable_vs2(obj)
   # Fsel <- getSelec(df$age,rep$par.fixed[names(rep$par.fixed) == 'psel_fish'], df$Smin, df$Smax)
   # F40 <- referencepoints(SSB$name[length(SSB$name)])
   # 
-  Fnew <- getRefpoint(rep$par.fixed, df,SSB)
+  Fnew <- getRefpoint(rep$par.fixed, df,SSB, Fin=df$F0[length(df$F0)])
   
   
   # Update the data data frame
@@ -201,7 +209,7 @@ for (time in 1:simyears){
   # And the fishing mortality
   F0.save <- Fnew
   
-  print(year.future[year])
+#  print(year.future[year])
   #SSB.test.om[[time]] <- rowSums(sim.data$SSB)
   
 }
@@ -250,8 +258,14 @@ SE.Catch <- ((Catch.end$name-sim.data$Catch)/Catch.end$name)*100
 par(mfrow = c(2,2), mar = c(4,4,1,1))
 plot(df$years,SE.SSB, ylim = c(-100,100), type = 'l', xlab = 'year', ylab = 'SSB SE')
 lines(df$years,rep(1,length(df$years)), lty = 2)
-plot(df$years, SE.R, ylim = c(-200,200), type = 'l', xlab = 'year', ylab = 'R SE')
+plot(df$years, SE.R, ylim = c(-300,300), type = 'l', xlab = 'year', ylab = 'R SE')
 lines(df$years,rep(1,length(df$years)), lty = 2)
 plot(df$years, SE.Catch,ylim= c(-100,100) ,type = 'l', xlab = 'year', ylab = 'Catch SE')
 lines(df$years,rep(1,length(df$years)), lty = 2)
 
+plot(F40.save, type= 'l')
+
+source('get_performance_metrics.R')
+cairo_pdf(file = 'performancemetrics.pdf', width = 12/2.3, height = 16/2.3)
+get_performance_metrics(sim.data,df)
+dev.off()

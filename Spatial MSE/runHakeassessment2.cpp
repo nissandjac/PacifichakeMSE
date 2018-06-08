@@ -20,7 +20,8 @@ Type objective_function<Type>::operator() ()
   DATA_SCALAR(logQ);
   DATA_VECTOR(b); // bias adjustment factor
   DATA_VECTOR(years);
-// // Selectivity
+  //DATA_INTEGER(logh);
+ // Selectivity
   DATA_INTEGER(Smin);
   DATA_INTEGER(Smin_survey);
   DATA_INTEGER(Smax);
@@ -31,7 +32,7 @@ Type objective_function<Type>::operator() ()
   DATA_VECTOR(survey_err);
   DATA_VECTOR(ss_survey); // Age comp sample size
   DATA_VECTOR(flag_survey); // Were ages sampled this year
-  // DATA_VECTOR(F0);
+  DATA_VECTOR(F0);
   DATA_ARRAY(age_survey); // Age compositions
   DATA_INTEGER(age_maxage); // Last age included in age comps
  // Catches
@@ -41,7 +42,7 @@ Type objective_function<Type>::operator() ()
   DATA_ARRAY(age_catch); // Age comps
 
   DATA_SCALAR(logSDcatch); // Error on catch
-  //DATA_SCALAR(logSDR); // Can it be estimated as a fixed effect?
+  DATA_SCALAR(logSDR); // Can it be estimated as a fixed effect?
   DATA_SCALAR(sigma_psel); // selectivity SD
 //  DATA_SCALAR(logSDF); // Fishing mortality SD
 //
@@ -55,7 +56,7 @@ Type objective_function<Type>::operator() ()
   PARAMETER(logh); // Steepness
   PARAMETER(logMinit); // Natural mortality
   PARAMETER(logSDsurv); // Survey uncertainty
-  PARAMETER(logSDR);
+  //PARAMETER(logSDR);
   //PARAMETER(logFinit);
   PARAMETER(logphi_catch);
   PARAMETER(logphi_survey);
@@ -66,8 +67,9 @@ Type objective_function<Type>::operator() ()
   PARAMETER_VECTOR(initN);
   PARAMETER_VECTOR(Rin); // Time varying stuff
   //PARAMETER_VECTOR(F0);
+  //PARAMETER_VECTOR(F0);
+
   PARAMETER_ARRAY(PSEL); // Time varying selectivity
-  PARAMETER_VECTOR(F0);
 
 //  PARAMETER(a);
 
@@ -355,15 +357,17 @@ Type ans_survey=0.0;
 for(int time=1;time<tEnd;time++){ // Survey biomass
 
       if(survey_x(time) == 2){
-        ans_survey += -dnorm(log(Biomass(time)), log(survey(time)), SDsurv+survey_err(time), TRUE);
+  //      ans_survey += -dnorm(log(Biomass(time)), log(survey(time)), SDsurv+survey_err(time), TRUE);
+        ans_survey += (0.5*pow(log(Biomass(time))-log(survey(time)),2)/(pow(SDsurv,2)+survey_err(time))+log(SDsurv+survey_err(time)));
     }
   }
 
 Type ans_catch = 0.0;
 for(int time=0;time<tEnd;time++){ // Total Catches
-        ans_catch += -dnorm(log(Catch(time)+1e-6), log(Catchobs(time)), SDcatch, TRUE);
-}
+//        ans_catch += -dnorm(log(Catch(time)+1e-6), log(Catchobs(time)), SDcatch, TRUE);
+        ans_catch += (0.5*pow(log(Catch(time))-log(Catchobs(time)),2)/(SDcatch*SDcatch));
 
+}
 
 // for(int time=0;time<tEnd;time++){ // Total Catches
 //         ans_catch += - ((log(Catch(time)+1e-6)-log(Catchobs(time)))*(log(Catch(time)+1e-6)-log(Catchobs(time))))/(2*SDcatch*SDcatch);
@@ -434,7 +438,9 @@ Type ans_SDR = 0.0;
  // }
 
  for(int time=0;time<(tEnd);time++){ // Start time loop
-   ans_SDR += -dnorm(logR(time), Type(0.0), SDR, TRUE);
+//   ans_SDR += -dnorm(logR(time), Type(0.0), SDR, TRUE);
+   ans_SDR += 0.5*((pow(logR(time),2))/(pow(SDR,2))+b(time)*log(SDR));
+
  }
 
 
@@ -442,7 +448,9 @@ Type ans_SDR = 0.0;
 //   ans_SDR += Type(0.5)*(initN(time)*initN(time))/(SDR*SDR);
 // }
 for(int time=0;time<(nage-2);time++){ // Start time loop
-  ans_SDR += -dnorm(initN(time), Type(0.0),SDR, TRUE);
+  //ans_SDR += -dnorm(initN(time), Type(0.0),SDR, TRUE);
+  ans_SDR += Type(1.0)*((pow(initN(time),2))/(pow(SDR,2))+b(time)*log(pow(SDR,2)));
+
 }
 
 
@@ -464,7 +472,8 @@ Type ans_psel = 0.0;
 // }
 for(int time=0;time<year_sel;time++){ // Start time loop
   for(int i=0;i<psel_fish.size();i++){ // Start time loop
-        ans_psel += -dnorm(PSEL(i,time), Type(0.0), sigma_psel, TRUE);
+        //ans_psel += -dnorm(PSEL(i,time), Type(0.0), sigma_psel, TRUE);
+        ans_psel += pow(PSEL(i,time),2)/(2*pow(sigma_psel,2));
       }
 }
 
