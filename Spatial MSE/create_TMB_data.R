@@ -70,7 +70,7 @@ create_TMB_data <- function(sim.data, df){
     #   stop('why')
     # }
   }  
-  b <- matrix(1, tEnd)
+  #b <- matrix(1, tEnd)
   
   # Load parameters from the assessment 
   
@@ -109,9 +109,9 @@ create_TMB_data <- function(sim.data, df){
                   #                Catchobs = catch$Fishery, # Convert to kg
                   ss_catch = df$ss_catch,
                   flag_catch =df$flag_catch,
-                  age_catch = sim.data$age_comps_catch,
+                  age_catch = sim.data$age_catch,
                   # variance parameters
-                  logSDcatch = log(0.1),
+                  logSDcatch = log(0.01),
                   logSDR = log(1.4), # Fixed in stock assessment ,
                   logphi_survey = log(0.91),
                   sigma_psel = 0.04,

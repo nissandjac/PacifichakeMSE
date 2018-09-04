@@ -29,19 +29,25 @@ load_data_seasons <- function(){
   movemat[,5,] <- 0.4
   movemat[,6,] <- 0.4
   movemat[,7:nage,] <- 0.5
+  #movemat <- movemat/3
+  # Never move south during the year
+  #movemat[1,3:nage,2:3] <- 0
   
+  
+  
+  movemat <- movemat
   # Force all the SSB to move south in the last season
-  movemat[1,mat$mat > 0,nseason] <- 0.9
-  movemat[2,mat$mat > 0,nseason] <- 0.1
+  movemat[1,mat$mat > 0,nseason] <- 0.8
+  movemat[2,mat$mat > 0,nseason] <- 0
   
   
   # Initial size distribution (make sure they add up to 1) 
   move.init <- array(0.5, dim = c(nspace, nage))
-  move.init <- movemat[,,4]
-  move.init[1,1] <- 0.1
-  move.init[2,1] <- 0.9
-  move.init[1,2] <- 0.1
-  move.init[2,2] <- 0.9
+  # move.init <- movemat[,,4]
+  # move.init[1,1] <- 0.1
+  # move.init[2,1] <- 0.9
+  # move.init[1,2] <- 0.1
+  # move.init[2,2] <- 0.9
   # move.init[1,3] <- 0.6
   # move.init[2,3] <- 0.4
 
@@ -168,11 +174,12 @@ load_data_seasons <- function(){
                   flag_catch =age_catch$flag,
                   age_catch = t(as.matrix(age_catch[,3:17])*0.01),
                   # variance parameters
-                  logSDcatch = log(0.1),
+                  logSDcatch = log(0.01),
                   logSDR = log(1.4), # Fixed in stock assessment ,
                   logphi_survey = log(0.91),
                   sigma_psel = 0.04,
                   years = years,
+                  logh = log(0.8),
                   b = b,
                   # Space parameters 
                   nspace = nspace,

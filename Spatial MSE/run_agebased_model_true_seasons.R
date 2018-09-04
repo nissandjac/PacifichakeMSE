@@ -89,7 +89,7 @@ run.agebased.true_seasons <- function(df, seed = 100){
   Ninit_dev <- rev(df$parms$initN)
   
   Ninit[2:(nage-1)] <-R0 * exp(-Mage[2:(nage-1)])*exp(-0.5*SDR^2*0+Ninit_dev[1:(nage-2)])
-  Ninit[nage] <- Ninit[nage-1]*exp(-(M[nage-1]))/(1-exp(-M[nage]))*exp(-0.5*SDR^2*1+Ninit_dev[nage-1])# Plus group (ignore recruitment dev's in first year )
+  Ninit[nage] <- Ninit[nage-1]*exp(-(M[nage-1]))/(1-exp(-M[nage]))*exp(-0.5*SDR^2*0+Ninit_dev[nage-1])# Plus group (ignore recruitment dev's in first year )
   
   # Create containers to save the data
   SSB_init <- NA
@@ -103,12 +103,16 @@ run.agebased.true_seasons <- function(df, seed = 100){
   
   
   SSB <- matrix(NA,nyear+1, nspace)
+  SSB.all <- array(NA, dim = c(nyear+1, nseason , nspace))
   Biomass.save <- matrix(NA,nyear+1, nspace)
   Catch <- matrix(NA,nyear+1)
   Catch.age <- matrix(NA,nage,nyear+1)
   R.save <- matrix(NA,nyear+1, nspace)
+  Fsel.save <- matrix(NA,nyear+1, nage)
   
   N.save.age <- array(NA,dim = c(nage,nyear+1, nspace, nseason))
+  Catch.save.age <- array(NA,dim = c(nage,nyear+1, nspace, nseason))
+  
   
   survey <- array(NA,dim = c(nyear))
   
@@ -125,8 +129,8 @@ run.agebased.true_seasons <- function(df, seed = 100){
       N.save.age[,1,space,season] <- N.save.age[,1,space,season-1]*exp(-M/nseason)
       }
     }
-    SSB[1,space] <- sum(N.save.age[,1,space,4]*Mat.sel, na.rm = T)*0.5
-    
+    SSB[1,space] <-sum(N.save.age[,1,space,4]*Mat.sel, na.rm = T)*0.5
+    SSB.all[1,4,space]<- sum(N.save.age[,1,space,4]*Mat.sel, na.rm = T)*0.5
   }
   
   
@@ -146,7 +150,7 @@ run.agebased.true_seasons <- function(df, seed = 100){
     }
     
     Fsel <- getSelec(age,psel,df$Smin,df$Smax) # Constant over space right now 
-    
+    Fsel.save[yr,] <- Fsel
     if(year[yr] < 2018){
       w_catch <- df$wage_catch[,yr]
       w_surv <- df$wage_survey[,yr]
@@ -169,17 +173,21 @@ run.agebased.true_seasons <- function(df, seed = 100){
     # Calculate the mortality at length
     Fyear <- F0[yr]*Fsel
     Myear <- M # Natural mortality 
+   
+    Fnseason <- c(0.25,0.25,0.25,0.25) # Must add to one
+    Fspace <- c(0.75,1) # Contribution of fishing mortality
+    #Z <- (Fyear+Myear)
+    Mseason <- Myear/nseason # M is distributed throughout the year
     
     for (season in 1:nseason){
 
-      
-      Z <- (Fyear+Myear)/nseason
       # Assume that recruitment is in the beginning of the year (bc why not)
       # Recruitment
       
-      
       for (space in 1:nspace){
         
+        Z <- Mseason+Fyear*Fnseason[season]*Fspace[space]
+        Fseason <- Fyear*Fnseason[season]*Fspace[space]
         # Get the indices for the surrounding spaces
         if(((space-1) == 0)){
           spaceidx <- 2
@@ -193,6 +201,7 @@ run.agebased.true_seasons <- function(df, seed = 100){
         
         if (season == 1){
         
+          
         # Recruitment only in season 1  
         R <- ((4*h*R_0[space]*SSB[idx-1,space])/
                 (SSB_0[space]*(1-h)+ SSB[idx-1,space]*(5*h-1)))*exp(-0.5*1*SDR^2+Ry)#*recruitmat[space]
@@ -221,14 +230,19 @@ run.agebased.true_seasons <- function(df, seed = 100){
                        N.save.age[nage, idx-1,spaceidx,nseason]*exp(-Z[nage]))*
                         (movemat[spaceidx,nage, season]) # Incoming
         
-        Ntot.plus <- Nsurvive.plus- Nout.plus - Nin.plus 
+        Ntot.plus <- Nsurvive.plus- Nout.plus + Nin.plus 
         
         # Save for the season and year
         N.save.age[2:(nage-1),idx,space,season] <-Ntot
         N.save.age[nage, idx,space,season] <- Ntot.plus
+        Catch.save.age[, idx,space, season] <- (Fseason/(Z))*(1-exp(-(Z)))*N.save.age[,idx,space,season]*w_catch
+        
+        
         
         age_comps_OM[,idx,space,season] <- N.save.age[, idx,space,season]/sum(N.save.age[, idx,space,season])
-          
+        
+        SSB.all[idx,season,space]<- sum(N.save.age[,idx,space,season]*Mat.sel, na.rm = T)*0.5
+        
         }else{
         N.save.age[,idx,space,season] <- N.save.age[,idx,space,season-1]*exp(-Z)-
           N.save.age[, idx,space,season-1]*exp(-Z)*(movemat[space,,season])+ # Remove the ones that leave
@@ -236,6 +250,8 @@ run.agebased.true_seasons <- function(df, seed = 100){
         
         age_comps_OM[,idx,space,season] <- N.save.age[, idx,space,season]/sum(N.save.age[, idx,space,season])
         
+        SSB.all[idx,season,space]<- sum(N.save.age[,idx,space,season]*Mat.sel, na.rm = T)*0.5
+        Catch.save.age[, idx,space, season] <- (Fseason/(Z))*(1-exp(-(Z)))*N.save.age[,idx,space,season]*w_catch
         }
         
         if (season==nseason){
@@ -249,8 +265,9 @@ run.agebased.true_seasons <- function(df, seed = 100){
       
     }
     
-    Catch.age[,idx]  <- (Fyear/(Fyear+Myear))*(1-exp(-(Fyear+Myear)))*rowSums(N.save.age[,idx,,1])*w_catch # Calculate the catch in kg 
-    Catch[idx] <- sum(Catch.age[,idx]) 
+    #Catch.age[,idx]  <- (Fyear/(Fyear+Myear))*(1-exp(-(Fyear+Myear)))*rowSums(N.save.age[,idx,,1])*w_catch # Calculate the catch in kg 
+    Catch.age[,idx] <- apply(Catch.save.age[,idx,,],MARGIN = 1,FUN = sum)
+    Catch[idx] <- sum(Catch.save.age[,idx,,])  
       #  }
       # Save the survey 
       # Survey is conducted in the start of the year
@@ -290,10 +307,13 @@ run.agebased.true_seasons <- function(df, seed = 100){
     
     
     df.out   <- list(N.save = Nsave[,2:(nyear+1)], SSB = SSB[2:(nyear+1),], 
+                     SSB.all = SSB.all[2:(nyear+1),,],
+                     Catch.save.age = Catch.save.age[,2:(nyear+1),,],
                      Catch = Catch[2:(nyear+1)], Catch.age = Catch.age[,2:(nyear+1)], 
                      survey = survey, age_comps_catch = age_comps_catch, age_comps_surv= age_comps_surv, 
                      Nout = N.save.age[,nyear+1,,1], age_comps_OM = age_comps_OM,
-                     SSB_0 = SSB_0, Nsave.all = N.save.age)
+                     SSB_0 = SSB_0, Nsave.all = N.save.age,
+                     Fsel = Fsel.save)
     
   return(df.out)
 }
