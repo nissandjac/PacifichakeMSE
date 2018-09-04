@@ -32,7 +32,7 @@ yrinit <- df$nyear
 # df$parms$Rin <- df$parms$Rin*0
 # df$F0 <- 0*df$F0
 
-simyears <- 32 # Project 30 years into the future (2048 that year)
+simyears <- 50 # Project 30 years into the future (2048 that year)
 year.future <- c(df$years,(df$years[length(df$years)]+1):(df$years[length(df$years)]+simyears))
 N0 <- NA
 sim.data <- run.agebased.true_seasons(df)
@@ -61,10 +61,12 @@ Catch.save.om[1:df$tEnd] <- sim.data$Catch
 F0.save <- df$fmort
 years <- df$years
 df$F0 <- assessment$F0
+model.save <- list()
 
 ## 
-#SSB.test.om <- list() # Test if SSB is the same in the OM
 
+SSB.test.om <- list() # Test if SSB is the same in the OM
+start.time <- Sys.time()
 
 for (time in 1:simyears){
   
@@ -113,12 +115,12 @@ for (time in 1:simyears){
   
   PSEL <- matrix(0,5, length(1991:years[length(years)]))
   initN <- rep(0,df$nage-1)
-  #F0 <- rep(0.01, df$tEnd)
+  F0 <- rep(0.01, df$nyear)
   Rdev <- rep(0, df$nyear)
   
   parms <- list( # Just start all the simluations with the same initial conditions 
     logRinit = 15,
-    logh = log(0.5),
+    #logh = log(0.5),
     logMinit = log(0.3),
     logSDsurv = log(0.3),
     #logSDR = log(1.4),
@@ -130,7 +132,7 @@ for (time in 1:simyears){
     psel_surv = c(0.568618,-0.216172,0.305286 ,0.373829),
     initN = initN,
     Rin = Rdev,
-   # F0 = F0,
+    F0 = F0,
     PSEL = PSEL
   )
   
@@ -138,59 +140,78 @@ for (time in 1:simyears){
   
   df.new <- create_TMB_data(sim.data, df)
   
-  obj <-MakeADFun(df.new,parms,DLL="runHakeassessment4") # Run the assessment 
+  obj <-MakeADFun(df.new,parms,DLL="runHakeassessment4", silent = FALSE) # Run the assessment 
   
   reps <- obj$report()
   
   lower <- obj$par-Inf
   upper <- obj$par+Inf
   
-  upper[names(upper) == 'logh']<- log(1) # h can't be over 1 
+  lower[names(lower) == 'F0'] <- 0.01
+  upper <- obj$par+Inf
+  upper[names(upper) == 'psel_fish' ] <- 5
+  upper[names(upper) == 'PSEL'] <- 5
   
-  system.time(opt<-nlminb(obj$par,obj$fn,obj$gr,lower=lower,upper=upper)) # If error one of the random effects is unused
+  system.time(opt<-nlminb(obj$par,obj$fn,obj$gr,lower=lower,upper=upper,
+                          control = list(iter.max = 5000, 
+                                         eval.max = 5000))) # If error one of the random effects is unused
   
+  SSB.save[[time]] <- obj$report()$SSB
+  
+  if(opt$convergence == 1){
+    print(paste('year',df$years[length(df$years)], 'did not converge'))
+  }
+  start.time <- Sys.time()
   rep<-sdreport(obj)
-  
-  #Uncertainty 
+  end.time <- Sys.time()
+  time.taken <- end.time - start.time
+  print(time.taken)
+
+  #Uncertainty
   sdrep <- summary(rep)
   rep.values<-rownames(sdrep)
   nyear <- df$tEnd
-  
-  
+  # 
+  # 
   SSB <- getUncertainty('SSB',df)
   F0 <- getUncertainty('Fyear',df)
   Catch <- getUncertainty('Catch',df)
   N <- getUncertainty('N',df)
-  # N$age <- rep(seq(1,df$nage), length.out = year*df$nage)
-  # N$year <- rep(1:year, each = df$nage)
-  
+  N$age <- rep(seq(1,df$nage), length.out = year*df$nage)
+  N$year <- rep(df$years, each = df$nage)
+
   Biomass <- getUncertainty('Biomass',df)
   R <- getUncertainty('R',df)
-  
-  ## Plots   
-  #tt <- Check_Identifiable_vs2(obj)
 
-  
+  ## Plots
+
+
   yl <- ylimits(SSB$name,sim.data$SSB)
   # plot(df.new$years,SSB$name, type = 'l', ylim = yl, xlab = 'year')
   # lines(df.new$years,rowSums(sim.data$SSB), col = 'red')
   # polygon()
   par(mfrow = c(2,1), mar = c(4,4,1,1))
   plotUncertainty(SSB,rowSums(sim.data$SSB))
-  
+
   df.plot <- df.new
   df.plot$survey[df.plot$survey == 1] <- NA
   plotUncertainty(Biomass, df.plot$survey)
-  # # Calculate the fishing mortality needed to reach F40  
-  Check_Identifiable_vs2(obj)
-  # Fsel <- getSelec(df$age,rep$par.fixed[names(rep$par.fixed) == 'psel_fish'], df$Smin, df$Smax)
+  plotUncertainty(Catch, df.new$Catchobs)
+  # # Calculate the fishing mortality needed to reach F40
+  #xx<- Check_Identifiable_vs2(obj)
+
+  # model.save[[time]] <- list(df = df.new, xx = xx, parameters = rep$par.fixed)
+
+
+    # Fsel <- getSelec(df$age,rep$par.fixed[names(rep$par.fixed) == 'psel_fish'], df$Smin, df$Smax)
   # F40 <- referencepoints(SSB$name[length(SSB$name)])
   # 
-  Fnew <- getRefpoint(rep$par.fixed, df,SSB, Fin=df$F0[length(df$F0)])
-  
+  Nend <- N$name[N$year == df$years[length(df$years)]]
+  Fnew <- getRefpoint(rep$par.fixed, df,SSB$name[length(SSB$name)], Fin=df$F0[length(df$F0)], Nend)
+  #Fnew <- 0.3
   
   # Update the data data frame
-  df$F0 <- c(df$F0,Fnew)
+  
   Ntmp <- sim.data$Nout
   df$tEnd <- df$tEnd+1 # Just run one more year in subsequent runs
   df$wage_catch <- df.new$wage_catch
@@ -203,25 +224,45 @@ for (time in 1:simyears){
   # Save some EM stuff in the last year 
   SSB.save[[time]] <- SSB
   R.save[[time]] <- R
-  F40.save[time] <- Fnew
+  F40.save[time] <- Fnew[[2]]
   Catch.save[[time]] <- Catch
   
   # And the fishing mortality
   F0.save <- Fnew
   
 #  print(year.future[year])
-  #SSB.test.om[[time]] <- rowSums(sim.data$SSB)
+  SSB.test.om[[time]] <- rowSums(sim.data$SSB)
   
 }
+
+
+end.time <- Sys.time()
+time.taken <- end.time - start.time
+print(time.taken)
+
+dev.off()
+plot(1966:(1966+yrinit-1),SSB.save[[1]], type = 'l', col = alpha('black', alpha = 0.3), xlab = c(1965,2066))
+
+for(i in 2:simyears){
+  lines(1966:(1966+yrinit-2+i), SSB.save[[i]], col = alpha('black', alpha = 0.3))
+  
+}
+
+lines(df$years,SSB.test.om[[time]], lwd = 2, col = 'red')
+lines(assessment$year,assessment$SSB, lwd = 2, col = 'green')
+
+
+save(model.save, file = 'modelsave.Rdata')
 
 # 
 plot(SSB$name, type = 'l', ylim = yl, xlab = 'year')
 lines(rowSums(sim.data$SSB), col = 'red')
 
 
+png(file = 'spawningMSE.png', width = 800, height = 400)
 library(scales)
 # Plot the SSB over time and see if it changed 
-plot(SSB.save[[1]]$name*1e-5, xlim = c(0, df$tEnd/df$nseason), type ='l', ylim =c(4,30))
+plot(SSB.save[[1]]$name*1e-5, xlim = c(0, df$tEnd/df$nseason), type ='l', ylim =c(3,20), ylab = 'spawning biomass')
 for (i in 2:simyears){
   
   if (i == simyears){
@@ -235,6 +276,7 @@ for (i in 2:simyears){
 }
 lines(rowSums(sim.data$SSB)*1e-5, col = 'red', lwd = 2)
 
+dev.off()
 # Plot the standard error
 # SSB.mean <- matrix(NA,simyears)
 # 
@@ -255,6 +297,8 @@ SE.SSB <- ((SSB.end$name-rowSums(sim.data$SSB))/SSB.end$name)*100
 SE.R <- ((R.end$name-sim.data$N.save[1,])/R.end$name)*100
 SE.Catch <- ((Catch.end$name-sim.data$Catch)/Catch.end$name)*100
 
+png(file = 'SE estimates.png', width = 800, height = 400)
+
 par(mfrow = c(2,2), mar = c(4,4,1,1))
 plot(df$years,SE.SSB, ylim = c(-100,100), type = 'l', xlab = 'year', ylab = 'SSB SE')
 lines(df$years,rep(1,length(df$years)), lty = 2)
@@ -263,9 +307,11 @@ lines(df$years,rep(1,length(df$years)), lty = 2)
 plot(df$years, SE.Catch,ylim= c(-100,100) ,type = 'l', xlab = 'year', ylab = 'Catch SE')
 lines(df$years,rep(1,length(df$years)), lty = 2)
 
-plot(F40.save, type= 'l')
+plot(F40.save, type= 'l', ylab= 'Fishing mortality')
+dev.off()
 
 source('get_performance_metrics.R')
-cairo_pdf(file = 'performancemetrics.pdf', width = 12/2.3, height = 16/2.3)
+#cairo_pdf(file = 'performancemetrics.pdf', width = 12/2.3, height = 16/2.3)
+png(file = 'performancemetrics.png',width = 800, height = 400)
 get_performance_metrics(sim.data,df)
 dev.off()

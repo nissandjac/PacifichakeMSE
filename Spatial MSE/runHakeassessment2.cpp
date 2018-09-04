@@ -252,6 +252,7 @@ for(int time=0;time<tEnd;time++){ // Start time loop
     pmax_catch_save(time) = pmax_catch;
     // Take care of selectivity
     if ((time >= (selYear-1)) & (years(time) < 2018)){
+
            for(int i=0;i<psel_fish.size();i++){
            psel_fish(i) = psel_fish_zero(i)+PSEL(i,time-selYear+1);
            }
@@ -500,5 +501,6 @@ ADREPORT(Ninit)
 ADREPORT(Fyear)
 ADREPORT(surveyselc)
 ADREPORT(catchselec)
+ADREPORT(selectivity_save)
   return ans;
 }
