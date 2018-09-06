@@ -34,6 +34,7 @@ upper <- obj$par+Inf
 upper[names(upper) == 'psel_fish' ] <- 5
 upper[names(upper) == 'PSEL'] <- 5
 upper[names(upper) == 'logh'] <- log(0.999)
+upper[names(upper) == 'F0'] <- 1.2
 
 
 system.time(opt<-nlminb(obj$par,obj$fn,obj$gr,lower=lower,upper=upper, 
