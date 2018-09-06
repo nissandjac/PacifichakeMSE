@@ -18,13 +18,14 @@ load_data_seasons <- function(){
   # Spatial stuff
   
   nspace <- 2 # number of grid cells 
-  recruitmat <- matrix(0, nspace) # 4 is seasonality 
-  recruitmat[1] <- 0.1 # 10 percent change of spawning north
-  recruitmat[2] <- 0.9 # 90 percent of spawning south
-  
+
+  # recruitmat <- matrix(0, nspace) # 4 is seasonality 
+  # recruitmat[1] <- 0.1 # 10 percent change of spawning north
+  # recruitmat[2] <- 0.9 # 90 percent of spawning south
+  # 
   # Movement matrix 
   movemat <- array(0, dim = c(nspace, nage, nseason)) # Chances of moving in to the other grid cell 
-  movemat[,3,] <- 0.2
+  movemat[,3,] <- 0.2 ## Add movement function (e.g., logistic)
   movemat[,4,] <- 0.25
   movemat[,5,] <- 0.3
   movemat[,6,] <- 0.4
@@ -32,8 +33,6 @@ load_data_seasons <- function(){
   movemat <- movemat*1.2
  # Never move south during the year
   movemat[1,3:nage,2:3] <- 0
-  
-  
   
   movemat <- movemat
   # Force all the SSB to move south in the last season
@@ -106,12 +105,12 @@ load_data_seasons <- function(){
   
   # Load parameters from the assessment 
   
-  Rdev <- read.csv('Rdev.csv')[,2]
-  initN <- read.csv('initN.csv', header = F)[,2]
+  Rdev <- read.csv('Rdev.csv')[,2] # Recruitment deviations 
+  initN <- read.csv('initN.csv', header = F)[,2] # Initial rec devs 
   
-  Fin <- assessment$F0
-  PSEL <- as.matrix(read.csv('p_estimated.csv'))
-  
+  Fin <- assessment$F0 # Fishing mortality 
+  PSEL <- as.matrix(read.csv('p_estimated.csv')) # Selectivity deviations 
+   
   b <- matrix(0, tEnd)
   Yr <- 1946:max(years)
   # Parameters 
@@ -191,7 +190,7 @@ load_data_seasons <- function(){
                   # Space parameters 
                   nspace = nspace,
                   movemat = movemat,
-                  recruitmat = recruitmat,
+                  #recruitmat = recruitmat,
                   move.init = move.init,
                   F0 = Fin,
                   # Parameters from the estimation model 

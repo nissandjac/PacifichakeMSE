@@ -7,11 +7,10 @@ run.agebased.true.catch <- function(df, seed = 100){
   # rSums <- function(x){
   #   if(df$>)
   #   
-  # }
-  # 
-  
-  
+
+
   set.seed(seed)
+  
   nseason <- df$nseason
   
   df$tEnd <- length(df$years)*nseason
@@ -31,7 +30,7 @@ run.agebased.true.catch <- function(df, seed = 100){
   Msel <- df$Msel # no difference between males and females
   M0 <- exp(df$parms$logMinit)
   M <- M0*Msel # Naural mortality at age
-  SDR <- 1.4
+  SDR <- exp(df$logSDR)
   b <- rep(1, nyear)
   # Survey selectivity 
   surv.sel <- getSelec(df$age,df$parms$psel_surv, df$Smin_survey, df$Smax_survey) # Constant over time
@@ -152,7 +151,7 @@ run.agebased.true.catch <- function(df, seed = 100){
   
   for (space in 1:nspace){
   survey.true[space,1] <- sum(N.save.age[,1,space,1]*surv.sel*q*df$wage_survey[,1])
-}
+  }
 
   idx.save <- seq(1,tEnd, by = nseason)
   
@@ -171,6 +170,7 @@ run.agebased.true.catch <- function(df, seed = 100){
       w_surv <- df$wage_survey[,1]
       w_mid <- df$wage_mid[,1]
     }
+    
     if (year[yr] < 2018){
       Ry <- df$parms$Rin[yr]
     }else{
@@ -190,9 +190,13 @@ run.agebased.true.catch <- function(df, seed = 100){
     # 
     # Fyear <- F0[yr]*Fsel
     Myear <- M # Natural mortality 
-   
+    
+    
+    ## add these to load data seasons 
+    
     Fnseason <- c(0.0,0.5,0.30,0.2) # Must add to one
-    Fspace <- c(0.25,0.75) # Contribution of Total catch (add to one)    #Z <- (Fyear+Myear)
+    Fspace <- c(0.24,0.76) # Contribution of Total catch (add to one)    #Z <- (Fyear+Myear)
+    
     Mseason <- Myear/nseason # M is distributed throughout the year
     
     for (season in 1:nseason){
@@ -200,7 +204,8 @@ run.agebased.true.catch <- function(df, seed = 100){
       for (space in 1:nspace){
         
         # Get the selectivity of the season and area 
-        psel <- df$psel[space,]
+        psel <- df$psel[space,] # Find out this comes from 
+        
         Fsel <- getSelec(age,psel,df$Smin,df$Smax) # Constant over space right now 
         Fsel.save[yr,space,] <- Fsel
         
@@ -216,8 +221,6 @@ run.agebased.true.catch <- function(df, seed = 100){
           stop(paste('Catch exceeds available biomass in year:',df$years[yr]))
         }
       
-        
-
         temp <- E.temp/(B.tmp + 0.1*E.temp)
         join <- (1+exp(30*(temp-0.95)))^-1
         temp2 <- join*temp+0.95*(1-join)
@@ -225,9 +228,6 @@ run.agebased.true.catch <- function(df, seed = 100){
         Fseason.save[idx,season,space] <- -log(1-temp)
         
         Z <- Mseason+Fseason
-        
-        
-    
         #Fseason <- Fyear*Fnseason[season]*Fspace[space]
         # Get the indices for the surrounding spaces
         if(((space-1) == 0)){
@@ -317,14 +317,15 @@ run.agebased.true.catch <- function(df, seed = 100){
       # Save the survey 
       # Survey is conducted in the start of the year
       if (df$flag_survey[yr] == 1){
-        err <- exp(rnorm(n = 1,mean = 0, sd = surv.sd))
+        #err <- exp(rnorm(n = 1,mean = 0, sd = surv.sd))
         err <- 1 # Don't put random error on the survey
         surv <- sum(rowSums(N.save.age[,idx,,2])*surv.sel*q*w_surv)*err # If the xtra factor is not included the mean is > 1
         survey[yr] <- surv
       }else{
         survey[yr] <- 1
       }
-      Ntot.year <- rowSums(N.save.age[,idx,,3])
+    
+      Ntot.year <- rowSums(N.save.age[,idx,,2])
       
       surv.tot <- sum(Ntot.year*surv.sel*q)
       

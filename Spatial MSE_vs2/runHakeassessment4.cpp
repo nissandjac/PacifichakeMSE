@@ -375,7 +375,7 @@ for(int time=0;time<tEnd;time++){ // Total Catches
 REPORT(ans_catch)
 ////Likelihood function for age composition in survey
 //
-Type alpha =0;
+// Type alpha =0;
 Type ans_survcomp = 0.0;
 Type ans_catchcomp = 0.0;
 
