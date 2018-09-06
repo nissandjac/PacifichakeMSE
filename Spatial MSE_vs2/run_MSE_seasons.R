@@ -1,6 +1,8 @@
 ## Run a simple MSE based on subfunctions ###### Run the HAKE MSE ####### 
 direc <- "~/GitHub/PacifichakeMSE/Spatial MSE_vs2/"
 setwd(direc)
+
+
 ###### Initialize the operating model ###### 
 library(TMB)
 compile("runHakeassessment4.cpp")
@@ -10,37 +12,44 @@ seedz <- 125
 set.seed(seedz)
 # Run the simulation model
 source('run_agebased_model_true_Catch.R')
+
+
+####  Plotting and uncertainty calculation functions #### 
 source('ylimits.R')
 source('plotUncertainty.R')
 source('getUncertainty.R')
-source('SSB0calc.R')
-source('getSelec.R')
-source('load_data_seasons.R')
-source('create_TMB_data.R')
-source('SSB0calc.R')
-source('getRefpoint.R')
-source('Check_Identifiable_vs2.R')
+
+source('getSelec.R') # Calculate hake selectivity
+ 
+source('load_data_seasons.R') # Loads data for Operating model
+source('create_TMB_data.R') # Compiles operating model data to tmb data
+
+source('getRefpoint.R') # Calculate refrence points 
+source('Check_Identifiable_vs2.R') # see if hessian is positive definite 
+
 assessment <- read.csv('asssessment_MLE.csv')
 assessment <- assessment[assessment$year > 1965 &assessment$year < 2018 ,]
 Catch.obs <- read.csv('hake_totcatch.csv')
 
 df <- load_data_seasons()
+
 df$Catch <- Catch.obs$Fishery
 time <- 1
 yrinit <- df$nyear
 ### Run the OM and the EM for x number of years in the MSE 
 ### Set targets for harvesting etc 
-# df$parms$initN <- df$parms$initN*0
+#
+df$parms$initN <- df$parms$initN*0
 # df$parms$Rin <- df$parms$Rin*0
 # df$F0 <- 0*df$F0
 
-simyears <- 25 # Project 30 years into the future (2048 that year)
+simyears <- 25 # Project 25 years into the future (2048 that year)
 year.future <- c(df$years,(df$years[length(df$years)]+1):(df$years[length(df$years)]+simyears))
 N0 <- NA
 sim.data <- run.agebased.true.catch(df)
 simdata0 <- sim.data # The other one is gonna get overwritten. 
 
-plot(rowSums(sim.data$SSB)/sum(sim.data$SSB_0), type = 'l', ylab = 'SSB/SSB_0')
+plot(sim.data$SSB[,2]/sim.data$SSB_0[2], type = 'l', ylab = 'SSB/SSB_0')
 # 
 # save(sim.data,file = 'simulated_space_OM.Rdata')
 # save(df,file = 'sim_data_parms.Rdata')
@@ -72,7 +81,7 @@ start.time <- Sys.time()
 for (time in 1:simyears){
   
   year <- yrinit+(time-1)
-  print(year)
+  print(year.future[year])
   
   
   if (time > 1){

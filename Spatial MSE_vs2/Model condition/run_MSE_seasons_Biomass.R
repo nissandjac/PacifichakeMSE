@@ -38,8 +38,8 @@ N0 <- NA
 sim.data <- run.agebased.true.catch(df)
 simdata0 <- sim.data # The other one is gonna get overwritten. 
 
-plot(rowSums(sim.data$SSB)/sum(sim.data$SSB_0), type = 'l', ylab = 'SSB/SSB_0')
-
+plot(df$years,rowSums(sim.data$SSB), type = 'l', ylab = 'SSB/SSB_0')
+lines(df$years[sim.data$survey > 1],sim.data$survey[sim.data$survey > 1])
 
 plot(df$years,df$Catch, type = 'l')
 points(df$years,sim.data$Catch)
