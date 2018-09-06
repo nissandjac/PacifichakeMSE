@@ -1,12 +1,10 @@
-## Run a simple MSE based on subfunctions ###### Run the HAKE MSE ####### 
-direc <- "~/GitHub/PacifichakeMSE/Spatial MSE_vs2/"
-setwd(direc)
+###### Run the HAKE MSE ####### 
 
 
 ###### Initialize the operating model ###### 
 library(TMB)
-compile("runHakeassessment4.cpp")
-dyn.load(dynlib("runHakeassessment4"))
+compile("runHakeassessment.cpp")
+dyn.load(dynlib("runHakeassessment"))
 
 seedz <- 125
 set.seed(seedz)
@@ -130,13 +128,11 @@ for (time in 1:simyears){
   
   parms <- list( # Just start all the simluations with the same initial conditions 
     logRinit = 15,
-    #logh = log(0.5),
+    logh = log(0.5),
     logMinit = log(0.3),
     logSDsurv = log(0.3),
-    #logSDR = log(1.4),
     logphi_catch = log(0.8276),
     logphi_survey = log(11.33),
-    # logSDF = log(0.1),
     # Selectivity parameters 
     psel_fish = c(2.486490, 0.928255,0.392144,0.214365,0.475473),
     psel_surv = c(0.568618,-0.216172,0.305286 ,0.373829),
@@ -150,7 +146,7 @@ for (time in 1:simyears){
   
   df.new <- create_TMB_data(sim.data, df)
   
-  obj <-MakeADFun(df.new,parms,DLL="runHakeassessment4", silent = TRUE) # Run the assessment 
+  obj <-MakeADFun(df.new,parms,DLL="runHakeassessment", silent = TRUE) # Run the assessment 
   
   reps <- obj$report()
   
@@ -161,16 +157,19 @@ for (time in 1:simyears){
   upper <- obj$par+Inf
   upper[names(upper) == 'psel_fish' ] <- 5
   upper[names(upper) == 'PSEL'] <- 5
+  upper[names(upper) == 'logh'] <- log(0.999)
+  upper[names(upper) == 'F0'] <- 1.2
+  
   
   system.time(opt<-nlminb(obj$par,obj$fn,obj$gr,lower=lower,upper=upper,
                           control = list(iter.max = 5000, 
                                          eval.max = 5000))) # If error one of the random effects is unused
   
-  SSB.save[[time]] <- obj$report()$SSB
   
   if(opt$convergence == 1){
     print(paste('year',df$years[length(df$years)], 'did not converge'))
-  }
+    stop('Model not converged')
+    }
   start.time <- Sys.time()
   rep<-sdreport(obj)
   end.time <- Sys.time()
@@ -190,25 +189,26 @@ for (time in 1:simyears){
   N$age <- rep(seq(1,df$nage), length.out = year*df$nage)
   N$year <- rep(df$years, each = df$nage)
 
-  Biomass <- getUncertainty('Biomass',df)
+  Surveyobs <- getUncertainty('Surveyobs',df)
   R <- getUncertainty('R',df)
 
   ## Plots
 
-
-  yl <- ylimits(SSB$name,sim.data$SSB)
-  # plot(df.new$years,SSB$name, type = 'l', ylim = yl, xlab = 'year')
-  # lines(df.new$years,rowSums(sim.data$SSB), col = 'red')
-  # polygon()
-  par(mfrow = c(2,1), mar = c(4,4,1,1))
-  plotUncertainty(SSB,rowSums(sim.data$SSB))
-
-  df.plot <- df.new
-  df.plot$survey[df.plot$survey == 1] <- NA
-  plotUncertainty(Biomass, df.plot$survey)
-  plotUncertainty(Catch, df.new$Catchobs)
-  # # Calculate the fishing mortality needed to reach F40
-  #xx<- Check_Identifiable_vs2(obj)
+# 
+#   yl <- ylimits(SSB$name,sim.data$SSB)
+#   # plot(df.new$years,SSB$name, type = 'l', ylim = yl, xlab = 'year')
+#   # lines(df.new$years,rowSums(sim.data$SSB), col = 'red')
+#   # polygon()
+#   par(mfrow = c(2,1), mar = c(4,4,1,1))
+ plotUncertainty(SSB,rowSums(sim.data$SSB))
+ plotUncertainty(Surveyobs,sim.data$survey)
+ # points(sim.data$survey, col = 'green') 
+ # # df.plot <- df.new
+ #  # df.plot$survey[df.plot$survey == 1] <- NA
+ #  # plotUncertainty(Surveyobs, df.plot$survey)
+ #  plotUncertainty(Catch, df.new$Catchobs)
+  # # # Calculate the fishing mortality needed to reach F40
+  # xx<- Check_Identifiable_vs2(obj)
 
   # model.save[[time]] <- list(df = df.new, xx = xx, parameters = rep$par.fixed)
 
@@ -251,10 +251,10 @@ time.taken <- end.time - start.time
 print(time.taken)
 
 dev.off()
-plot(1966:(1966+yrinit-1),SSB.save[[1]], type = 'l', col = alpha('black', alpha = 0.3), xlab = c(1965,2066))
+plot(1966:(1966+yrinit-1),SSB.save[[1]]$name, type = 'l', col = alpha('black', alpha = 0.3), xlab = c(1965,2066))
 
 for(i in 2:simyears){
-  lines(1966:(1966+yrinit-2+i), SSB.save[[i]], col = alpha('black', alpha = 0.3))
+  lines(1966:(1966+yrinit-2+i), SSB.save[[i]]$name, col = alpha('black', alpha = 0.3))
   
 }
 
@@ -265,6 +265,7 @@ lines(assessment$year,assessment$SSB, lwd = 2, col = 'green')
 save(model.save, file = 'modelsave.Rdata')
 
 # 
+yl <- ylimits(SSB$name,rowSums(sim.data$SSB))
 plot(SSB$name, type = 'l', ylim = yl, xlab = 'year')
 lines(rowSums(sim.data$SSB), col = 'red')
 
@@ -322,6 +323,6 @@ dev.off()
 
 source('get_performance_metrics.R')
 #cairo_pdf(file = 'performancemetrics.pdf', width = 12/2.3, height = 16/2.3)
-png(file = 'performancemetrics.png',width = 800, height = 400)
+#png(file = 'performancemetrics.png',width = 800, height = 400)
 get_performance_metrics(sim.data,df)
 dev.off()
