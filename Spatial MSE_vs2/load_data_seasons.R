@@ -29,7 +29,7 @@ load_data_seasons <- function(){
   movemat[1,5,] <- 0.2
   movemat[1,6:11,] <- 0.3
   movemat[1,12:nage,] <- 0.4
-  movemat[1,,] <- movemat[1,,]*0.6
+  movemat[1,,] <- movemat[1,,]
   
   movemat[2,3,] <- 0.1
   movemat[2,4,] <- 0.1
@@ -41,10 +41,10 @@ load_data_seasons <- function(){
   movemat[1,3:nage,2:3] <- 0.05
   
   # Force all the SSB to move south in the last season
-  movemat[1,mat$mat > 0,nseason] <- 0.9
+  movemat[1,mat$mat > 0,nseason] <- 0.8
   movemat[2,mat$mat > 0,nseason] <- 0
   
-  
+  movemat <- movemat*0.8
   # Initial size distribution (make sure they add up to 1) 
   move.init <- array(0.5, dim = c(nspace, nage))
   move.init[1,] <- 0.3
@@ -118,7 +118,7 @@ load_data_seasons <- function(){
   Fin <- assessment$F0
   PSEL <- as.matrix(read.csv('p_estimated.csv'))
   
-  b <- matrix(0, tEnd)
+  b <- matrix(0,length(years))
   Yr <- 1946:max(years)
   # Parameters 
   yb_1 <- 1965 #_last_early_yr_nobias_adj_in_MPD
@@ -158,7 +158,7 @@ load_data_seasons <- function(){
   psel[1,] <- c(1, 1, 1, 1,1)
   
   parms =  list( # Just start all the simluations with the same initial conditions 
-    logRinit = 14.8354*1.01, # Have to make Rinit a little larger with movement (1.02)
+    logRinit = 14.8354*1.02, # Have to make Rinit a little larger with movement (1.02)
     logh = log(0.8122),
     logMinit = log(0.2299),
     logSDsurv = log(0.3048),
@@ -187,7 +187,7 @@ load_data_seasons <- function(){
                   nseason = nseason,
                   nyear = nyear,
                   tEnd = tEnd, # The extra year is to initialize 
-                  logQ = log(1),   # Analytical solution
+                  logQ = log(1.135767),   # Analytical solution
                   # Selectivity 
                   Smin = 1,
                   Smin_survey = 2,
@@ -210,7 +210,6 @@ load_data_seasons <- function(){
                   logSDcatch = log(0.01),
                   logSDR = log(1.4), # Fixed in stock assessment ,
                   logphi_survey = log(0.91),
-                  sigma_psel = 0.04,
                   years = years,
                   b = b,
                   logh = log(0.8),

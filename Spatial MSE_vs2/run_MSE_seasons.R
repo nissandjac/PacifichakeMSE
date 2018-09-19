@@ -6,7 +6,7 @@ library(TMB)
 compile("runHakeassessment.cpp")
 dyn.load(dynlib("runHakeassessment"))
 
-seedz <- 125
+seedz <- 12345
 set.seed(seedz)
 # Run the simulation model
 source('run_agebased_model_true_Catch.R')
@@ -16,6 +16,7 @@ source('run_agebased_model_true_Catch.R')
 source('ylimits.R')
 source('plotUncertainty.R')
 source('getUncertainty.R')
+source('plotValues.R')
 
 source('getSelec.R') # Calculate hake selectivity
  
@@ -25,8 +26,13 @@ source('create_TMB_data.R') # Compiles operating model data to tmb data
 source('getRefpoint.R') # Calculate refrence points 
 source('Check_Identifiable_vs2.R') # see if hessian is positive definite 
 
+source('getParameters.R')
+source('calcSSB0.R')
+
 assessment <- read.csv('asssessment_MLE.csv')
 assessment <- assessment[assessment$year > 1965 &assessment$year < 2018 ,]
+
+parms.true <- getParameters(TRUE)
 Catch.obs <- read.csv('hake_totcatch.csv')
 
 df <- load_data_seasons()
@@ -37,17 +43,26 @@ yrinit <- df$nyear
 ### Run the OM and the EM for x number of years in the MSE 
 ### Set targets for harvesting etc 
 #
-df$parms$initN <- df$parms$initN*0
 # df$parms$Rin <- df$parms$Rin*0
 # df$F0 <- 0*df$F0
 
-simyears <- 25 # Project 25 years into the future (2048 that year)
+simyears <- 32 # Project 25 years into the future (2048 that year)
 year.future <- c(df$years,(df$years[length(df$years)]+1):(df$years[length(df$years)]+simyears))
 N0 <- NA
 sim.data <- run.agebased.true.catch(df)
 simdata0 <- sim.data # The other one is gonna get overwritten. 
 
-plot(sim.data$SSB[,2]/sim.data$SSB_0[2], type = 'l', ylab = 'SSB/SSB_0')
+
+par(mfrow = c(3,1), mar = c(4,4,1,1))
+plot(df$years,sim.data$SSB[,2]/sum(sim.data$SSB_0[2]), type = 'l', ylab = 'SSB/SSB_0')
+SSB0_ass <- calcSSB0(exp(parms.true$logRinit), exp(parms.true$logMinit), df$nage, df$Matsel)
+lines(assessment$year,assessment$SSB/SSB0_ass, col = 'red')
+
+plot(df$years,rowSums(sim.data$SSB), type = 'l', ylab = 'SSB')
+lines(assessment$year, assessment$SSB, col = 'red')
+
+plot(df$years,df$Catch)
+lines(df$years, sim.data$Catch)
 # 
 # save(sim.data,file = 'simulated_space_OM.Rdata')
 # save(df,file = 'sim_data_parms.Rdata')
@@ -102,6 +117,13 @@ for (time in 1:simyears){
     df$flag_catch <- c(df$flag_catch,1)
     df$years <- year.future[1:year]
     df$nyear <- length(df$years)
+    #df$tEnd <- df$tEnd+1 # Just run one more year in subsequent runs
+    df$wage_catch <- df.new$wage_catch
+    df$wage_survey <- df.new$wage_survey
+    df$wage_mid <- df.new$wage_mid
+    df$wage_ssb <- df.new$wage_ssb
+    df$Catch <- c(df$Catch, Fnew[[1]])
+    #df$years <- c(df$years,df$years[length(df$years)]+1)
     
     
     sim.data <- run.agebased.true.catch(df, seedz)
@@ -153,12 +175,12 @@ for (time in 1:simyears){
   lower <- obj$par-Inf
   upper <- obj$par+Inf
   
-  lower[names(lower) == 'F0'] <- 1e-10
+  lower[names(lower) == 'F0'] <- 0.01
   upper <- obj$par+Inf
   upper[names(upper) == 'psel_fish' ] <- 5
   upper[names(upper) == 'PSEL'] <- 5
-  upper[names(upper) == 'logh'] <- log(0.999)
-  upper[names(upper) == 'F0'] <- 1.2
+  # upper[names(upper) == 'logh'] <- log(0.999)
+  # upper[names(upper) == 'F0'] <- 1.2
   
   
   system.time(opt<-nlminb(obj$par,obj$fn,obj$gr,lower=lower,upper=upper,
@@ -166,33 +188,60 @@ for (time in 1:simyears){
                                          eval.max = 5000))) # If error one of the random effects is unused
   
   
-  if(opt$convergence == 1){
+  if(opt$convergence != 0){
     print(paste('year',df$years[length(df$years)], 'did not converge'))
     stop('Model not converged')
+    xx<- Check_Identifiable_vs2(obj)
+    
     }
-  start.time <- Sys.time()
-  rep<-sdreport(obj)
-  end.time <- Sys.time()
-  time.taken <- end.time - start.time
-  print(time.taken)
-
-  #Uncertainty
+  
+  reps <- obj$report()
+  
+  SSB <- reps$SSB
+  Fyear <- reps$Fyear
+  N <- reps$N
+  Catch <- reps$Catch
+  R <- reps$R
+  
+  
+  #par(mfrow = c(2,1), mar = c(4,4,1,1))
+  # yl <- ylimits(SSB,sim.data$SSB[,1])
+  # plot(year.future[1:year],SSB, ylim = yl)
+  # lines(year.future[1:(year)],rowSums(sim.data$SSB)) # One model takes SSB in the beginning of the year the other in the end
+  #rep<-sdreport(obj)
+  
+  # #Uncertainty
+  rep <- sdreport(obj)
   sdrep <- summary(rep)
   rep.values<-rownames(sdrep)
   nyear <- df$tEnd
-  # 
-  # 
+  # # # 
+  # # # 
   SSB <- getUncertainty('SSB',df)
-  F0 <- getUncertainty('Fyear',df)
-  Catch <- getUncertainty('Catch',df)
-  N <- getUncertainty('N',df)
-  N$age <- rep(seq(1,df$nage), length.out = year*df$nage)
-  N$year <- rep(df$years, each = df$nage)
-
-  Surveyobs <- getUncertainty('Surveyobs',df)
-  R <- getUncertainty('R',df)
-
-  ## Plots
+  # p1 <- plotValues(SSB, data.frame(x=df$years,y = rowSums(sim.data$SSB)), 'SSB')
+  # # F0 <- getUncertainty('Fyear',df)
+  # # Catch <- getUncertainty('Catch',df)
+  # # N <- getUncertainty('N',df)
+  # # N$age <- rep(seq(1,df$nage), length.out = year*df$nage)
+  # # N$year <- rep(df$years, each = df$nage)
+  # # 
+  # Surveyobs <- getUncertainty('Surveyobs',df)
+  # Surveyobs <- Surveyobs[df.new$flag_survey == 1,]
+  # p2 <- plotValues(Surveyobs, data.frame(x=df$years[df.new$flag_survey == 1],y = sim.data$survey[df.new$flag_survey == 1]), 'survey biomass')
+  # 
+  # grid.arrange(p1,p2)
+  # 
+  # df.plot <- Surveyobs
+  # df.plot$model <- 'estimation'
+  # df.plot$year <- year.future[1:year]
+  # 
+  # df.plot <- rbind(df.plot, data.frame(name = sim.data$survey, SE = NA, min = NA, max = NA, model = 'OM', year = df.plot$year))
+  # df.plot$name[df.plot$name == 1] <- NA
+  #   # R <- getUncertainty('R',df)
+  # ggplot(df.plot, aes(x=  year,y= name, color = model))+geom_line(data = df.plot[df.plot$model == 'estimation',])+theme_bw()+
+  #   geom_point(data = df.plot[df.plot$model == 'OM',])+
+  #   geom_ribbon(data = df.plot[df.plot$model == 'estimation',],aes(ymin = min, ymax= max), fill = alpha('gray', alpha = 0.3), linetype = 0)
+  # ## Plots
 
 # 
 #   yl <- ylimits(SSB$name,sim.data$SSB)
@@ -200,15 +249,14 @@ for (time in 1:simyears){
 #   # lines(df.new$years,rowSums(sim.data$SSB), col = 'red')
 #   # polygon()
 #   par(mfrow = c(2,1), mar = c(4,4,1,1))
- plotUncertainty(SSB,rowSums(sim.data$SSB))
- plotUncertainty(Surveyobs,sim.data$survey)
+ # plotUncertainty(SSB,rowSums(sim.data$SSB))
+ # plotUncertainty(Surveyobs,sim.data$survey)
  # points(sim.data$survey, col = 'green') 
  # # df.plot <- df.new
  #  # df.plot$survey[df.plot$survey == 1] <- NA
  #  # plotUncertainty(Surveyobs, df.plot$survey)
  #  plotUncertainty(Catch, df.new$Catchobs)
   # # # Calculate the fishing mortality needed to reach F40
-  # xx<- Check_Identifiable_vs2(obj)
 
   # model.save[[time]] <- list(df = df.new, xx = xx, parameters = rep$par.fixed)
 
@@ -216,24 +264,19 @@ for (time in 1:simyears){
     # Fsel <- getSelec(df$age,rep$par.fixed[names(rep$par.fixed) == 'psel_fish'], df$Smin, df$Smax)
   # F40 <- referencepoints(SSB$name[length(SSB$name)])
   # 
-  Nend <- N$name[N$year == df$years[length(df$years)]]
-  Fnew <- getRefpoint(rep$par.fixed, df,SSB$name[length(SSB$name)], Fin=df$F0[length(df$F0)], Nend)
+  # Nend <- N$name[N$year == df$years[length(df$years)]]
+  Nend <- N[,dim(N)[2]]
+  Fnew <- getRefpoint(opt$par, df,SSB$name[length(SSB$name)], Fin=Fyear[length(Fyear)], Nend)
   #Fnew <- 0.3
-  
+  print(paste('new quota = ',Fnew[[1]]))
   # Update the data data frame
   
   Ntmp <- sim.data$Nout
-  df$tEnd <- df$tEnd+1 # Just run one more year in subsequent runs
-  df$wage_catch <- df.new$wage_catch
-  df$wage_survey <- df.new$wage_survey
-  df$wage_mid <- df.new$wage_mid
-  df$wage_ssb <- df.new$wage_ssb
-  df$Catch <- c(df$Catch, Fnew[[1]])
-  
+
   
   # Save some EM stuff in the last year 
-  SSB.save[[time]] <- SSB
-  R.save[[time]] <- R
+  SSB.save[[time]] <- SSB$name
+  R.save[[time]] <- N[1,]
   F40.save[time] <- Fnew[[2]]
   Catch.save[[time]] <- Catch
   
@@ -251,10 +294,10 @@ time.taken <- end.time - start.time
 print(time.taken)
 
 dev.off()
-plot(1966:(1966+yrinit-1),SSB.save[[1]]$name, type = 'l', col = alpha('black', alpha = 0.3), xlab = c(1965,2066))
+plot(1966:(1966+yrinit-1),SSB.save[[1]], type = 'l', col = alpha('black', alpha = 0.3), xlab = c(1965,df$years[year]))
 
 for(i in 2:simyears){
-  lines(1966:(1966+yrinit-2+i), SSB.save[[i]]$name, col = alpha('black', alpha = 0.3))
+  lines(1966:(1966+yrinit-2+i), SSB.save[[i]], col = alpha('black', alpha = 0.3))
   
 }
 
@@ -262,25 +305,25 @@ lines(df$years,SSB.test.om[[time]], lwd = 2, col = 'red')
 lines(assessment$year,assessment$SSB, lwd = 2, col = 'green')
 
 
-save(model.save, file = 'modelsave.Rdata')
+#save(model.save, file = 'modelsave.Rdata')
 
 # 
-yl <- ylimits(SSB$name,rowSums(sim.data$SSB))
-plot(SSB$name, type = 'l', ylim = yl, xlab = 'year')
+yl <- ylimits(SSB,rowSums(sim.data$SSB))
+plot(SSB, type = 'l', ylim = yl, xlab = 'year')
 lines(rowSums(sim.data$SSB), col = 'red')
 
 
-png(file = 'spawningMSE.png', width = 800, height = 400)
+#png(file = 'spawningMSE.png', width = 800, height = 400)
 library(scales)
 # Plot the SSB over time and see if it changed 
-plot(SSB.save[[1]]$name*1e-5, xlim = c(0, df$tEnd/df$nseason), type ='l', ylim =c(3,20), ylab = 'spawning biomass')
+plot(SSB.save[[1]]*1e-5, xlim = c(0, df$tEnd/df$nseason), type ='l', ylim =c(3,20), ylab = 'spawning biomass')
 for (i in 2:simyears){
   
   if (i == simyears){
-    lines(SSB.save[[i]]$name*1e-5, col = alpha('green', alpha = 0.6))
+    lines(SSB.save[[i]]*1e-5, col = alpha('green', alpha = 0.6))
     
   }else{
-    lines(SSB.save[[i]]$name*1e-5, col = alpha('black', alpha = 0.3))
+    lines(SSB.save[[i]]*1e-5, col = alpha('black', alpha = 0.3))
     
     
   }
@@ -304,16 +347,16 @@ R.end <- R.save[[simyears]]
 # F0.end <- F0.save[[simyears]]
 Catch.end <- Catch.save[[simyears]]
 
-SE.SSB <- ((SSB.end$name-rowSums(sim.data$SSB))/SSB.end$name)*100
-SE.R <- ((R.end$name-sim.data$N.save[1,])/R.end$name)*100
-SE.Catch <- ((Catch.end$name-sim.data$Catch)/Catch.end$name)*100
+SE.SSB <- ((SSB.end-rowSums(sim.data$SSB))/SSB.end)*100
+SE.R <- ((log(R.end)-log(sim.data$N.save[1,]))/log(R.end))*100
+SE.Catch <- ((Catch.end-sim.data$Catch)/Catch.end)*100
 
-png(file = 'SE estimates.png', width = 800, height = 400)
+#png(file = 'SE estimates.png', width = 800, height = 400)
 
 par(mfrow = c(2,2), mar = c(4,4,1,1))
 plot(df$years,SE.SSB, ylim = c(-100,100), type = 'l', xlab = 'year', ylab = 'SSB SE')
 lines(df$years,rep(1,length(df$years)), lty = 2)
-plot(df$years, SE.R, ylim = c(-300,300), type = 'l', xlab = 'year', ylab = 'R SE')
+plot(df$years, SE.R, ylim = c(-50,50), type = 'l', xlab = 'year', ylab = 'log(R) SE')
 lines(df$years,rep(1,length(df$years)), lty = 2)
 plot(df$years, SE.Catch,ylim= c(-100,100) ,type = 'l', xlab = 'year', ylab = 'Catch SE')
 lines(df$years,rep(1,length(df$years)), lty = 2)

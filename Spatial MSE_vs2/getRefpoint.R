@@ -73,7 +73,7 @@ Fnew <- F40$par
 
 V <- sum(Nend*Cw*sel)
 
-Fx <- 0.4
+Fx <- 1-exp(-Fnew) # Convert to harvest rate 
 
 if((SSBy/SSB_0) < 0.1){
   Cnew <- 0.01 # add a very low catch (fix later)
@@ -88,10 +88,13 @@ if((SSBy/SSB_0) > 0.4){
 
 if(((SSBy/SSB_0) <= 0.4) & ((SSBy/SSB_0) >= 0.1)){
  
-  Cnew <- Fx*V*((SSBy-0.1*SSB_0)*((0.4*SSB_0/SSB_eq)/(0.4*SSB_0-0.1*SSB_0)))
+  Cnew <- Fnew*V*((SSBy-0.1*SSB_0)*((0.4*SSB_0/SSBy)/(0.4*SSB_0-0.1*SSB_0)))
   
 }
 
+if (Cnew > 500000){
+  Cnew <- 500000
+}
 
 
 return(list(Cnew = Cnew, Fnew = Fnew))

@@ -47,6 +47,10 @@ Type objective_function<Type>::operator() ()
 //   // Mortality
   DATA_VECTOR(Msel); // How mortality scales with age
   DATA_VECTOR(Matsel); // Maturity ogive
+
+  // Priors
+  DATA_SCALAR(Bprior);
+  DATA_SCALAR(Aprior)
 //   // Time parameters
   // Parameter integers
   PARAMETER(logRinit); // Recruitment at
@@ -57,7 +61,7 @@ Type objective_function<Type>::operator() ()
 
   PARAMETER(logphi_catch);
   PARAMETER(logphi_survey);
-
+  //DATA_SCALAR(logphi_survey);
   PARAMETER_VECTOR(psel_fish);
   PARAMETER_VECTOR(psel_surv);
   PARAMETER_VECTOR(initN);
@@ -318,7 +322,7 @@ for(int time=1;time<tEnd;time++){ // Survey Surveyobs
 
 Type ans_catch = 0.0;
 for(int time=0;time<tEnd;time++){ // Total Catches
-        ans_catch += -dnorm(log(Catch(time)+1e-6), log(Catchobs(time)), SDcatch, TRUE);
+        ans_catch += -dnorm(log(Catch(time)+1e-6), log(Catchobs(time)+1e-6), SDcatch, TRUE);
 }
 
 
@@ -394,9 +398,14 @@ for(int time=0;time<year_sel;time++){ // Start time loop
 // Priors on h and M
 Type ans_priors = 0.0;
 
-ans_priors += -dnorm(h,Type(0.777),Type(0.01),TRUE);
-ans_priors += -dnorm(Minit, Type(0.2), Type(0.01), TRUE);
+// ans_priors += -dnorm(logh,log(Type(0.777)),Type(0.113),TRUE);
 
+// Prior on h
+ans_priors += -dbeta(h,Bprior,Aprior,TRUE);
+
+
+// ans_priors += -dnorm(logMinit, log(Type(0.2)), Type(0.1), TRUE);
+ans_priors += 0.5*pow(((logMinit)-log(Type(0.2))/Type(0.1)),2);
 
 
 vector<Type>ans_tot(7);
@@ -430,6 +439,14 @@ ADREPORT(age_catch_est)
 ADREPORT(age_survey)
 ADREPORT(age_survey_est)
 ADREPORT(ans_tot)
+
+REPORT(SSB)
+REPORT(Fyear)
+REPORT(N)
+REPORT(Catch)
+REPORT(R)
+
+
 
   return ans;
 }
