@@ -6,7 +6,7 @@ getUncertainty <- function(name,data){
   df$max <- df$name+2*df$SE
   
   if(dim(df)[1] == data$nyear){
-    df$year <- data$year
+    df$year <- data$years
   }
   
   return(df)  

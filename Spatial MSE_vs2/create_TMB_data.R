@@ -70,10 +70,17 @@ create_TMB_data <- function(sim.data, df){
     #   stop('why')
     # }
   }  
-  b <- matrix(1, tEnd)
+  #b <- matrix(1, tEnd)
   
   # Load parameters from the assessment 
+  ### h prior distribution
+  hmin <- 0.2
+  hmax <- 1
+  hprior <- 0.777
+  hsd <- 0.117
   
+  mu <- (hprior-hmin)/(hmax-hmin)
+  tau <- ((hprior-hmin)*(hmax-hprior))/hsd^2-1
 
   
   df.new <-list(      #### Parameters #####
@@ -90,7 +97,7 @@ create_TMB_data <- function(sim.data, df){
                   selYear = 26,
                   years = years,
                   tEnd = length(years), # The extra year is to initialize 
-                  logQ = log(1),   # Analytical solution
+                  logQ = log(1.135767),   # Analytical solution
                   # Selectivity 
                   Smin = 1,
                   Smin_survey = 2,
@@ -116,7 +123,8 @@ create_TMB_data <- function(sim.data, df){
                   logphi_survey = log(0.91),
                   sigma_psel = 0.04,
                   logh = log(0.8),
-                  F0 = c(df$F0,sim.data$F0),
+                  Bprior= tau*mu,
+                  Aprior = tau*(1-mu),
                   survey_err = df$survey_err
                 
   )

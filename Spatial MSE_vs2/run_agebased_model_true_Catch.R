@@ -212,13 +212,13 @@ run.agebased.true.catch <- function(df, seed = 100){
         E.temp <- df$Catch[yr]*Fnseason[season]*Fspace[space] # Catch distribution in the year
         
         if(season == 1){
-          B.tmp <-  sum(N.save.age[,idx-1,space,season]*exp(-Mseason*0.5)*w_mid*Fsel) # Get biomass from previous year
+          B.tmp <-  sum(N.save.age[,idx-1,space,season]*exp(-Mseason*2)*w_mid*Fsel) # Get biomass from previous year
         }else{
-          B.tmp <-  sum(N.save.age[,idx,space,season-1]*exp(-Mseason*0.5)*w_mid*Fsel) # Get biomass from previous season
+          B.tmp <-  sum(N.save.age[,idx,space,season-1]*exp(-Mseason*2)*w_mid*Fsel) # Get biomass from previous season
         }
         
         if(E.temp/B.tmp > 1){
-          stop(paste('Catch exceeds available biomass in year:',df$years[yr]))
+          stop(paste('Catch exceeds available biomass in year:',df$years[yr],' and season', season, 'area', space))
         }
       
         temp <- E.temp/(B.tmp + 0.1*E.temp)
@@ -319,13 +319,13 @@ run.agebased.true.catch <- function(df, seed = 100){
       if (df$flag_survey[yr] == 1){
         #err <- exp(rnorm(n = 1,mean = 0, sd = surv.sd))
         err <- 1 # Don't put random error on the survey
-        surv <- sum(rowSums(N.save.age[,idx,,2])*surv.sel*q*w_surv)*err # If the xtra factor is not included the mean is > 1
+        surv <- sum(rowSums(N.save.age[,idx,,4])*surv.sel*q*w_surv)*err # If the xtra factor is not included the mean is > 1
         survey[yr] <- surv
       }else{
         survey[yr] <- 1
       }
     
-      Ntot.year <- rowSums(N.save.age[,idx,,2])
+      Ntot.year <- rowSums(N.save.age[,idx,,4])
       
       surv.tot <- sum(Ntot.year*surv.sel*q)
       
@@ -366,6 +366,7 @@ run.agebased.true.catch <- function(df, seed = 100){
     
     
     df.out   <- list(N.save = Nsave[,2:(nyear+1)], SSB = SSB[2:(nyear+1),], 
+                     N.save.age = N.save.age[,2:(nyear+1),,],
                      SSB.all = SSB.all[2:(nyear+1),,],
                      Catch.save.age = Catch.save.age[,2:(nyear+1),,],
                      CatchN.save.age = CatchN.save.age[,2:(nyear+1),,],
