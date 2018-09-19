@@ -46,7 +46,7 @@ yrinit <- df$nyear
 # df$parms$Rin <- df$parms$Rin*0
 # df$F0 <- 0*df$F0
 
-simyears <- 32 # Project 25 years into the future (2048 that year)
+simyears <- 3 # Project 25 years into the future (2048 that year)
 year.future <- c(df$years,(df$years[length(df$years)]+1):(df$years[length(df$years)]+simyears))
 N0 <- NA
 sim.data <- run.agebased.true.catch(df)
@@ -90,6 +90,7 @@ model.save <- list()
 
 SSB.test.om <- list() # Test if SSB is the same in the OM
 start.time <- Sys.time()
+dev.off()
 
 for (time in 1:simyears){
   
@@ -205,21 +206,23 @@ for (time in 1:simyears){
   
   
   #par(mfrow = c(2,1), mar = c(4,4,1,1))
-  # yl <- ylimits(SSB,sim.data$SSB[,1])
-  # plot(year.future[1:year],SSB, ylim = yl)
-  # lines(year.future[1:(year)],rowSums(sim.data$SSB)) # One model takes SSB in the beginning of the year the other in the end
+  yl <- ylimits(SSB,sim.data$SSB[,1])
+  plot(year.future[1:year],SSB, ylim = yl)
+  lines(year.future[1:(year)],rowSums(sim.data$SSB)) # One model takes SSB in the beginning of the year the other in the end
   #rep<-sdreport(obj)
   
   # #Uncertainty
-  rep <- sdreport(obj)
-  sdrep <- summary(rep)
-  rep.values<-rownames(sdrep)
-  nyear <- df$tEnd
-  # # # 
-  # # # 
-  SSB <- getUncertainty('SSB',df)
-  # p1 <- plotValues(SSB, data.frame(x=df$years,y = rowSums(sim.data$SSB)), 'SSB')
-  # # F0 <- getUncertainty('Fyear',df)
+  if(time == simyears){
+    rep <- sdreport(obj)
+    sdrep <- summary(rep)
+    rep.values<-rownames(sdrep)
+    nyear <- df$tEnd
+    SSB <- getUncertainty('SSB',df)
+    p1 <- plotValues(SSB, data.frame(x=df$years,y = rowSums(sim.data$SSB)), 'SSB')
+    p1
+    SSB <- SSB$name
+  }
+      # # F0 <- getUncertainty('Fyear',df)
   # # Catch <- getUncertainty('Catch',df)
   # # N <- getUncertainty('N',df)
   # # N$age <- rep(seq(1,df$nage), length.out = year*df$nage)
@@ -266,7 +269,7 @@ for (time in 1:simyears){
   # 
   # Nend <- N$name[N$year == df$years[length(df$years)]]
   Nend <- N[,dim(N)[2]]
-  Fnew <- getRefpoint(opt$par, df,SSB$name[length(SSB$name)], Fin=Fyear[length(Fyear)], Nend)
+  Fnew <- getRefpoint(opt$par, df,SSB[length(SSB)], Fin=Fyear[length(Fyear)], Nend)
   #Fnew <- 0.3
   print(paste('new quota = ',Fnew[[1]]))
   # Update the data data frame
@@ -275,7 +278,7 @@ for (time in 1:simyears){
 
   
   # Save some EM stuff in the last year 
-  SSB.save[[time]] <- SSB$name
+  SSB.save[[time]] <- SSB
   R.save[[time]] <- N[1,]
   F40.save[time] <- Fnew[[2]]
   Catch.save[[time]] <- Catch
@@ -316,7 +319,7 @@ lines(rowSums(sim.data$SSB), col = 'red')
 #png(file = 'spawningMSE.png', width = 800, height = 400)
 library(scales)
 # Plot the SSB over time and see if it changed 
-plot(SSB.save[[1]]*1e-5, xlim = c(0, df$tEnd/df$nseason), type ='l', ylim =c(3,20), ylab = 'spawning biomass')
+plot(SSB.save[[1]]*1e-5, xlim = c(0, df$tEnd/df$nseason), type ='l', ylim =c(3,30), ylab = 'spawning biomass')
 for (i in 2:simyears){
   
   if (i == simyears){
@@ -348,7 +351,7 @@ R.end <- R.save[[simyears]]
 Catch.end <- Catch.save[[simyears]]
 
 SE.SSB <- ((SSB.end-rowSums(sim.data$SSB))/SSB.end)*100
-SE.R <- ((log(R.end)-log(sim.data$N.save[1,]))/log(R.end))*100
+SE.R <- (((R.end)-(sim.data$N.save[1,]))/(R.end))*100
 SE.Catch <- ((Catch.end-sim.data$Catch)/Catch.end)*100
 
 #png(file = 'SE estimates.png', width = 800, height = 400)
