@@ -91,10 +91,10 @@ if(((SSBy/SSB_0) <= 0.4) & ((SSBy/SSB_0) >= 0.1)){
   Cnew <- Fnew*V*((SSBy-0.1*SSB_0)*((0.4*SSB_0/SSBy)/(0.4*SSB_0-0.1*SSB_0)))
   
 }
-
-if (Cnew > 500000){
-  Cnew <- 500000
-}
+# 
+# if (Cnew > 500000){
+#   Cnew <- 500000
+# }
 
 
 return(list(Cnew = Cnew, Fnew = Fnew))
