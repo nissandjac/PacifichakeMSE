@@ -6,8 +6,6 @@ library(TMB)
 compile("runHakeassessment.cpp")
 dyn.load(dynlib("runHakeassessment"))
 
-seedz <- 12345
-set.seed(seedz)
 # Run the simulation model
 source('run_agebased_model_true_Catch.R')
 
@@ -19,7 +17,7 @@ source('getUncertainty.R')
 source('plotValues.R')
 
 source('getSelec.R') # Calculate hake selectivity
- 
+
 source('load_data_seasons.R') # Loads data for Operating model
 source('create_TMB_data.R') # Compiles operating model data to tmb data
 
@@ -103,7 +101,7 @@ for (time in 1:simyears){
     if(sum(year.future[year] == S.year.future)>0){
       df$flag_survey <- c(df$flag_survey,1)
       df$survey_x <- c(df$survey_x,2)
-     # df$ss_catch <- c(df$ss_catch,ceiling(mean(df$ss_catch[df$ss_catch > 0])))
+      # df$ss_catch <- c(df$ss_catch,ceiling(mean(df$ss_catch[df$ss_catch > 0])))
       df$ss_survey <- c(df$ss_survey,ceiling(mean(df$ss_survey[df$ss_survey > 0])))
       df$survey_err <- c(df$survey_err,mean(df$survey_err[df$survey_err < 1]))
       
@@ -194,7 +192,7 @@ for (time in 1:simyears){
     stop('Model not converged')
     xx<- Check_Identifiable_vs2(obj)
     
-    }
+  }
   
   reps <- obj$report()
   
@@ -222,7 +220,7 @@ for (time in 1:simyears){
     p1
     SSB <- SSB$name
   }
-      # # F0 <- getUncertainty('Fyear',df)
+  # # F0 <- getUncertainty('Fyear',df)
   # # Catch <- getUncertainty('Catch',df)
   # # N <- getUncertainty('N',df)
   # # N$age <- rep(seq(1,df$nage), length.out = year*df$nage)
@@ -245,26 +243,26 @@ for (time in 1:simyears){
   #   geom_point(data = df.plot[df.plot$model == 'OM',])+
   #   geom_ribbon(data = df.plot[df.plot$model == 'estimation',],aes(ymin = min, ymax= max), fill = alpha('gray', alpha = 0.3), linetype = 0)
   # ## Plots
-
-# 
-#   yl <- ylimits(SSB$name,sim.data$SSB)
-#   # plot(df.new$years,SSB$name, type = 'l', ylim = yl, xlab = 'year')
-#   # lines(df.new$years,rowSums(sim.data$SSB), col = 'red')
-#   # polygon()
-#   par(mfrow = c(2,1), mar = c(4,4,1,1))
- # plotUncertainty(SSB,rowSums(sim.data$SSB))
- # plotUncertainty(Surveyobs,sim.data$survey)
- # points(sim.data$survey, col = 'green') 
- # # df.plot <- df.new
- #  # df.plot$survey[df.plot$survey == 1] <- NA
- #  # plotUncertainty(Surveyobs, df.plot$survey)
- #  plotUncertainty(Catch, df.new$Catchobs)
+  
+  # 
+  #   yl <- ylimits(SSB$name,sim.data$SSB)
+  #   # plot(df.new$years,SSB$name, type = 'l', ylim = yl, xlab = 'year')
+  #   # lines(df.new$years,rowSums(sim.data$SSB), col = 'red')
+  #   # polygon()
+  #   par(mfrow = c(2,1), mar = c(4,4,1,1))
+  # plotUncertainty(SSB,rowSums(sim.data$SSB))
+  # plotUncertainty(Surveyobs,sim.data$survey)
+  # points(sim.data$survey, col = 'green') 
+  # # df.plot <- df.new
+  #  # df.plot$survey[df.plot$survey == 1] <- NA
+  #  # plotUncertainty(Surveyobs, df.plot$survey)
+  #  plotUncertainty(Catch, df.new$Catchobs)
   # # # Calculate the fishing mortality needed to reach F40
-
+  
   # model.save[[time]] <- list(df = df.new, xx = xx, parameters = rep$par.fixed)
-
-
-    # Fsel <- getSelec(df$age,rep$par.fixed[names(rep$par.fixed) == 'psel_fish'], df$Smin, df$Smax)
+  
+  
+  # Fsel <- getSelec(df$age,rep$par.fixed[names(rep$par.fixed) == 'psel_fish'], df$Smin, df$Smax)
   # F40 <- referencepoints(SSB$name[length(SSB$name)])
   # 
   # Nend <- N$name[N$year == df$years[length(df$years)]]
@@ -275,7 +273,7 @@ for (time in 1:simyears){
   # Update the data data frame
   
   Ntmp <- sim.data$Nout
-
+  
   
   # Save some EM stuff in the last year 
   SSB.save[[time]] <- SSB
@@ -286,7 +284,7 @@ for (time in 1:simyears){
   # And the fishing mortality
   F0.save <- Fnew
   
-#  print(year.future[year])
+  #  print(year.future[year])
   SSB.test.om[[time]] <- rowSums(sim.data$SSB)
   
 }

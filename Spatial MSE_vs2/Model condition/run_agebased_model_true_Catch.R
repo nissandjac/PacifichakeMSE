@@ -117,13 +117,13 @@ run.agebased.true.catch <- function(df, seed = 100){
   Catch.save.age <- array(NA,dim = c(nage,nyear+1, nspace, nseason))
   CatchN.save.age <- array(NA,dim = c(nage,nyear+1, nspace, nseason))
   
-  survey <- array(NA,dim = c(nyear))
+  survey <- array(NA,dim = c(nyear+1))
   survey.true <- array(NA, dim = c(nspace, nyear+1))
 
-  age_comps_surv <- array(NA, dim = c(df$age_maxage,nyear)) # Fix the max ages later
-  age_comps_surv_space <- array(NA, dim = c(df$age_maxage,nyear,nspace)) # Fix the max ages later
+  age_comps_surv <- array(NA, dim = c(df$age_maxage,nyear+1)) # Fix the max ages later
+  age_comps_surv_space <- array(NA, dim = c(df$age_maxage,nyear+1,nspace)) # Fix the max ages later
 
-  age_comps_catch <- array(NA, dim = c(df$age_maxage,nyear))
+  age_comps_catch <- array(NA, dim = c(df$age_maxage,nyear+1))
   age_comps_OM <- array(NA, dim = c(df$nage,nyear+1, nspace,nseason))
   
   # Distribute over space 
@@ -317,12 +317,18 @@ run.agebased.true.catch <- function(df, seed = 100){
       # Save the survey 
       # Survey is conducted in the start of the year
       if (df$flag_survey[yr] == 1){
-        #err <- exp(rnorm(n = 1,mean = 0, sd = surv.sd))
-        err <- 1 # Don't put random error on the survey
-        surv <- sum(rowSums(N.save.age[,idx,,4])*surv.sel*q*w_surv)*err # If the xtra factor is not included the mean is > 1
-        survey[yr] <- surv
+        
+        if(year[yr] > 2018){
+        err <- rnorm(n = 1,mean = 0, sd = surv.sd)
+        surv <- exp(log(sum(rowSums(N.save.age[,idx,,4])*surv.sel*q*w_surv))+err) # If the xtra factor is not included the mean is > 1
+        }else{
+         surv <- sum(rowSums(N.save.age[,idx,,4])*surv.sel*q*w_surv)
+       }
+        
+        
+        survey[idx] <- surv
       }else{
-        survey[yr] <- 1
+        survey[idx] <- 1
       }
     
       Ntot.year <- rowSums(N.save.age[,idx,,4])
@@ -330,31 +336,31 @@ run.agebased.true.catch <- function(df, seed = 100){
       surv.tot <- sum(Ntot.year*surv.sel*q)
       
      if(df$flag_survey[yr] == 1){
-        age_comps_surv[1,yr] <- 0 # No year 1 recorded
+        age_comps_surv[1,idx] <- 0 # No year 1 recorded
 
-        age_comps_surv[1:(df$age_maxage-1),yr] <-  (Ntot.year[2:(df$age_maxage)]*surv.sel[2:(df$age_maxage)]*q)/surv.tot
-        age_comps_surv[df$age_maxage,yr] <- sum(Ntot.year[(df$age_maxage+1):nage]*surv.sel[(df$age_maxage+1):nage]*q)/surv.tot
+        age_comps_surv[1:(df$age_maxage-1),idx] <-  (Ntot.year[2:(df$age_maxage)]*surv.sel[2:(df$age_maxage)]*q)/surv.tot
+        age_comps_surv[df$age_maxage,idx] <- sum(Ntot.year[(df$age_maxage+1):nage]*surv.sel[(df$age_maxage+1):nage]*q)/surv.tot
       }else{
-        age_comps_surv[,yr] <- NA
+        age_comps_surv[,idx] <- NA
       }
       
       for(space in 1:nspace){
       Ntot.year <- N.save.age[,idx,space,2]
       surv.tot  <- sum(Ntot.year*surv.sel*q)
         
-      age_comps_surv_space[1,yr,space] <- 0 # No year 1 recorded
+      age_comps_surv_space[1,idx,space] <- 0 # No year 1 recorded
         
-      age_comps_surv_space[1:(df$age_maxage-1),yr,space] <-  (Ntot.year[2:(df$age_maxage)]*surv.sel[2:(df$age_maxage)]*q)/surv.tot
-      age_comps_surv_space[df$age_maxage,yr,space] <- sum(Ntot.year[(df$age_maxage+1):nage]*surv.sel[(df$age_maxage+1):nage]*q)/surv.tot
+      age_comps_surv_space[1:(df$age_maxage-1),idx,space] <-  (Ntot.year[2:(df$age_maxage)]*surv.sel[2:(df$age_maxage)]*q)/surv.tot
+      age_comps_surv_space[df$age_maxage,idx,space] <- sum(Ntot.year[(df$age_maxage+1):nage]*surv.sel[(df$age_maxage+1):nage]*q)/surv.tot
      
       }
       
       #
       if(df$flag_catch[yr] == 1){
-        age_comps_catch[1:(df$age_maxage-1),yr] <-  CatchN.age[2:(df$age_maxage),yr]/CatchN[yr]
-        age_comps_catch[df$age_maxage,yr] <- sum(CatchN.age[(df$age_maxage+1):nage,yr]/CatchN[yr])
+        age_comps_catch[1:(df$age_maxage-1),idx] <-  CatchN.age[2:(df$age_maxage),idx]/CatchN[idx]
+        age_comps_catch[df$age_maxage,idx] <- sum(CatchN.age[(df$age_maxage+1):nage,idx]/CatchN[idx])
       }else{
-        age_comps_catch[,yr] <- NA
+        age_comps_catch[,idx] <- NA
       }
       
 
@@ -370,12 +376,16 @@ run.agebased.true.catch <- function(df, seed = 100){
                      SSB.all = SSB.all[2:(nyear+1),,],
                      Catch.save.age = Catch.save.age[,2:(nyear+1),,],
                      CatchN.save.age = CatchN.save.age[,2:(nyear+1),,],
-                     Catch = Catch[2:(nyear+1)], Catch.age = Catch.age[,2:(nyear+1)], 
-                     Nout = N.save.age[,nyear+1,,1], age_comps_OM = age_comps_OM,
-                     age_catch = age_comps_catch,
+                     Catch = Catch[2:(nyear+1)], 
+                     Catch.age = Catch.age[,2:(nyear+1)], 
+                     Nout = N.save.age[,nyear+1,,1], 
+                     age_comps_OM = age_comps_OM[,2:(nyear+1),,],
+                     age_catch = age_comps_catch[,2:(nyear+1)],
                      SSB_0 = SSB_0, Nsave.all = N.save.age,
-                     survey.true = survey.true[,2:(nyear+1)],survey = survey,
-                     age_comps_surv = age_comps_surv,age_comps_country = age_comps_surv_space,
+                     survey.true = survey.true[,2:(nyear+1)],
+                     survey = survey[2:(nyear+1)],
+                     age_comps_surv = age_comps_surv[,2:(nyear+1)],
+                     age_comps_country = age_comps_surv_space[,2:(nyear+1),],
                      Fsel = Fsel.save, Fsave = Fseason.save[2:(nyear+1),,])
     
   return(df.out)
