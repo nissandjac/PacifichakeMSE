@@ -317,9 +317,15 @@ run.agebased.true.catch <- function(df, seed = 100){
       # Save the survey 
       # Survey is conducted in the start of the year
       if (df$flag_survey[yr] == 1){
-        #err <- exp(rnorm(n = 1,mean = 0, sd = surv.sd))
-        err <- 1 # Don't put random error on the survey
-        surv <- sum(rowSums(N.save.age[,idx,,4])*surv.sel*q*w_surv)*err # If the xtra factor is not included the mean is > 1
+        
+        if(df$year[yr] > 2018){
+        err <- rnorm(n = 1,mean = 0, sd = surv.sd)
+        surv <- exp(log(sum(rowSums(N.save.age[,idx,,4])*surv.sel*q*w_surv))+err) # If the xtra factor is not included the mean is > 1
+        }else{
+         surv <- sum(rowSums(N.save.age[,idx,,4])*surv.sel*q*w_surv)
+       }
+        
+        
         survey[idx] <- surv
       }else{
         survey[idx] <- 1
