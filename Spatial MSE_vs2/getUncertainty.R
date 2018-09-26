@@ -1,4 +1,4 @@
-getUncertainty <- function(name,data){
+getUncertainty <- function(name,data,sdrep){
   
   df <- data.frame(name = sdrep[rep.values == name,1])
   df$SE <- sdrep[rep.values == name,2]
