@@ -25,7 +25,7 @@ assessment <- read.csv('asssessment_MLE.csv')
 assessment <- assessment[assessment$year > 1965 &assessment$year < 2018 ,]
 Catch.obs <- read.csv('hake_totcatch.csv')
 
-nruns <- 2000
+nruns <- 5000
 
 seedz <- floor(runif(n = nruns,min = 1, max = 1e6))  # Random of a random 
 yr.future <- 50
@@ -115,7 +115,7 @@ p3 <- ggplot(survey, aes(x = year, y = p50))+
   theme_bw()+geom_point(size = 1.5)+
   geom_ribbon(aes(ymin = p5,ymax = p95), fill = alpha('gray',alpha = 0.5), linetype = 0)+
   geom_ribbon(aes(ymin = p25,ymax = p75), fill = alpha('gray',alpha = 0.8), linetype = 0)+  geom_line(size = 1.5)+
-  scale_y_continuous(name = 'survey (million kg)')
+  scale_y_continuous(name = 'survey (million tonnes)')
 
 p3
 
@@ -123,6 +123,9 @@ p3
 gs <- list(p1,p2,p3)
 ls.mat <- rbind(c(1,1),c(2,3))
 
+cairo_pdf('OM_future.pdf', width = 16, height = 12)
+
 grid.arrange(p1,                             # First row with one plot spaning over 2 columns
              arrangeGrob(p2, p3, ncol = 2), # Second row with 2 plots in 2 different columns
              nrow = 2)
+dev.off()
