@@ -74,8 +74,8 @@ Yr <- 1946:2017
 # Parameters 
 yb_1 <- 1965 #_last_early_yr_nobias_adj_in_MPD
 yb_2 <- 1971 #_first_yr_fullbias_adj_in_MPD
-yb_3 <- 2016 #_last_yr_fullbias_adj_in_MPD
-yb_4 <- 2017 #_first_recent_yr_nobias_adj_in_MPD
+yb_3 <- 2017 #_last_yr_fullbias_adj_in_MPD
+yb_4 <- 2018 #_first_recent_yr_nobias_adj_in_MPD
 b_max <- 0.87 #_max_bias_adj_in_MPD
 
 b[1] <- 0
@@ -102,6 +102,26 @@ for(j in 2:length(Yr)){
   #   stop('why')
   # }
 }  
+
+### h prior distribution
+hmin <- 0.2
+hmax <- 1
+hprior <- 0.777
+hsd <- 0.117
+
+mu <- (hprior-hmin)/(hmax-hmin)
+tau <- ((hprior-hmin)*(hmax-hprior))/hsd^2-1
+
+
+Bprior= tau*mu
+Aprior = tau*(1-mu)
+Pconst <- 1e-6
+hrange <- seq(0.2,1, length.out = 100)
+
+Prior_Like =  (1.0-Bprior)*log(Pconst+hrange-hmin) + 
+              (1.0-Aprior)*log(Pconst+hmax-hrange)-
+              (1.0-Bprior)*log(Pconst+hprior-hmin) - 
+              (1.0-Aprior)*log(Pconst+hmax-hprior)
 
 
 
@@ -140,12 +160,17 @@ df <-list(      #### Parameters #####
                 flag_catch =age_catch$flag,
                 age_catch = t(as.matrix(age_catch[,3:17])*0.01),
                 # variance parameters
-                logSDcatch = log(0.03),
+                logSDcatch = log(0.01),
                 logSDR = log(1.4), # Fixed in stock assessment ,
                 F0 = F0,
                 #logphi_survey = log(0.91),
                 sigma_psel = 1.4,
+                logh = log(0.8),
                 years = years,
+                logphi_catch = log(0.8276), # log(0.8276)
+                logphi_survey = log(11.33),
+                Bprior= tau*mu,
+                Aprior = tau*(1-mu),
                 b = b[Yr >= years[1]]
 )
 

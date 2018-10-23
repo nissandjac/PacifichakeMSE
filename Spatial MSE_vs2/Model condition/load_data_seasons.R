@@ -1,10 +1,10 @@
 ## Load the hake data
 # year and age input 
-load_data_seasons <- function(){
+load_data_seasons <- function(move = TRUE){
   
   
   years <- 1966:2017
-  nseason <- 4 # 4 seasons
+  nseason <- 12 # 4 seasons
   nyear <- length(years)
   tEnd <- length(years)*nseason
   age <- 0:20
@@ -16,47 +16,52 @@ load_data_seasons <- function(){
   # Maturity
   mat <- read.csv('maturity.csv')
   # Spatial stuff
-  
   nspace <- 2 # number of grid cells 
-  recruitmat <- matrix(0, nspace) # 4 is seasonality 
-  recruitmat[1] <- 0.1 # 10 percent change of spawning north
-  recruitmat[2] <- 0.9 # 90 percent of spawning south
   
-  # Movement matrix 
+  if(move == FALSE){
+    nspace <- 1
+  }
+    
+  # recruitmat <- matrix(0, nspace) # 4 is seasonality 
+  # recruitmat[1] <- 0.1 # 10 percent change of spawning north
+  # recruitmat[2] <- 0.9 # 90 percent of spawning south
+  # 
+  # Movement matrix 5
+  movemax <- rep(0.5,nseason)
+  movefifty <- 5
+  moveslope <- 0.5
+  
   movemat <- array(0, dim = c(nspace, nage, nseason)) # Chances of moving in to the other grid cell 
-  movemat[1,3,] <- 0.1
-  movemat[1,4,] <- 0.1
-  movemat[1,5,] <- 0.2
-  movemat[1,6:11,] <- 0.3
-  movemat[1,12:nage,] <- 0.4
-  movemat[1,,] <- movemat[1,,]
   
-  movemat[2,3,] <- 0.1
-  movemat[2,4,] <- 0.1
-  movemat[2,5,] <- 0.2
-  movemat[2,6:11,] <- 0.2
-  movemat[2,12:nage,] <- 0.25
-  
-  # Rarely move south during the year
-  movemat[1,3:nage,2:3] <- 0.05
-  
-  # Force all the SSB to move south in the last season
-  movemat[1,mat$mat > 0,nseason] <- 0.8
-  movemat[2,mat$mat > 0,nseason] <- 0
-  
-  movemat <- movemat*0.8
-  # Initial size distribution (make sure they add up to 1) 
-  move.init <- array(0.5, dim = c(nspace, nage))
-  move.init[1,] <- 0.3
-  move.init[2,] <- 0.7
-  # move.init <- movemat[,,4]
-  # move.init[1,1] <- 0.1
-  # move.init[2,1] <- 0.9
-  # move.init[1,2] <- 0.1
-  # move.init[2,2] <- 0.9
-  # move.init[1,3] <- 0.6
-  # move.init[2,3] <- 0.4
-
+  if(move == TRUE){
+    
+    for(j in 1:nspace){
+      for(i in 1:nseason){
+        movemat[j,,i] <- movemax[i]/(1+exp(-moveslope*(age-movefifty)))
+        
+      }
+    }
+    
+    movemat[,1:2,] <- 0 # Recruits and 1 year olds don't move
+    
+    # movemat[1,3:nage,2:3] <- 0.05 # Don't move south during the year
+    # movemat[1,3:10,nseason] <- 0.8
+    # movemat[2,3:10,nseason] <- 0
+    # 
+    # movemat[1,11:nage,nseason] <- 0
+    # movemat[2,11:nage,nseason] <- 0
+    
+    
+    
+    # move.init <- array(0.5, dim = c(nspace, nage))
+    # 
+    # move.init[1,] <- 0.3
+    # move.init[2,] <- 0.7
+    move.init <- c(0.3,0.7)
+    
+    }else{
+      move.init <- 1
+    }
 
   
   # weight at age 
@@ -155,10 +160,17 @@ load_data_seasons <- function(){
   psel<- matrix(NA,2, 5) 
   
   psel[2,] <- c(2.8476, 0.973,0.3861,0.1775,0.5048) # USA selectivity 
-  psel[1,] <- c(1, 1, 1, 1,1)
+  psel[1,] <- psel[2,]#c(1, 1, 1, 1,1)
+  
+  # if(move == TRUE){
+     mul <- 1.013
+  # }else{
+  #  mul <- 1
+#  }
+  
   
   parms =  list( # Just start all the simluations with the same initial conditions 
-    logRinit = 14.8354*1.02, # Have to make Rinit a little larger with movement (1.02)
+    logRinit = 14.8354*mul, # Have to make Rinit a little larger with movement (1.02)
     logh = log(0.8122),
     logMinit = log(0.2299),
     logSDsurv = log(0.3048),
@@ -216,7 +228,8 @@ load_data_seasons <- function(){
                   # Space parameters 
                   nspace = nspace,
                   movemat = movemat,
-                  recruitmat = recruitmat,
+                  move = move,
+                 # recruitmat = recruitmat,
                   move.init = move.init,
                   F0 = Fin,
                   psel = psel,

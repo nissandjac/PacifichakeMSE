@@ -261,7 +261,7 @@ cps.all.s <- cps.all %>%
 
 ## Load the single species model to check the age comp fits 
 source('load_data.R')
-source('parameters_TRUE.R')
+source('getParameters.R')
 source('runAssessment.R')
 
 df.new <- load_data()
@@ -273,7 +273,7 @@ reps <- runAssessment(df.new)
 am.est <- reps$age_catch_est
 
 
-age.comps <- sim.data$age_comps_catch
+age.comps <- sim.data$age_catch
 
 
 # Calculate the average age in the catch 
@@ -293,7 +293,7 @@ df.plot <- rbind(df.am.all, data.frame(year = df.new$years, am = am.mean$am.sim,
 #   #geom_line(data = cps.all.s, col = 'red', size = 2)+
 #   geom_line(data = am.mean, aes(x = years), col = 'green', size = 1)+
 #   geom_line(data = am.mean,aes(x = years,y = am.sim), col = 'blue', size =1 )+theme_classic()
-df.plot$Country <- mapvalues(df.plot$Country,from='All',to = 'Observed')
+#df.plot$Country <- mapvalues(df.plot$Country,from='All',to = 'Observed')
 df.plot$am[df.plot$am<3] <- NA # Weird bug
 
 p2 <- ggplot(df.plot, aes(x = year, y= am, color = Country))+geom_line()+theme_classic()+scale_y_continuous(name = 'Average age in catch')
