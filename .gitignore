@@ -2,5 +2,6 @@
 *.o
 *.dll
 
-# Ignore Rhistory uploads 
+# Ignore Rhistory and Rdata uploads 
 .Rhistory
+.RData
