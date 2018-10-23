@@ -25,7 +25,7 @@ assessment <- read.csv('asssessment_MLE.csv')
 assessment <- assessment[assessment$year > 1965 &assessment$year < 2018 ,]
 Catch.obs <- read.csv('hake_totcatch.csv')
 
-nruns <- 5000
+nruns <- 1000
 
 seedz <- floor(runif(n = nruns,min = 1, max = 1e6))  # Random of a random 
 yr.future <- 50

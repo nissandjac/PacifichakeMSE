@@ -8,10 +8,10 @@ runAssessment <- function(df.new){
   parms <- getParameters(TRUE,df.new)
   
   
-  compile("runHakeassessment2.cpp")
-  dyn.load(dynlib("runHakeassessment2"))
+  compile("runHakeassessment.cpp")
+  dyn.load(dynlib("runHakeassessment"))
   
-  obj <-MakeADFun(df.new,parms,DLL="runHakeassessment2")#, )
+  obj <-MakeADFun(df.new,parms,DLL="runHakeassessment", checkParameterOrder = FALSE)#, )
   
   # Test the input things 
   reps <- obj$report()
