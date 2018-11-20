@@ -72,10 +72,10 @@ for (i in 1:dim(age_catch.df)[1]){
 b <- matrix(NA, tEnd)
 Yr <- 1946:2017
 # Parameters 
-yb_1 <- 1965 #_last_early_yr_nobias_adj_in_MPD
+yb_1 <- 1966 #_last_early_yr_nobias_adj_in_MPD
 yb_2 <- 1971 #_first_yr_fullbias_adj_in_MPD
-yb_3 <- 2017 #_last_yr_fullbias_adj_in_MPD
-yb_4 <- 2018 #_first_recent_yr_nobias_adj_in_MPD
+yb_3 <- 2016 #_last_yr_fullbias_adj_in_MPD
+yb_4 <- 2017 #_first_recent_yr_nobias_adj_in_MPD
 b_max <- 0.87 #_max_bias_adj_in_MPD
 
 b[1] <- 0

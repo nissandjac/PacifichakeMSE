@@ -32,15 +32,19 @@ yr.future <- 50
 df <- load_data_seasons_future(yr.future)
 
 df$Catch <- Catch.obs$Fishery
-df$Catch <- c(df$Catch, rep(mean(df$Catch), yr.future))
+Catch.future <- c(df$Catch, rep(206507.8, yr.future))
+df$Catch <- Catch.future
 
-sim.data <- run.agebased.true.catch(df,seed =  1)
+sim.data <- run.agebased.true.catch(df,seed =  2)
 SSB0 <- sum(sim.data$SSB_0)
 
+plot(sim.data$SSB[,2]/sim.data$SSB0[2])
+lines(assessment$SSB)
 
 SSB.save <- matrix(NA, df$nyear, nruns)
 survey.save <- matrix(NA, df$nyear, nruns)
 R.save <- matrix(NA, df$nyear, nruns)
+Catch.save <- matrix(NA,df$nyear,nruns)
 run.true <- matrix(1, nruns)
 
 
@@ -50,8 +54,7 @@ for(i in 1:nruns){
   set.seed(seedz[i])
   
   df <- load_data_seasons_future(yr.future)
-  df$Catch <- Catch.obs$Fishery
-  df$Catch <- c(df$Catch, rep(mean(df$Catch), yr.future))
+  df$Catch <- Catch.future
   
   sim.data <- try(run.agebased.true.catch(df,seed =  seedz[i]), silent = TRUE)
   
@@ -59,10 +62,11 @@ for(i in 1:nruns){
   SSB.save[,i] <- rowSums(sim.data$SSB)
   R.save[,i] <- sim.data$N.save[1,]
   survey.save[,i] <- sim.data$survey
+  Catch.save[,i] <- sim.data$Catch
+  rm(sim.data)
   }else{
   run.true[i] <- 0  
   }
-  
 }
 
 end.time <- Sys.time()
@@ -82,10 +86,12 @@ SSB$year <- df$years
 
 
 p1 <- ggplot(SSB, aes(x = year, y = p50))+
-  theme_bw()+geom_point(size = 1.5)+
+  theme_classic()+geom_point(size = 1.5)+
   geom_ribbon(aes(ymin = p5,ymax = p95), fill = alpha('gray',alpha = 0.5), linetype = 0)+
   geom_ribbon(aes(ymin = p25,ymax = p75), fill = alpha('gray',alpha = 0.8), linetype = 0)+  geom_line(size = 1.5)+
-  scale_y_continuous(name = 'SSB/SSB_0')+geom_hline(aes(yintercept = 0.1),linetype =2)
+  scale_y_continuous(name = 'SSB/SSB_0')+geom_hline(aes(yintercept = 0.4),linetype =2, col = 'green')+
+  geom_hline(aes(yintercept = 0.1),linetype =2, col = 'red')+
+  geom_text(aes(x = 1965, y = 1.9, label = 'a'))
 
 p1
 
@@ -97,10 +103,11 @@ R$year <- df$years
 
 
 p2 <- ggplot(R, aes(x = year, y = p50))+
-  theme_bw()+geom_point(size = 1.5)+
+  theme_classic()+geom_point(size = 1.5)+
   geom_ribbon(aes(ymin = p5,ymax = p95), fill = alpha('gray',alpha = 0.5), linetype = 0)+
   geom_ribbon(aes(ymin = p25,ymax = p75), fill = alpha('gray',alpha = 0.8), linetype = 0)+  geom_line(size = 1.5)+
-  scale_y_continuous(name = 'million recruits')
+  scale_y_continuous(name = 'million recruits')+
+  geom_text(aes(x = 1965, y = 18, label = 'b'))
 
 p2
 
@@ -112,10 +119,11 @@ survey$year <- df$years
 survey <- survey[df$flag_survey ==1,]
 
 p3 <- ggplot(survey, aes(x = year, y = p50))+
-  theme_bw()+geom_point(size = 1.5)+
+  theme_classic()+geom_point(size = 1.5)+
   geom_ribbon(aes(ymin = p5,ymax = p95), fill = alpha('gray',alpha = 0.5), linetype = 0)+
   geom_ribbon(aes(ymin = p25,ymax = p75), fill = alpha('gray',alpha = 0.8), linetype = 0)+  geom_line(size = 1.5)+
-  scale_y_continuous(name = 'survey (million tonnes)')
+  scale_y_continuous(name = 'survey (million tonnes)')+
+  geom_text(aes(x = 1996, y = 8.5, label = 'c'))
 
 p3
 
@@ -123,9 +131,12 @@ p3
 gs <- list(p1,p2,p3)
 ls.mat <- rbind(c(1,1),c(2,3))
 
-cairo_pdf('OM_future.pdf', width = 16, height = 12)
+# cairo_pdf('OM_future.pdf', width = 16, height = 12)
+# png('OM_future.png', width = 16, height = 12, unit = 'cm', res = 600)
 
-grid.arrange(p1,                             # First row with one plot spaning over 2 columns
+
+
+grid.arrange(p1,                         # First row with one plot spaning over 2 columns
              arrangeGrob(p2, p3, ncol = 2), # Second row with 2 plots in 2 different columns
              nrow = 2)
-dev.off()
+# dev.off()

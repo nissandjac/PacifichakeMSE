@@ -2,7 +2,7 @@ getRefpoint <- function(par.fixed, df, SSBy, Fin, Nend){
 
 R0 <- as.numeric(exp(par.fixed)['logRinit'])
 Mest <- as.numeric(exp(par.fixed)['logMinit'])
-h <- exp(df$logh)
+h <- as.numeric(exp(par.fixed)['logh'])
 psel <- as.numeric(par.fixed[7:11])
 sel <- getSelec(df$age,psel,df$Smin,df$Smax)
 

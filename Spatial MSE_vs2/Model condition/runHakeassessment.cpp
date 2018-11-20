@@ -150,10 +150,10 @@ vector<Type>Meq = cumsum(M);
 //
 Nzero(0) = Rinit;
 for(int i=1;i<(nage-1);i++){
-    Nzero(i) = Rinit * exp(-(Meq(i-1)));
+    Nzero(i) = Rinit * exp(-(M(i-1)*age(i)));
   }
 //
-Nzero(nage-1) = Rinit*exp(-(Meq(nage-2)))/(Type(1.0)-exp(-M(nage-1)));//*exp(initN(nage-2)); // Plus group
+Nzero(nage-1) = Rinit*exp(-(M(nage-2)*age(nage-2)))/(Type(1.0)-exp(-M(nage-1)));//*exp(initN(nage-2)); // Plus group
 
 array<Type> SSBage(nage);
 array<Type> Catchinit(nage);
@@ -165,25 +165,22 @@ for(int i=0;i<nage;i++){ // Loop over ages
     SSBzero += Matsel(i)*Nzero(i)*0.5;
   }
 // Run the initial distribution
-array<Type>Ninit(nage,nage);
-array<Type>SSBinit(nage);
-
+array<Type>Ninit(nage);
+Type SSBinit = 0;
 REPORT(SSBzero);
 
-for(int i=0;i<(nage);i++){ // Loop over other ages
-    Ninit(i,0) = Nzero(i);
-  }
-  SSBinit(0) = SSBzero;
-
-Ninit(0,nage-1) = Rinit;
+// for(int i=0;i<(nage);i++){ // Loop over other ages
+//     Ninit(i,0) = Nzero(i);
+//   }
+Ninit(0) = Rinit;
 for(int i=1;i<(nage-1);i++){
-    Ninit(i,nage-1) = Rinit * exp(-(Meq(i-1)))*exp(-0.5*0*SDR*SDR+initN(i-1));
+    Ninit(i) = Rinit * exp(-(M(i)*age(i)))*exp(-0.5*0*SDR*SDR+initN(i-1));
   }
 //
-Ninit(nage-1,nage-1) = Rinit*exp(-(Meq(nage-2)))/(Type(1.0)-exp(-M(nage-1)))*exp(-0.5*0*SDR*SDR+initN(nage-2));
+Ninit(nage-1) = Rinit*exp(-(M(nage-2)*age(nage-2)))/(Type(1.0)-exp(-M(nage-1)))*exp(-0.5*0*SDR*SDR+initN(nage-2));
 
-  for(int i=0;i<(nage-1);i++){ // Loop over other ages
-    SSBinit(nage-1) += Ninit(i,nage-1)*Matsel(i)*0.5;
+for(int i=0;i<(nage-1);i++){ // Loop over other ages
+  SSBinit += Ninit(i)*Matsel(i)*0.5;
 }
 
 // Plus group
@@ -198,6 +195,7 @@ array<Type>Surveyobs(tEnd); // Survey observed Surveyobs
 array<Type>Surveyobs_tot(tEnd); // Total Surveyobs over age 2
 array<Type>age_survey_est(age_maxage,tEnd);
 array<Type>age_catch_est(age_maxage,tEnd);
+array<Type>Zsave(nage,tEnd);
 //
 vector<Type> Myear = M*Msel; // Natural mortality (if we want to change it later)
 //
@@ -240,9 +238,9 @@ for(int time=0;time<tEnd;time++){ // Start time loop
          }
   if (time == 0){
       for(int j=0;j<(nage);j++){ // Fix the Catch selectivity
-      Ntmp(j) = Ninit(j,nage-1);
+      Ntmp(j) = Ninit(j);
     }
-      SSBtmp = SSBinit(nage-1);
+      SSBtmp = SSBinit;
   }else{
     for(int j=0;j<(nage);j++){ // Fix the Catch selectivity
      Ntmp(j) = N(j,time-1);
@@ -261,6 +259,7 @@ for(int time=0;time<tEnd;time++){ // Start time loop
   Surveyobs(time) += surveyselc(i)*wage_survey(i,time)*Ntmp(i)*q;
   Ntot_survey += surveyselc(i)*Ntmp(i); // To use with age comps
   selectivity_save(i,time) = catchselec(i);
+  Zsave(i,time) = Z(i);
   }
 
   if(flag_survey(time) == 1){ // Flag if  there was a measurement that year
@@ -445,8 +444,10 @@ REPORT(Fyear)
 REPORT(N)
 REPORT(Catch)
 REPORT(R)
-REPORT(age_catch_est)
-REPORT(age_survey_est)
+REPORT(Nzero)
+REPORT(Ninit)
+REPORT(Zsave)
+
 
 
   return ans;

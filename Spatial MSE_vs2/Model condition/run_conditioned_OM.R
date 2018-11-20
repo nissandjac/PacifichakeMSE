@@ -298,7 +298,7 @@ df.plot$am[df.plot$am<3] <- NA # Weird bug
 
 p2 <- ggplot(df.plot, aes(x = year, y= am, color = Country))+geom_line()+theme_classic()+scale_y_continuous(name = 'Average age in catch')
 
-
+p2
 ## Plot the average survey age comp 
 
 am.survey.sim <- sim.data$age_comps_surv
@@ -345,9 +345,9 @@ p.movement[[i]] <- ggplot(df.movement[df.movement$season == i,], aes(x = age, y 
 library(gridExtra)
 #png('survey_comps.png', width = 16, height = 10, res= 400, unit = 'cm')
 
+png('movement.png', width = 16, height = 10, res= 400, unit = 'cm')
 do.call("grid.arrange", c(p.movement, ncol=2))
-
-#dev.off()
+dev.off()
 
 
 # Biomass distribution in the surveys 
@@ -357,6 +357,8 @@ df.survey <- read.csv('survey_country.csv')
 p1 <- ggplot(df.survey, aes(x = year, y = SSB/1e6, color = Country))+geom_line()+geom_point()+theme_classic()
 p1
 
+p1 <- ggplot(df.survey, aes(x = year, y = Biomass/1e6, color = Country))+geom_line()+geom_point()+theme_classic()
+p1
 
 ## Total survey
 survey.tot <- df.survey %>% 
@@ -394,9 +396,9 @@ p.survey <- ggplot(data = survey.plot, aes(x = year, y = survey*1e-6, color = co
   theme_classic()+scale_y_continuous(name = 'survey biomass (millions tons)')+
   scale_x_continuous(limit = c(1994, 2018))
 
-#png('survey_distribution.png', width = 16, height = 12, res = 400,units = 'cm')
+png('survey_distribution.png', width = 16, height = 12, res = 400,units = 'cm')
 p.survey                            
-#dev.off()                            
+dev.off()                            
 
 
 # Calculate the am per country in the OM 
@@ -422,7 +424,7 @@ dist.survey <- ggplot(df.survey, aes(x= year, y = am, color = Country))+geom_lin
   scale_y_continuous(name = 'Average age in survey', limit = c(2,10))+
   geom_line(data = am.mean.surv, linetype = 2)
 
-#png('survey_comps.png', width = 16, height = 12, res = 400,units = 'cm')
+#png('survey_comps.png', width = 12, height = 6, res = 400,units = 'cm')
 dist.survey
 #dev.off()
 

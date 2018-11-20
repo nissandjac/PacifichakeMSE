@@ -42,8 +42,8 @@ create_TMB_data <- function(sim.data, df){
   # Parameters 
   yb_1 <- 1965 #_last_early_yr_nobias_adj_in_MPD
   yb_2 <- 1971 #_first_yr_fullbias_adj_in_MPD
-  yb_3 <- 2016 #_last_yr_fullbias_adj_in_MPD
-  yb_4 <- 2017 #_first_recent_yr_nobias_adj_in_MPD
+  yb_3 <- years[nyear-1] #_last_yr_fullbias_adj_in_MPD
+  yb_4 <- years[nyear] #_first_recent_yr_nobias_adj_in_MPD
   b_max <- 0.87 #_max_bias_adj_in_MPD
   
   b[1] <- 0
