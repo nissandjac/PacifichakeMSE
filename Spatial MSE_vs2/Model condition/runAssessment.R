@@ -5,7 +5,7 @@ runAssessment <- function(df.new){
   
   
   #U[2,] <- 0.01
-  parms <- getParameters(TRUE,df.new)
+  parms <- getParameters(TRUE)
   
   
   compile("runHakeassessment.cpp")
@@ -16,9 +16,9 @@ runAssessment <- function(df.new){
   # Test the input things 
   reps <- obj$report()
   
-  plot(reps$SSB)
-  lines(assessment$SSB)
-  
-  
+  # plot(reps$SSB)
+  # lines(assessment$SSB)
+  # 
+  # 
   return(reps)
 }

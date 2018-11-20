@@ -1,6 +1,8 @@
-## Run the SAM assessment model for hake 
+# Run the hake assessment 
+setwd("~/GitHub/PacifichakeMSE/Hake SS3 version")
 
 library(TMB)
+#library(TMBdebug)
 library(ggplot2)
 source('plotValues.R')
 source('getUncertainty.R')
@@ -20,16 +22,22 @@ years <- df$years
 
 
 #U[2,] <- 0.01
-parms <- getParameters(FALSE)
+parms <- getParameters(TRUE)
 
 compile("runHakeassessment.cpp")
 dyn.load(dynlib("runHakeassessment"))
-
 obj <-MakeADFun(df,parms,DLL="runHakeassessment")#, )
+# plot(obj$report()$SSB)
+# lines(assessment$SSB)
+
+
+Ninit <- obj$report()$Ninit
+Nass <- obj$report()$N
+SSBass <- obj$report()$SSB
 
 lower <- obj$par-Inf
 
-lower[names(lower) == 'F0'] <- 0.0001
+lower[names(lower) == 'F0'] <- 0.001
 upper <- obj$par+Inf
 upper[names(upper) == 'psel_fish' ] <- 5
 upper[names(upper) == 'PSEL'] <- 9

@@ -24,7 +24,7 @@ getParameters <- function(trueparms = TRUE){
       # Selectivity parameters 
       psel_fish = c(2.486490, 0.928255,0.392144,0.214365,0.475473),
       psel_surv = c(0.568618,-0.216172,0.305286 ,0.373829),
-      initN = initN,
+      initN = rev(initN),
       Rin = Rdev,
       F0 = F0,
       PSEL = PSEL

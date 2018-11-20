@@ -1,6 +1,11 @@
 ###### Run the HAKE MSE ####### 
-run_multiple_MSEs <- function(simyears,seed){
+run_multiple_MSEs <- function(simyears = NULL,seed = 123){
 
+if(is.null(simyears)){
+  print('Number of years to simulate not specified. Simulating 30 years into the future')
+  simyears <- 30
+}
+  
 df <- load_data_seasons()
 
 df$Catch <- Catch.obs$Fishery
@@ -30,13 +35,17 @@ R.save <- list()
 Catch.save <- list()
 S.year.future <- seq(2019,2019+simyears, by = 2)
 # Save som OM stuff 
-SSB.save.om <- array(NA, df$tEnd+simyears)
-R.save.om <- array(NA, df$tEnd+simyears)
-Catch.save.om <- array(NA, df$tEnd+simyears)
+# SSB.save.om <- array(NA, df$nyear+simyears)
+# R.save.om <- array(NA, df$nyear+simyears)
+# Catch.save.om <- array(NA, df$nyear+simyears)
+
+# Save the estimated parameters from the EM (exclude time varying) 
+parms.save <- array(NA, dim = c(simyears, 4))
+
 # Before the MSE starts 
-SSB.save.om[1:df$tEnd] <- sim.data$SSB
-R.save.om[1:df$tEnd] <- sim.data$N.save[1,]
-Catch.save.om[1:df$tEnd] <- sim.data$Catch
+# SSB.save.om[1:df$tEnd] <- sim.data$SSB
+# R.save.om[1:df$nyear] <- sim.data$N.save[1,]
+# Catch.save.om[1:df$nyear] <- sim.data$Catch
 F0.save <- df$fmort
 years <- df$years
 model.save <- list()
@@ -78,6 +87,10 @@ for (time in 1:simyears){
     df$wage_mid <- df.new$wage_mid
     df$wage_ssb <- df.new$wage_ssb
     df$Catch <- c(df$Catch, Fnew[[1]])
+    df$b <- c(df$b,0.87)
+    Rdevs <- rnorm(n = 1,mean = 0, sd = exp(df$logSDR))
+    #Rdevs <- rep(0, yr.future)
+    df$parms$Rin <- c(df$parms$Rin,Rdevs)
     #df$years <- c(df$years,df$years[length(df$years)]+1)
     
     
@@ -89,7 +102,7 @@ for (time in 1:simyears){
   
   PSEL <- matrix(0,5, length(1991:years[length(years)]))
   initN <- rep(0,df$nage-1)
-  F0 <- rep(0.01, df$nyear)
+  F0 <- rep(0.001, df$nyear)
   Rdev <- rep(0, df$nyear)
   
   parms <- list( # Just start all the simluations with the same initial conditions 
@@ -123,13 +136,13 @@ for (time in 1:simyears){
   upper <- obj$par+Inf
   upper[names(upper) == 'psel_fish' ] <- 5
   upper[names(upper) == 'PSEL'] <- 5
-  # upper[names(upper) == 'logh'] <- log(0.999)
-  # upper[names(upper) == 'F0'] <- 1.2
+  upper[names(upper) == 'logh'] <- log(0.999)
+  upper[names(upper) == 'F0'] <- 2
   
   
   system.time(opt<-nlminb(obj$par,obj$fn,obj$gr,lower=lower,upper=upper,
-                          control = list(iter.max = 5000, 
-                                         eval.max = 5000))) # If error one of the random effects is unused
+                          control = list(iter.max = 1e5, 
+                                         eval.max = 1e5))) # If error one of the random effects is unused
   
   
   if(opt$convergence != 0){
@@ -167,12 +180,15 @@ for (time in 1:simyears){
     # p1
     SSB.hes <- SSB
     SSB <- SSB$name
+    
+    
+    
   }
  
   Nend <- N[,dim(N)[2]]
   Fnew <- getRefpoint(opt$par, df,SSB[length(SSB)], Fin=Fyear[length(Fyear)], Nend)
   #Fnew <- 0.3
-  print(paste('new quota = ',Fnew[[1]]))
+  #print(paste('new quota = ',Fnew[[1]]))
   # Update the data data frame
   
   Ntmp <- sim.data$Nout
@@ -188,10 +204,19 @@ for (time in 1:simyears){
   F0.save <- Fnew
   
   #  print(year.future[year])
-  SSB.test.om[[time]] <- rowSums(sim.data$SSB)
+  #SSB.test.om[[time]] <- rowSums(sim.data$SSB)
+  
+  ### Include the parameters needed to calculate SSB0 
+  parms.save[time, ] <- exp(opt$par)[1:4]
+  
+    
+    
   
 }
 
+nms <- unlist(strsplit(names(opt$par), split = 'log')[1:4])[c(2,4,6,8)]
+names(parms.save) <- nms
+  
 
 end.time <- Sys.time()
 time.taken <- end.time - start.time
@@ -208,7 +233,8 @@ df.ret <- list(Catch = sim.data$Catch,  # All output is from the OM
                SSB.hes = SSB.hes,
                Survey.om = sim.data$survey,
                F0 = F0.save,
-               df = df.new,
+               V = sim.data$V.all[,1,],
+               parms = parms.save,
                am.c = sim.data$age_catch,
                am.s = sim.data$age_comps_surv
                )

@@ -1,6 +1,6 @@
 ## Load the hake data
 # year and age input 
-load_data_seasons_future <- function(yr.future){
+load_data_seasons_future <- function(yr.future, move = TRUE){
   
   
   years <- 1966:(2017+yr.future)
@@ -16,39 +16,61 @@ load_data_seasons_future <- function(yr.future){
   # Maturity
   mat <- read.csv('maturity.csv')
   # Spatial stuff
-  
   nspace <- 2 # number of grid cells 
+  
+  if(move == FALSE){
+    nspace <- 1
+  }
+  
   recruitmat <- matrix(0, nspace) # 4 is seasonality 
-  recruitmat[1] <- 0.1 # 10 percent change of spawning north
-  recruitmat[2] <- 0.9 # 90 percent of spawning south
+  recruitmat[1] <- 1 # 10 percent change of spawning north
+  recruitmat[2] <- 1 # 90 percent of spawning south
   
-  # Movement matrix 
+  # Movement matrix 5
+  if(nseason > 1){
+    movemax <- rep(0.5,nseason)
+  }else{
+    movemax <- rep(0.2,nseason)
+  }
+  
+  
+  
+  
+  movefifty <- 6
+  moveslope <- 0.5
+  
   movemat <- array(0, dim = c(nspace, nage, nseason)) # Chances of moving in to the other grid cell 
-  movemat[1,3,] <- 0.1
-  movemat[1,4,] <- 0.1
-  movemat[1,5,] <- 0.2
-  movemat[1,6:11,] <- 0.3
-  movemat[1,12:nage,] <- 0.4
-  movemat[1,,] <- movemat[1,,]
   
-  movemat[2,3,] <- 0.1
-  movemat[2,4,] <- 0.1
-  movemat[2,5,] <- 0.2
-  movemat[2,6:11,] <- 0.2
-  movemat[2,12:nage,] <- 0.25
-  
-  # Rarely move south during the year
-  movemat[1,3:nage,2:3] <- 0.05
-  
-  # Force all the SSB to move south in the last season
-  movemat[1,mat$mat > 0,nseason] <- 0.8
-  movemat[2,mat$mat > 0,nseason] <- 0
-  
-  movemat <- movemat*0.8
-  # Initial size distribution (make sure they add up to 1) 
-  move.init <- array(0.5, dim = c(nspace, nage))
-  move.init[1,] <- 0.3
-  move.init[2,] <- 0.7
+  if(move == TRUE){
+    
+    for(j in 1:nspace){
+      for(i in 1:nseason){
+        movemat[j,,i] <- movemax[i]/(1+exp(-moveslope*(age-movefifty)))
+        
+      }
+    }
+    
+    if(nseason == 4){ # For the standard model
+      movemat[,1:2,] <- 0 # Recruits and 1 year olds don't move
+      
+      movemat[1,3:nage,2:3] <- 0.05 # Don't move south during the year
+      movemat[1,3:nage,nseason] <- 0.8
+      movemat[2,3:nage,nseason] <- 0.05
+    }
+    # movemat[1,11:nage,nseason] <- 0
+    # movemat[2,11:nage,nseason] <- 0
+    
+    
+    
+    # move.init <- array(0.5, dim = c(nspace, nage))
+    # 
+    # move.init[1,] <- 0.3
+    # move.init[2,] <- 0.7
+    move.init <- c(0.3,0.7)
+    
+  }else{
+    move.init <- 1
+  }
   
   
   
@@ -118,13 +140,17 @@ load_data_seasons_future <- function(yr.future){
   
   PSEL <- as.matrix(read.csv('p_estimated.csv'))
   
-  b <- matrix(0, nyear)
-  Yr <- 1946:max(years)
+  b <- matrix(0,length(years))
+  Yr <- years#1966:max(years)
   # Parameters 
   yb_1 <- 1965 #_last_early_yr_nobias_adj_in_MPD
   yb_2 <- 1971 #_first_yr_fullbias_adj_in_MPD
   yb_3 <- 2016 #_last_yr_fullbias_adj_in_MPD
   yb_4 <- 2017 #_first_recent_yr_nobias_adj_in_MPD
+  yb_3 <- years[nyear-1]
+  yb_4 <- years[nyear]
+   
+  
   b_max <- 0.87 #_max_bias_adj_in_MPD
   b[1] <- 0
   for(j in 2:length(Yr)){
@@ -151,23 +177,27 @@ load_data_seasons_future <- function(yr.future){
     # }
   }  
   #b <- matrix(1, tEnd)
-  psel<- matrix(NA,2, 5) 
   
-  psel[2,] <- c(2.8476, 0.973,0.3861,0.1775,0.5048) # USA selectivity 
-  psel[1,] <- c(1, 1, 1, 1,1)
+  psel<- matrix(NA,nspace, 5) 
   
-  parms =  list( # Just start all the simluations with the same initial conditions 
-    logRinit = 14.8354*1.02, # Have to make Rinit a little larger with movement (1.02)
-    logh = log(0.8122),
-    logMinit = log(0.2299),
-    logSDsurv = log(0.3048),
-    logphi_catch = log(0.3),
+  for(i in 1:nspace){
+    psel[i,] <- c(2.8476, 0.973,0.3861,0.1775,0.5048) # USA selectivity 
+  }
+  
+  parms <- list( # Just start all the simluations with the same initial conditions 
+    logRinit = 14.5614*1.015,
+    logh = log(0.861909),
+    logMinit = log(0.213686),
+    logSDsurv = log(0.257246),
+    #logSDR = log(1.4),
+    logphi_catch = log(0.8276),
+    logphi_survey = log(11.33),
+    # logSDF = log(0.1),
     # Selectivity parameters 
-    psel_fish = c(2.8476, 0.973,0.3861,0.1775,0.5048),
-    psel_surv = c(0.5919,-0.2258,0.2876,0.3728),
+    psel_fish = c(2.486490, 0.928255,0.392144,0.214365,0.475473),
+    psel_surv = c(0.568618,-0.216172,0.305286 ,0.373829),
     initN = initN,
     Rin = Rdev,
-    #   F0 = Fin,
     PSEL = PSEL
   )
   
@@ -188,7 +218,8 @@ load_data_seasons_future <- function(yr.future){
                   nseason = nseason,
                   nyear = nyear,
                   tEnd = tEnd, # The extra year is to initialize 
-                  logQ = log(1.135767),   # Analytical solution
+                  logQ = log(1),   # Analytical solution
+                  surveyseason = 2,
                   # Selectivity 
                   Smin = 1,
                   Smin_survey = 2,
@@ -211,14 +242,14 @@ load_data_seasons_future <- function(yr.future){
                   logSDcatch = log(0.01),
                   logSDR = log(1.4), # Fixed in stock assessment ,
                   logphi_survey = log(0.91),
+                  move = move,
                   years = years,
                   b = b,
-                  logh = log(0.8),
                   # Space parameters 
                   nspace = nspace,
                   movemat = movemat,
-                  recruitmat = recruitmat,
                   move.init = move.init,
+                  move = move,
                   psel = psel,
                   parms = parms
                   # Parameters from the estimation model 
@@ -242,6 +273,7 @@ load_data_seasons_future <- function(yr.future){
     df$flag_survey[idx.future] <- 1
      
     Rdevs <- rnorm(n = yr.future,mean = 0, sd = exp(df$logSDR))
+    #Rdevs <- rep(0, yr.future)
     df$parms$Rin <- c(df$parms$Rin,Rdevs)
   }
   
