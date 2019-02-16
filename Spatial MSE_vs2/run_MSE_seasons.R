@@ -35,7 +35,7 @@ assessment <- assessment[assessment$year > 1965 &assessment$year < 2018 ,]
 parms.true <- getParameters(TRUE)
 Catch.obs <- read.csv('hake_totcatch.csv')
 
-df <- load_data_seasons()
+df <- load_data_seasons(move = TRUE, nseason = 4, nspace = 2)
 
 df$Catch <- Catch.obs$Fishery
 time <- 1

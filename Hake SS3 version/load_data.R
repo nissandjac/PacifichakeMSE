@@ -75,7 +75,7 @@ Yr <- 1946:2017
 yb_1 <- 1966 #_last_early_yr_nobias_adj_in_MPD
 yb_2 <- 1971 #_first_yr_fullbias_adj_in_MPD
 yb_3 <- 2016 #_last_yr_fullbias_adj_in_MPD
-yb_4 <- 2017 #_first_recent_yr_nobias_adj_in_MPD
+yb_4 <- 2018 #_first_recent_yr_nobias_adj_in_MPD
 b_max <- 0.87 #_max_bias_adj_in_MPD
 
 b[1] <- 0
@@ -136,7 +136,7 @@ df <-list(      #### Parameters #####
                 Matsel= mat$mat,
                 nage = nage,
                 age = age,
-                year_sel = length(1991:2010), # Years to model time varying sel
+                year_sel = length(1991:years[length(years)]), # Years to model time varying sel
                 selYear = 26,
                 tEnd = length(years), # The extra year is to initialize 
                 logQ = log(1.135767),   # Analytical solution

@@ -26,19 +26,29 @@ source('runfuture_OM.R')
 assessment <- read.csv('asssessment_MLE.csv')
 assessment <- assessment[assessment$year > 1965 &assessment$year < 2018 ,]
 Catch.obs <- read.csv('hake_totcatch.csv')
+survey.obs <- read.csv('survey_country_2.csv')
 
-movemax.parms <- seq(0.1,0.75, length.out = 5)
-movefifty.parms <- seq(5,10, length.out = 5)
+
+nparms <- 5
+movemax.parms <- seq(0.1,0.75, length.out = nparms)
+movefifty.parms <- seq(5,10, length.out = nparms)
+
+nruns <- nparms^2
 
 move <- c(0.5,5)
 yr.future <- 2
 
 df <- load_data_seasons_future_move(yr.future,move = TRUE, movemaxinit  = move[1] , movefiftyinit = move[2])
+df$parms$PSEL <- 0*df$parms$PSEL
 
 df$Catch <- Catch.obs$Fishery
 Catch.future <- c(df$Catch, rep(206507.8, yr.future)) # Project MSY
 df$Catch <- Catch.future
 r.succes <- matrix(NA, length(movemax.parms)*length(movefifty.parms))
+AC.catch.tot <- AC.survey.tot <- array(NA, dim = c(df$age_maxage,df$nyear, 
+                                                   df$nspace,length(movemax.parms)*length(movefifty.parms)))
+survey.ml <- array(NA,dim = c(df$nyear,df$nspace,length(movemax.parms)*length(movefifty.parms)))
+
 
 standard.move <- runfuture_OM(df, 1, moveparms = move)
 save.idx <- 1
@@ -74,8 +84,15 @@ for(i in 1:length(movemax.parms)){
       AC.survey$run <- paste(as.character(i),'-',as.character(j), sep ='')
       
       
-      
-      
+      AC.catch.tot[,,,save.idx] <- move.tmp$catch.AC.tot
+      AC.survey.tot[,,,save.idx] <- move.tmp$survey.AC.tot
+
+     
+      survey.ml[,,save.idx] <- move.tmp$survey.space
+      survey.save <- data.frame(survey = c(move.tmp$survey.space[1,],move.tmp$survey.space[2,]),
+                                Country = rep(c('CAN','USA'), each = df$nyear), year = rep(df$years,2),
+                                run = paste(as.character(i),'-',as.character(j), sep =''))
+     
                               
     }else{
       SSB.tmp <- move.tmp$SSB
@@ -93,9 +110,27 @@ for(i in 1:length(movemax.parms)){
       AC.catch <- rbind(AC.catch, AC.catch.tmp)
       AC.survey <- rbind(AC.survey, AC.survey.tmp)
       
+      survey.tmp <- data.frame(survey = c(move.tmp$survey.space[1,],move.tmp$survey.space[2,]),
+                                           Country = rep(c('CAN','USA'), each = df$nyear), year = rep(df$years,2),
+                                           run = paste(as.character(i),'-',as.character(j), sep =''))
+      
+      survey.save <- rbind(survey.save,survey.tmp)
+      
+      
       r.succes[save.idx] <- move.tmp$success.runs
       
+      AC.catch.tot[,,,save.idx] <- move.tmp$catch.AC.tot
+      AC.survey.tot[,,,save.idx] <- move.tmp$survey.AC.tot
+      survey.ml[,,save.idx] <- move.tmp$survey.space
+      
+      
     }
+    
+   # p <- movement_parameters(df,ac.surv = move.tmp$survey.AC.tot,ac.catch = move.tmp$catch.AC.tot,
+    #                         biomass = move.tmp$survey.space)
+    
+    
+    
     save.idx <- save.idx+1
   }
 }
@@ -130,7 +165,7 @@ p.AC.catch <- ggplot(AC.catch.plot, aes(x = year, y= AC.mean, color = Country))+
               aes(ymin= AC.mean-2*AC.sd, ymax= AC.mean+2*AC.sd), fill = c(alpha('red', 0.3)), color = NA)+
   geom_ribbon(data = AC.catch.plot[AC.catch.plot$Country == 'USA',],
               aes(ymin= AC.mean-2*AC.sd, ymax= AC.mean+2*AC.sd), fill = c(alpha('blue', 0.3)), color = NA)+
-  geom_line(data = catch.ac.obs, aes(x = year, y = am, color = Country), linetype = 2, size = 0.8)+
+  geom_line(data = catch.ac.obs, aes(x = year, y = am, color = Country), linetype = 1, size = 0.8)+
   geom_point(data = catch.ac.obs, aes(x = year, y = am, color = Country))+
   scale_color_manual(values = rep(c('red','blue'),each= 2))+
   theme(legend.position = 'none')+scale_y_continuous('average age in catch')
@@ -153,7 +188,7 @@ p.AC.survey <- ggplot(AC.survey.plot, aes(x = year, y= AC.mean, color = Country)
               aes(ymin= AC.mean-2*AC.sd, ymax= AC.mean+2*AC.sd), fill = c(alpha('red', 0.3)), color = NA)+
   geom_ribbon(data = AC.survey.plot[AC.survey.plot$Country == 'USA',],
               aes(ymin= AC.mean-2*AC.sd, ymax= AC.mean+2*AC.sd), fill = c(alpha('blue', 0.3)), color = NA)+
-  geom_line(data = survey.obs, aes(x = year, y = am, color = Country), linetype = 2, size = 0.8)+
+  geom_line(data = survey.obs, aes(x = year, y = am, color = Country), linetype = 1, size = 0.8)+
   geom_point(data = survey.obs, aes(x = year, y = am, group = Country))+
   scale_color_manual(values = c('red','blue'))+
   theme(legend.position = 'none')+scale_y_continuous('average age in survey')
@@ -164,3 +199,32 @@ png(filename = 'AC_survey.png', width = 16, height = 12, res = 400, units = 'cm'
 }
 p.AC.survey
 dev.off()
+
+### Survey 
+
+
+# Which set of movement parameters best fit the data 
+survey.obs <- read.csv('survey_country_2.csv')
+
+df.plot.survey <- survey.save %>% 
+  group_by(Country,year) %>% 
+  summarise(survey.m = mean(survey), surv.min = min(survey), surv.max = max(survey))
+  
+mul <- 1e-6
+
+
+p1.survey <- ggplot(df.plot.survey, aes(x = year, y = survey.m*mul, color = Country))+theme_classic()+geom_line(size = 1.2)+ 
+   geom_ribbon(data = df.plot.survey[df.plot.survey$Country == 'CAN',],
+               aes(ymin= surv.min*mul, ymax= surv.max*mul), fill = c(alpha('red', 0.3)), color = NA)+
+   geom_ribbon(data = df.plot.survey[df.plot.survey$Country == 'USA',],
+               aes(ymin= surv.min*mul, ymax= surv.max*mul), fill = c(alpha('blue', 0.3)), color = NA)+
+   geom_point(data = survey.obs, aes(y = Bio*1e-3*mul), size = 2)+
+  geom_line(data = survey.obs, aes(y = Bio*1e-3*mul), size = 0.9)+
+  scale_y_continuous('Survey biomass (1000 tonnes)')
+
+if(plot.figures == TRUE){
+  png('survey_country.png', width = 16, height = 12, units = 'cm', res = 400)
+}
+p1.survey
+dev.off()
+

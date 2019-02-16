@@ -3,7 +3,10 @@ getRefpoint <- function(par.fixed, df, SSBy, Fin, Nend){
 R0 <- as.numeric(exp(par.fixed)['logRinit'])
 Mest <- as.numeric(exp(par.fixed)['logMinit'])
 h <- as.numeric(exp(par.fixed)['logh'])
-psel <- as.numeric(par.fixed[7:11])
+psel <- as.numeric(par.fixed[which(names(par.fixed) == 'psel_fish')])
+
+
+
 sel <- getSelec(df$age,psel,df$Smin,df$Smax)
 
 Cw <- as.numeric(df$wage_catch[,dim(df$wage_catch)[2]])
@@ -76,7 +79,7 @@ V <- sum(Nend*Cw*sel)
 Fx <- 1-exp(-Fnew) # Convert to harvest rate 
 
 if((SSBy/SSB_0) < 0.1){
-  Cnew <- 0.01 # add a very low catch (fix later)
+  Cnew <- 1 # add a very low catch (fix later)
 }
 
 if((SSBy/SSB_0) > 0.4){
@@ -95,7 +98,26 @@ if(((SSBy/SSB_0) <= 0.4) & ((SSBy/SSB_0) >= 0.1)){
 # if (Cnew > 500000){
 #   Cnew <- 500000
 # }
+# Adjust TAC by JMC/Utilization 
+TACs <- read.csv('adjusted_tac_fn.csv')
+
+df$TAC <- 1
+if(df$TAC == 1){
+  Cexp <- Cnew
+}else if(df$TAC == 2){
+  Cexp <- TACs$incpt[1]+TACs$slp[1]*Cnew
+}else if(df$TAC == 3){
+  Cexp <- TACs$incpt[2]+TACs$slp[2]*Cnew
+}
+
+# Do a test run 
+# print(paste('JTC TAC = ', Cnew))
+# print(paste('JMC  TAC = ', Cexp))
+
+if(Cexp > Cnew){ # Never go over the JTC recommendation 
+  Cexp <- Cnew
+}
 
 
-return(list(Cnew = Cnew, Fnew = Fnew))
+return(list(Cnew = Cexp, Fnew = Fnew))
 }

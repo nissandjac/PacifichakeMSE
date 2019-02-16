@@ -179,7 +179,7 @@ for(int i=1;i<(nage-1);i++){
 //
 Ninit(nage-1) = Rinit*exp(-(M(nage-2)*age(nage-2)))/(Type(1.0)-exp(-M(nage-1)))*exp(-0.5*0*SDR*SDR+initN(nage-2));
 
-for(int i=0;i<(nage-1);i++){ // Loop over other ages
+for(int i=0;i<(nage);i++){ // Loop over other ages
   SSBinit += Ninit(i)*Matsel(i)*0.5;
 }
 
@@ -197,6 +197,10 @@ array<Type>age_survey_est(age_maxage,tEnd);
 array<Type>age_catch_est(age_maxage,tEnd);
 array<Type>Zsave(nage,tEnd);
 //
+age_survey_est.setZero();
+age_catch_est.setZero();
+Catch.setZero();
+CatchN.setZero();
 vector<Type> Myear = M*Msel; // Natural mortality (if we want to change it later)
 //
 vector<Type> Fyear(tEnd);
@@ -236,17 +240,29 @@ for(int time=0;time<tEnd;time++){ // Start time loop
              }
            }
          }
-  if (time == 0){
-      for(int j=0;j<(nage);j++){ // Fix the Catch selectivity
-      Ntmp(j) = Ninit(j);
-    }
-      SSBtmp = SSBinit;
-  }else{
-    for(int j=0;j<(nage);j++){ // Fix the Catch selectivity
-     Ntmp(j) = N(j,time-1);
-  }
-      SSBtmp = SSB(time-1);
-}
+         if (time == 0){
+             for(int j=0;j<(nage);j++){ // Fix the Catch selectivity
+             Ntmp(j) = Ninit(j);
+
+             if(j >0){
+             Nmid(j) = Ninit(j-1);
+             }else{
+             Nmid(j) = 0;
+           }
+         }
+             SSBtmp = SSBinit;
+         }else{
+           for(int j=0;j<(nage);j++){ //
+            Ntmp(j) = N(j,time-1);
+            if(j >0){
+            Nmid(j) = N(j-1,time-1);
+           }else{
+            Nmid(j) = 0;
+          }
+
+         }
+             SSBtmp = SSB(time-1);
+       }
   Catch(time) = 0;
 
   // Calculate fishing Mortality
@@ -447,7 +463,9 @@ REPORT(R)
 REPORT(Nzero)
 REPORT(Ninit)
 REPORT(Zsave)
-
+REPORT(age_survey_est)
+REPORT(age_catch_est)
+REPORT(CatchN)
 
 
   return ans;

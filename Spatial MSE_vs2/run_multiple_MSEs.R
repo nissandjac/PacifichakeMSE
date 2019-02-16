@@ -1,13 +1,20 @@
 ###### Run the HAKE MSE ####### 
-run_multiple_MSEs <- function(simyears = NULL,seed = 123){
+run_multiple_MSEs <- function(simyears = NULL,seed = 123,moveparms = NA){
 
 if(is.null(simyears)){
   print('Number of years to simulate not specified. Simulating 30 years into the future')
   simyears <- 30
 }
   
-df <- load_data_seasons()
-
+  if(is.na(moveparms[1])){
+df <- load_data_seasons(move = FALSE,
+                        nseason = 1, nspace = 1)
+  }else{
+    if(length(moveparms) != 2){
+      stop('Wrong number of movement parameters')
+    }
+df <- load_data_seasons_move(move = TRUE,movemaxinit = moveparms[1], moveparms[2])
+  }
 df$Catch <- Catch.obs$Fishery
 time <- 1
 yrinit <- df$nyear
@@ -56,9 +63,8 @@ SSB.test.om <- list() # Test if SSB is the same in the OM
 start.time <- Sys.time()
 
 for (time in 1:simyears){
-  
   year <- yrinit+(time-1)
- #print(year.future[year])
+  print(year.future[year])
   
   
   if (time > 1){
@@ -87,22 +93,29 @@ for (time in 1:simyears){
     df$wage_mid <- df.new$wage_mid
     df$wage_ssb <- df.new$wage_ssb
     df$Catch <- c(df$Catch, Fnew[[1]])
-    df$b <- c(df$b,0.87)
-    Rdevs <- rnorm(n = 1,mean = 0, sd = exp(df$logSDR))
-    #Rdevs <- rep(0, yr.future)
-    df$parms$Rin <- c(df$parms$Rin,Rdevs)
     #df$years <- c(df$years,df$years[length(df$years)]+1)
     
     
-    sim.data <- run.agebased.true.catch(df, seed)
+    sim.data <- run.agebased.true.catch(df, seedz)
     
- 
+    # # Add to the original data frame 
+    # 
+    # # 1 measurement per year
+    # sim.data$SSB <- c(sim.data$SSB, sim.data.tmp$SSB[df.tmp$tEnd])
+    # sim.data$Catch<- c(sim.data$Catch, sim.data.tmp$Catch[df.tmp$tEnd])
+    # sim.data$Catch.obs <- c(sim.data$Catch.obs, sim.data.tmp$Catch.obs[df.tmp$tEnd])
+    # 
+    # # Measurement per age 
+    # sim.data$N.save <- cbind(sim.data$N.save,sim.data.tmp$N.save)
+    # sim.data$survey <- cbind(sim.data$survey,sim.data.tmp$survey[df.tmp$tEnd])
+    # sim.data$Catch.age <- cbind(sim.data$Catch.age,sim.data.tmp$Catch.age)
+    # 
     
   }
   
   PSEL <- matrix(0,5, length(1991:years[length(years)]))
   initN <- rep(0,df$nage-1)
-  F0 <- rep(0.001, df$nyear)
+  F0 <- rep(0.01, df$nyear)
   Rdev <- rep(0, df$nyear)
   
   parms <- list( # Just start all the simluations with the same initial conditions 
@@ -136,13 +149,13 @@ for (time in 1:simyears){
   upper <- obj$par+Inf
   upper[names(upper) == 'psel_fish' ] <- 5
   upper[names(upper) == 'PSEL'] <- 5
-  upper[names(upper) == 'logh'] <- log(0.999)
-  upper[names(upper) == 'F0'] <- 2
+  # upper[names(upper) == 'logh'] <- log(0.999)
+  # upper[names(upper) == 'F0'] <- 1.2
   
   
   system.time(opt<-nlminb(obj$par,obj$fn,obj$gr,lower=lower,upper=upper,
-                          control = list(iter.max = 1e5, 
-                                         eval.max = 1e5))) # If error one of the random effects is unused
+                          control = list(iter.max = 5000, 
+                                         eval.max = 5000))) # If error one of the random effects is unused
   
   
   if(opt$convergence != 0){
@@ -151,7 +164,6 @@ for (time in 1:simyears){
     xx<- Check_Identifiable_vs2(obj)
     
   }
-  
   reps <- obj$report()
   
   SSB <- reps$SSB
@@ -161,8 +173,12 @@ for (time in 1:simyears){
   R <- reps$R
   
   
-  
+  plot(SSB)
+  lines(assessment$SSB)
+  lines(sim.data$SSB, col = 'red')
   # #Uncertainty
+  
+
   if(time == simyears){
     rep <- sdreport(obj)
     sdrep <- summary(rep)
