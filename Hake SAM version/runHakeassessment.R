@@ -22,10 +22,10 @@ years <- df$years
 #U[2,] <- 0.01
 parms <- getParameters(TRUE)
 
-compile("runHakeassessment.cpp")
-dyn.load(dynlib("runHakeassessment"))
+compile("runHakeassessment_SAM.cpp")
+dyn.load(dynlib("runHakeassessment_SAM"))
 
-obj <-MakeADFun(df,parms,DLL="runHakeassessment", random = c('Rin'))#, )
+obj <-MakeADFun(df,parms,DLL="runHakeassessment_SAM", random = c('Rin'))#, )
 
 lower <- obj$par-Inf
 

@@ -1,11 +1,17 @@
-hake_objectives <- function(ls.MSE, sim.data){
+hake_objectives <- function(ls.MSE, sim.data, move = NA){
 #'   
 #' @ls.mse # A list of individual MSE runs. Should contain Biomass, Catch, and df with parameters    
 # sim.data # Initial years of the operating model   
   nruns <- length(ls.MSE)
   
   yr <- 1966:(2017+simyears-1)
-  SSB.plot <- data.frame(SSB = rowSums(ls.save[[1]]$SSB)/sum(sim.data$SSB_0), year = yr, run = paste('run',1, sep=''))
+  
+  if(is.na(df$move)){
+  SSB.plot <- data.frame(SSB = (ls.save[[1]]$SSB)/(sim.data$SSB_0), year = yr, run = paste('run',1, sep=''))
+  }else{
+    SSB.plot <- data.frame(SSB = rowSums(ls.save[[1]]$SSB)/sum(sim.data$SSB_0), year = yr, run = paste('run',1, sep=''))
+  }  
+  
   Catch.plot <- data.frame(Catch = ls.save[[1]]$Catch, year = yr, run = paste('run',1, sep=''))
   AAV.plot  <- data.frame(AAV = abs(ls.save[[1]]$Catch[2:length(yr)]-ls.save[[1]]$Catch[1:(length(yr)-1)])/ls.save[[1]]$Catch[1:(length(yr)-1)], 
                            year = yr[2:length(yr)], run = paste('run',1, sep=''))
@@ -14,7 +20,13 @@ hake_objectives <- function(ls.MSE, sim.data){
     ls.tmp <- ls.MSE[[i]]  
     
     if(is.list(ls.tmp)){
-      SSB.tmp <- data.frame(SSB = rowSums(ls.tmp$SSB)/sum(sim.data$SSB_0), year = yr, run =  paste('run',i, sep=''))
+      if(is.na(df$move)){
+      SSB.tmp <- data.frame(SSB = (ls.tmp$SSB)/(sim.data$SSB_0), year = yr, run =  paste('run',i, sep=''))
+      }else{
+        SSB.tmp <- data.frame(SSB = rowSums(ls.tmp$SSB)/sum(sim.data$SSB_0), year = yr, run =  paste('run',i, sep=''))
+      }
+      
+      
       SSB.plot <- rbind(SSB.plot,SSB.tmp)
       
       Catch.tmp <- data.frame(Catch = ls.tmp$Catch, year = yr, run =  paste('run',i, sep=''))
@@ -24,8 +36,7 @@ hake_objectives <- function(ls.MSE, sim.data){
                             year = yr[2:length(yr)], run =  paste('run',i, sep=''))
       AAV.plot <- rbind(AAV.plot, AAV.tmp)
       
-      
-      
+  
     }
   }
   
@@ -143,10 +154,10 @@ hake_objectives <- function(ls.MSE, sim.data){
                            round(length(which(SSB.future$SSB>0.1 & SSB.future$SSB<0.4))/length(SSB.future$SSB)*100, digits = 2),
                            round(length(which(SSB.future$SSB>0.4))/length(SSB.future$SSB)*100, digits = 2),
                            round(mean(p.vals), digits = 2), 
-                           (1-length(unique(Catch.plot$run))/length(ls.MSE))*100,
+                           round(length(which(SSB.future$SSB<0.1))/length(SSB.future$SSB)*100, digits = 0),
                           round(median(AAV.plotquant$med), digits = 2),
                           median(SSB.plotquant$med[SSB.plotquant$year > 2017]),
-                          median(1e6*Catch.plotquant$med[Catch.plotquant$year >2017]))
+                          median(1e6*Catch.plotquant$med[Catch.plotquant$year >2017])*1e-6)
                          )
                            
                            

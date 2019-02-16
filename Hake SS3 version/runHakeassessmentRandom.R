@@ -1,6 +1,7 @@
 ## Run the SAM assessment model for hake 
 
 library(TMB)
+library(tmbstan)
 library(ggplot2)
 source('plotValues.R')
 source('getUncertainty.R')
@@ -21,22 +22,24 @@ years <- df$years
 
 
 #U[2,] <- 0.01
-parms <- getParameters_random(FALSE)
+parms <- getParameters_random(TRUE)
 
 compile("runHakeassessmentRandom.cpp")
 dyn.load(dynlib("runHakeassessmentRandom"))
 
-obj <-MakeADFun(df,parms,DLL="runHakeassessmentRandom", random = 'Rin') # 
+obj <-MakeADFun(df,parms,DLL="runHakeassessmentRandom") # 
 
 lower <- obj$par-Inf
 
 lower[names(lower) == 'F0'] <- 0.0001
+lower[names(lower) == 'sigma_psel']<- 0.01
 upper <- obj$par+Inf
 upper[names(upper) == 'psel_fish' ] <- 5
 upper[names(upper) == 'PSEL'] <- 9
 upper[names(upper) == 'logh'] <- log(0.999)
 #upper[names(upper) == 'F0'] <- 0.5
-
+upper[names(upper) == 'logSDR'] <- log(1.4)
+lower[names(lower) == 'logSDR'] <- log(1.4)
 
 system.time(opt<-nlminb(obj$par,obj$fn,obj$gr,lower=lower,upper=upper, 
                         control = list(iter.max = 2000,
@@ -64,7 +67,10 @@ R <- getUncertainty('R',df)
 surveyselec.est <- getUncertainty('surveyselc', df)
 catchselec.est <- getUncertainty('catchselec', df)
 
+#png('SSB_random.png', height = 12, width  = 16, res= 400, unit = 'cm')
 plotValues(SSB, data.frame(x= assessment$year, y= assessment$SSB),'SSB')
+#dev.off()
+
 plotValues(Catch, data.frame(x = df$years,y =df$Catchobs), 'Catch')
 
 # yl <- ylimits(Biomass$name*1e-9,df$survey[df$survey > 1]*1e-9)
@@ -165,6 +171,7 @@ ggplot(df.plot, aes(x = age, y = sel, color = model))+geom_line()+facet_wrap(~fl
 
 
 ## Plot estimated SSB over SSB0
+source('calcSSB0.R')
 SSB0_assessment <- calcSSB0(exp(parms.true$logRinit),exp(parms.true$logMinit),df$nage,df$Matsel)
 SSB0_TMB <- calcSSB0(exp(rep$par.fixed[1]),exp(rep$par.fixed[3]),df$nage,df$Matsel)
 
@@ -172,3 +179,8 @@ df.plot <- data.frame(year = c(assessment$year,df$years),SSB = c(assessment$SSB/
                       model = rep(c('assessment','TMB'), each = length(df$year)))
 
 ggplot(df.plot, aes(x = year, y=  SSB, color = model))+geom_line()+theme_bw()
+
+
+##### Try Coles package
+
+

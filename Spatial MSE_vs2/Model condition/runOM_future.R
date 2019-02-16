@@ -77,6 +77,7 @@ print(paste('Fraction of successful runs = ',sum(run.true)/nruns))
 SSB.save <- SSB.save[,which(run.true == 1)]
 R.save <- R.save[,which(run.true == 1)]
 survey.save <- survey.save[,which(run.true == 1)]
+Catch.save <- Catch.save[,which(run.true == 1)]
 
 SSB <- as.data.frame(t(apply(SSB.save,1,quantile, probs = c(0.5,0.95,0.75,0.25,0.05), names = F)))
 SSB <- SSB/SSB0
@@ -125,18 +126,20 @@ p3 <- ggplot(survey, aes(x = year, y = p50))+
   scale_y_continuous(name = 'survey (million tonnes)')+
   geom_text(aes(x = 1996, y = 8.5, label = 'c'))
 
+png('survey_future.png', width = 16, height = 12, res = 400, unit = 'cm')
 p3
-
+dev.off()
 
 gs <- list(p1,p2,p3)
 ls.mat <- rbind(c(1,1),c(2,3))
 
 # cairo_pdf('OM_future.pdf', width = 16, height = 12)
-# png('OM_future.png', width = 16, height = 12, unit = 'cm', res = 600)
+png('OM_future.png', width = 16, height = 12, unit = 'cm', res = 600)
 
 
 
 grid.arrange(p1,                         # First row with one plot spaning over 2 columns
              arrangeGrob(p2, p3, ncol = 2), # Second row with 2 plots in 2 different columns
              nrow = 2)
-# dev.off()
+dev.off()
+

@@ -1,10 +1,10 @@
 ## Load the hake data
 # year and age input 
-load_data_seasons <- function(move = TRUE){
+load_data_seasons <- function(move = TRUE,
+                              nseason = 4, nspace = 2){
   
   
   years <- 1966:2017
-  nseason <- 4 # 4 seasons
   nyear <- length(years)
   tEnd <- length(years)*nseason
   age <- 0:20
@@ -16,8 +16,7 @@ load_data_seasons <- function(move = TRUE){
   # Maturity
   mat <- read.csv('maturity.csv')
   # Spatial stuff
-  nspace <- 2 # number of grid cells 
-  
+
   if(move == FALSE){
     nspace <- 1
   }
@@ -33,10 +32,10 @@ load_data_seasons <- function(move = TRUE){
       movemax <- rep(0.2,nseason)
       }
         
-
+  TAC <- 2 #  1) JTC reccomendation, 2 = JMC recommendation, 3 # Historical catch utilization
   
   
-  movefifty <- 6
+  movefifty <- 5
   moveslope <- 0.5
   
   movemat <- array(0, dim = c(nspace, nage, nseason)) # Chances of moving in to the other grid cell 
@@ -139,7 +138,7 @@ load_data_seasons <- function(move = TRUE){
   b <- matrix(0,length(years))
   Yr <- years#1966:max(years)
   # Parameters 
-  yb_1 <- 1965 #_last_early_yr_nobias_adj_in_MPD
+  yb_1 <- 1966 #_last_early_yr_nobias_adj_in_MPD
   yb_2 <- 1971 #_first_yr_fullbias_adj_in_MPD
   yb_3 <- 2016 #_last_yr_fullbias_adj_in_MPD
   yb_4 <- 2017 #_first_recent_yr_nobias_adj_in_MPD
@@ -170,22 +169,17 @@ load_data_seasons <- function(move = TRUE){
   }  
   #b <- matrix(1, tEnd)
   
-  psel<- matrix(NA,nspace, 5) 
+ 
   
-  for(i in 1:nspace){
-  psel[i,] <- c(2.8476, 0.973,0.3861,0.1775,0.5048) # USA selectivity 
-  }
-  #psel[1,] <- psel[2,]#c(1, 1, 1, 1,1)
-  
-  # if(move == TRUE){
-     mul <- 1
-  # }else{
-  #  mul <- 1
-#  }
-  
+  if(move == TRUE){
+     mul <- 1.015
+  }else{
+   mul <- 1
+   }
+
   
      parms <- list( # Just start all the simluations with the same initial conditions 
-       logRinit = 14.5614*1.015,
+       logRinit = 14.5614*mul,
        logh = log(0.861909),
        logMinit = log(0.213686),
        logSDsurv = log(0.257246),
@@ -200,7 +194,12 @@ load_data_seasons <- function(move = TRUE){
        Rin = Rdev,
        PSEL = PSEL
      )
-  
+     psel<- matrix(NA,nspace, 5) 
+     
+     for(i in 1:nspace){
+       psel[i,] <- parms$psel_fish # USA selectivity 
+     }
+     #psel[1,] <- psel[2,]#c(1, 1, 1, 1,1)
      
      
   df <-list(      #### Parameters #####
@@ -213,7 +212,7 @@ load_data_seasons <- function(move = TRUE){
                   Matsel= mat$mat,
                   nage = nage,
                   age = age,
-                  year_sel = length(1991:2010), # Years to model time varying sel
+                  year_sel = length(1991:2017), # Years to model time varying sel
                   selYear = 26,
                   nseason = nseason,
                   nyear = nyear,
@@ -247,6 +246,7 @@ load_data_seasons <- function(move = TRUE){
                   #logh = log(0.8),
                   # Space parameters 
                   nspace = nspace,
+                  TAC = TAC,
                   movemat = movemat,
                   move = move,
                   recruitmat = recruitmat,

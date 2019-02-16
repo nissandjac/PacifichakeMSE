@@ -93,10 +93,10 @@ Type objective_function<Type>::operator() ()
 //
 
 
-for(int j=0;j<(tEnd);j++){
+for(int j=0;j<(tEnd-1);j++){
       logR(j)=Rin(j);
 }
-
+logR(tEnd-1) = 0.0; // Can't predict the last years deviations
 
 // selectivity
 // survey
@@ -150,10 +150,10 @@ vector<Type>Meq = cumsum(M);
 //
 Nzero(0) = Rinit;
 for(int i=1;i<(nage-1);i++){
-    Nzero(i) = Rinit * exp(-(Meq(i-1)));
+    Nzero(i) = Rinit * exp(-(M(i-1)*age(i)));
   }
 //
-Nzero(nage-1) = Rinit*exp(-(Meq(nage-2)))/(Type(1.0)-exp(-M(nage-1)));//*exp(initN(nage-2)); // Plus group
+Nzero(nage-1) = Rinit*exp(-(M(nage-2)*age(nage-2)))/(Type(1.0)-exp(-M(nage-1)));//*exp(initN(nage-2)); // Plus group
 
 array<Type> SSBage(nage);
 array<Type> Catchinit(nage);
@@ -165,25 +165,22 @@ for(int i=0;i<nage;i++){ // Loop over ages
     SSBzero += Matsel(i)*Nzero(i)*0.5;
   }
 // Run the initial distribution
-array<Type>Ninit(nage,nage);
-array<Type>SSBinit(nage);
-
+array<Type>Ninit(nage);
+Type SSBinit = 0;
 REPORT(SSBzero);
 
-for(int i=0;i<(nage);i++){ // Loop over other ages
-    Ninit(i,0) = Nzero(i);
-  }
-  SSBinit(0) = SSBzero;
-
-Ninit(0,nage-1) = Rinit;
+// for(int i=0;i<(nage);i++){ // Loop over other ages
+//     Ninit(i,0) = Nzero(i);
+//   }
+Ninit(0) = Rinit;
 for(int i=1;i<(nage-1);i++){
-    Ninit(i,nage-1) = Rinit * exp(-(Meq(i-1)))*exp(-0.5*0*SDR*SDR+initN(i-1));
+    Ninit(i) = Rinit * exp(-(M(i)*age(i)))*exp(-0.5*0*SDR*SDR+initN(i-1));
   }
 //
-Ninit(nage-1,nage-1) = Rinit*exp(-(Meq(nage-2)))/(Type(1.0)-exp(-M(nage-1)))*exp(-0.5*0*SDR*SDR+initN(nage-2));
+Ninit(nage-1) = Rinit*exp(-(M(nage-2)*age(nage-2)))/(Type(1.0)-exp(-M(nage-1)))*exp(-0.5*0*SDR*SDR+initN(nage-2));
 
-  for(int i=0;i<(nage-1);i++){ // Loop over other ages
-    SSBinit(nage-1) += Ninit(i,nage-1)*Matsel(i)*0.5;
+for(int i=0;i<(nage);i++){ // Loop over other ages
+  SSBinit += Ninit(i)*Matsel(i)*0.5;
 }
 
 // Plus group
@@ -198,7 +195,12 @@ array<Type>Surveyobs(tEnd); // Survey observed Surveyobs
 array<Type>Surveyobs_tot(tEnd); // Total Surveyobs over age 2
 array<Type>age_survey_est(age_maxage,tEnd);
 array<Type>age_catch_est(age_maxage,tEnd);
+array<Type>Zsave(nage,tEnd);
 //
+age_survey_est.setZero();
+age_catch_est.setZero();
+Catch.setZero();
+CatchN.setZero();
 vector<Type> Myear = M*Msel; // Natural mortality (if we want to change it later)
 //
 vector<Type> Fyear(tEnd);
@@ -238,17 +240,29 @@ for(int time=0;time<tEnd;time++){ // Start time loop
              }
            }
          }
-  if (time == 0){
-      for(int j=0;j<(nage);j++){ // Fix the Catch selectivity
-      Ntmp(j) = Ninit(j,nage-1);
-    }
-      SSBtmp = SSBinit(nage-1);
-  }else{
-    for(int j=0;j<(nage);j++){ // Fix the Catch selectivity
-     Ntmp(j) = N(j,time-1);
-  }
-      SSBtmp = SSB(time-1);
-}
+         if (time == 0){
+             for(int j=0;j<(nage);j++){ // Fix the Catch selectivity
+             Ntmp(j) = Ninit(j);
+
+             if(j >0){
+             Nmid(j) = Ninit(j);
+             }else{
+             Nmid(j) = 0;
+           }
+         }
+             SSBtmp = SSBinit;
+         }else{
+           for(int j=0;j<(nage);j++){ //
+            Ntmp(j) = N(j,time-1);
+            if(j >0){
+            Nmid(j) = N(j,time-1); //*exp(-Myear(j)*0.4)
+           }else{
+            Nmid(j) = 0;
+          }
+
+         }
+             SSBtmp = SSB(time-1);
+       }
   Catch(time) = 0;
 
   // Calculate fishing Mortality
@@ -258,18 +272,19 @@ for(int time=0;time<tEnd;time++){ // Start time loop
   for(int i=0;i<(nage);i++){ // Loop over other ages
   Freal(i) = Fyear(time)*catchselec(i);
   Z(i) = Freal(i)+Myear(i);
-  Surveyobs(time) += surveyselc(i)*wage_survey(i,time)*Ntmp(i)*q;
-  Ntot_survey += surveyselc(i)*Ntmp(i); // To use with age comps
+  Surveyobs(time) += surveyselc(i)*wage_survey(i,time)*Nmid(i)*exp(-Myear(i)*0.5)*q;
+  Ntot_survey += surveyselc(i)*Nmid(i)*exp(-Myear(i)*0.5); // To use with age comps
   selectivity_save(i,time) = catchselec(i);
+  Zsave(i,time) = Z(i);
   }
 
   if(flag_survey(time) == 1){ // Flag if  there was a measurement that year
 
     for(int i=0;i<(nage-1);i++){ // Loop over other ages
       if(i < age_maxage){
-      age_survey_est(i,time) = ((surveyselc(i+1)*Ntmp(i+1))/Ntot_survey);
+      age_survey_est(i,time) = ((surveyselc(i+1)*Nmid(i+1)*exp(-Myear(i)*0.5))/Ntot_survey);
       }else{
-      age_survey_est(age_maxage-1,time) += ((surveyselc(i+1)*Ntmp(i+1))/Ntot_survey);
+      age_survey_est(age_maxage-1,time) += ((surveyselc(i+1)*Nmid(i+1)*exp(-Myear(i)*0.5))/Ntot_survey);
       }
     }
   }  //Recruitment
@@ -286,8 +301,8 @@ for(int time=0;time<tEnd;time++){ // Start time loop
     Catch(time) = 0;
 
     for(int i=0;i<nage;i++){ // Loop over other ages
-    CatchAge(i,time)= (Freal(i)/(Z(i)))*(1-exp(-Z(i)))*N(i,time)*wage_catch(i,time);// Calculate the catch in kg
-    CatchNAge(i,time)= (Freal(i)/(Z(i)))*(1-exp(-Z(i)))*N(i,time);// Calculate the catch in kg
+    CatchAge(i,time)= (Freal(i)/(Z(i)))*(1-exp(-Z(i)))*Nmid(i)*wage_catch(i,time);// Calculate the catch in kg
+    CatchNAge(i,time)= (Freal(i)/(Z(i)))*(1-exp(-Z(i)))*Nmid(i);// Calculate the catch in kg
     Catch(time) += CatchAge(i,time);
     CatchN(time) += CatchNAge(i,time);
     }
@@ -445,7 +460,15 @@ REPORT(Fyear)
 REPORT(N)
 REPORT(Catch)
 REPORT(R)
-
+REPORT(Nzero)
+REPORT(Ninit)
+REPORT(Zsave)
+REPORT(age_survey_est)
+REPORT(age_catch_est)
+REPORT(CatchN)
+REPORT(Surveyobs)
+REPORT(ans_tot)
+REPORT(ans_survey)
 
   return ans;
 }

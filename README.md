@@ -10,4 +10,4 @@ The Spatial MSE folder runs the MSE with a spatial operating model and the estim
 The hake SS3 folder is the hake stock assessment. The official stock assessment has been rewritten in TMB. The assessment can be run from the file runHakeassessment.R
 
 ### Disclaimer
-All code by Nis Sand Jacobsen nissandjac@gmail.com . 
+All code by Nis Sand Jacobsen nissandjac@gmail.com . Please do not use in specific management scenarios without first consulting the author.  

@@ -180,12 +180,21 @@ row.names(idx.tmp) <- NULL
 p1 <- ggplot(data = SSB, aes(x = year, y = p50*1e-6, color =movemax, group = run))+theme_classic()+
   geom_line(data = ass.obs, aes(x= year, y = SSB*1e-6, group = NA), color = 'black', size = 1.5)+geom_line()+
   scale_y_continuous('SSB (million  tonnes)')
+png("C:/Users/Nis/Documents/GitHub/PacifichakeMSE/Spatial MSE_vs2/Model condition/Figures/SSB_move.png",
+    width = 12, height = 8, res = 400, unit = 'cm')
 p1
-
+dev.off()
 p2 <- ggplot(data = SSB, aes(x = year, y = p50*1e-6, color =movefifty, group = run))+theme_classic()+
   geom_line(data = ass.obs, aes(x= year, y = SSB*1e-6, group = NA), color = 'black', size = 1.5)+geom_line()+
   scale_y_continuous('SSB (million  tonnes)')
+png("C:/Users/Nis/Documents/GitHub/PacifichakeMSE/Spatial MSE_vs2/Model condition/Figures/SSB_move2.png",
+    width = 12, height = 8, res = 400, unit = 'cm')
+
 p2
+dev.off()
+
+png("C:/Users/Nis/Documents/GitHub/PacifichakeMSE/Spatial MSE_vs2/Model condition/Figures/SSB_tot.png",
+    width = 12, height = 8, res = 400, unit = 'cm')
 
 p3 <- ggplot(data = SSB, aes(x = year, y = p50*1e-6, color = run))+theme_classic()+
   geom_line(data = ass.obs, aes(x= year, y = SSB*1e-6, group = NA), color = 'black', size = 1.5)+geom_line()+
@@ -194,6 +203,7 @@ p3 <- ggplot(data = SSB, aes(x = year, y = p50*1e-6, color = run))+theme_classic
   geom_ribbon(aes(ymin = p75*1e-6, ymax = p25*1e-6), fill = alpha('red', 0.2), color = NA)
 
 p3
+dev.off()
 ### SSB in the two different countries 
 tmp.can <- SSB.CAN %>% 
   group_by(year) %>% 
@@ -208,23 +218,36 @@ df.plot <- rbind(tmp.can, tmp)
 mul <- 1e-6
 
 # Data 
-survey.obs <- read.csv('survey_country.csv')
+survey.obs <- read.csv('survey_country_2.csv')
 
 survey.tot <- survey.obs %>% 
   group_by(year) %>% 
-  summarise(Biomass = sum(Biomass))
+  summarise(Biomass = sum(Bio))
 
 p2 <- ggplot(df.plot, aes(x = year, y= SSB.m*mul, color = country))+geom_line(size = 1.5)+theme_classic()+
   geom_ribbon(data = df.plot[df.plot$country == 'CAN',],
               aes(ymin = SSB.min*mul, ymax = SSB.max*mul), fill = alpha('red',0.3), color = NA)+
   geom_ribbon(data = df.plot[df.plot$country == 'USA',],
               aes(ymin = SSB.min*mul, ymax = SSB.max*mul), fill = alpha('blue',0.3), color = NA)+
-  theme(legend.position = '')+scale_y_continuous('Spawning biomass (million tonnes)')
+  theme(legend.position = '')+scale_y_continuous('Spawning biomass (million tonnes)')+
+  coord_cartesian(xlim = c(1965,2018))
+
+png("C:/Users/Nis/Documents/GitHub/PacifichakeMSE/Spatial MSE_vs2/Model condition/Figures/SSB_country.png",
+    width = 12, height = 8, res = 400, unit = 'cm')
+
 p2
 
-
+dev.off()
 ## The median age at catch
+## Which run has the average min and max SSB
 
+minmaxSSB <- SSB.USA[SSB.USA$year>2018,] %>% 
+  summarise(SSBmin = min(p5), SSBmax = max(p5), mid = median(p5), 
+            runmin = run[which.min(p5)],
+            runmax = run[which.max(p5)],
+            runmid = run[which.median(p5)])
+
+write.csv(x = minmaxSSB, file = 'minmaxSSB.csv', row.names = FALSE)
 ### SSB in the two different countries 
 tmp.can <- catch.CAN %>% 
   group_by(year) %>% 
@@ -248,8 +271,13 @@ p2 <- ggplot(df.plot, aes(x = year, y= AC.m*mul, color = country))+geom_line(siz
   theme(legend.position = '')+scale_y_continuous('Average age in catch')+
   geom_point(data = am.obs,aes(y =am, color=Country), size = 1.5)+
   geom_line(data = am.obs,aes(y =am, color=Country), size = 1)
+
+png("C:/Users/Nis/Documents/GitHub/PacifichakeMSE/Spatial MSE_vs2/Model condition/Figures/age_country_catch.png",
+    width = 12, height = 8, res = 400, unit = 'cm')
+
 p2
 
+dev.off()
 
 tmp.can <- survey.CAN %>% 
   group_by(year) %>% 
@@ -272,9 +300,12 @@ p3 <- ggplot(df.plot, aes(x = year, y= AC.m*mul, color = country))+geom_line(siz
   theme(legend.position = '')+scale_y_continuous('Average age in survey')+
   geom_point(data = survey.obs,aes(y =am, color=Country), size = 1.5)+
   geom_line(data = survey.obs,aes(y =am, color=Country), size = 1)
-  
-p3
 
+png("C:/Users/Nis/Documents/GitHub/PacifichakeMSE/Spatial MSE_vs2/Model condition/Figures/age_survey.png",
+    width = 12, height = 8, res = 400, unit = 'cm')
+
+p3
+dev.off()
 survey.CAN$country <- 'CAN'
 
 survey.USA$country <- 'USA'
@@ -286,10 +317,19 @@ p4 <- ggplot(df.plot2, aes(x =year, y = p5, group = run, color = movemax))+
   geom_line(data = df.plot2[df.plot2$country == 'CAN',], linetype = 2)+
   geom_line(data = df.plot2[df.plot2$country == 'USA',])+theme_classic()+
   scale_y_continuous('Average age')+scale_color_continuous(low = 'red', high = 'blue')
+
+png("C:/Users/Nis/Documents/GitHub/PacifichakeMSE/Spatial MSE_vs2/Model condition/Figures/AM_move.png",
+    width = 12, height = 8, res = 400, unit = 'cm')
+
 p4
+dev.off()
 
 p5 <- ggplot(df.plot2, aes(x =year, y = p5, group = run, color = movefifty))+
   geom_line(data = df.plot2[df.plot2$country == 'CAN',], linetype = 2)+
   geom_line(data = df.plot2[df.plot2$country == 'USA',])+theme_classic()+
   scale_y_continuous('Average age')+scale_color_continuous(low = 'red', high = 'blue')
+png("C:/Users/Nis/Documents/GitHub/PacifichakeMSE/Spatial MSE_vs2/Model condition/Figures/AM_move_2.png",
+    width = 12, height = 8, res = 400, unit = 'cm')
+
 p5
+dev.off()

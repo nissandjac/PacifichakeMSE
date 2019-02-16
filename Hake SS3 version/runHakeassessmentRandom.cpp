@@ -392,7 +392,8 @@ Type ans_psel = 0.0;
 //
 for(int time=0;time<year_sel;time++){ // Start time loop
   for(int i=0;i<psel_fish.size();i++){ // Start time loop
-        ans_psel += Type(0.5)*(PSEL(i,time)*PSEL(i,time))/(sigma_psel*sigma_psel);
+      //  ans_psel += Type(0.5)*(PSEL(i,time)*PSEL(i,time))/(sigma_psel*sigma_psel);
+
       }
 }
 
