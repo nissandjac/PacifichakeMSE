@@ -1,4 +1,4 @@
-getRefpoint <- function(par.fixed, df, SSBy, Fin, Nend,
+getRefpoint <- function(par.fixed, df, SSBy, Fin =NA, Nend,
                         TAC = 1){
 
 R0 <- as.numeric(exp(par.fixed)['logRinit'])
@@ -17,7 +17,7 @@ Mage <- M #cumsum(M)
 # N0 <- NA
 # N0[1] <- R0
 # N0[2:(nage-1)] <-R0 * exp(-Mage[1:(nage-2)]*age[2:(nage-1)])
-# N0[nage] <- R0*exp(-(Mage[nage-1]*age[nage-1]))/(1-exp(-M[nage]))# Plus group 
+# N0[nage] <- R0*exp(-(Mage[nage-1]*age[nage-1]))/(1-exp(-M[nage]))# Plus group
 
 N0 <- NA
 N0[1] <- R0
@@ -59,8 +59,9 @@ SPR <- SSB_eq/SSB_0
 # ## Calculate the F40 reference point
 
 getF <- function(par){
-  # Z <- M+par[1]*sel
-  # Zage <- cumsum(Z)
+
+    Z <- M+par[1]*sel
+  # Zage <- Z
   # N1 <- NA
   # N1[1] <- R0
   # N1[2:(nage-1)] <-R0 * exp(-Zage[2:(nage-1)]*age[2:(nage-1)])
@@ -73,7 +74,7 @@ getF <- function(par){
   for(a in 1:(nage-1)){
     N1[a+1] <- N1[a]*exp(-Zage[a])
   }
-  # adjust plus group sum of geometric series as a/(1-r)
+  #adjust plus group sum of geometric series as a/(1-r)
   N1[nage] <- N1[nage]/(1-Zage[nage])
 
   SSB_eq <- sum(df$Matsel*N1)*0.5

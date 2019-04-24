@@ -48,17 +48,17 @@ sdrep <- summary(rep)
 rep.values<-rownames(sdrep)
 
 SSB <- getUncertainty('SSB',df, sdrep)
-SSB$type <- 'assess'
+SSB$type <- 'EM'
 Fyear <- getUncertainty('Fyear', df, sdrep)
 Catch <- getUncertainty('Catch',df, sdrep)
 
 SSB.plot <- rbind(SSB, data.frame(name = assessment$SSB, SE = NA, min = NA, max = NA, year = assessment$year,
-                             type = 'obs'),
+                             type = 'assessment'),
              data.frame(name = rowSums(sim.data$SSB), SE = NA, min = NA, max = NA, year = df$years,
-                        type = 'sim'))
+                        type = 'Operating model'))
 
-ggplot(SSB.plot, aes(x= year, y = name, color = type))+geom_line()+
-  geom_ribbon(aes(ymin = min, ymax = max),fill = alpha('gray', 0.3), linetype = 0)
+ggplot(SSB.plot, aes(x= year, y = name*1e-6, color = type))+geom_line()+
+  geom_ribbon(aes(ymin = min*1e-6, ymax = max*1e-6),fill = alpha('gray', 0.3), linetype = 0)
 
 
 N <- obj$report()$N
@@ -81,9 +81,9 @@ print(F.tac) # Note that the calculated exploitation rate at F40 is about 50% of
 TAC.obs <- read.csv('TAC.csv')
 TAC.plot <- melt(TAC.obs,id.vars = 'Year', measure.vars =c(2,3,7))
 
-plot(df$years,TAC, ylim = c(1e5, 1e6))
+plot(df$years,TAC, ylim = c(1e5, 1e6), type= 'l', col='green')
 lines(TAC.obs$Year,TAC.obs$AssessTac)
-lines(TAC.obs$Year,TAC.obs$TAC)
+lines(TAC.obs$Year,TAC.obs$TAC, col = 'red')
 lines(TAC.obs$Year,TAC.obs$Realized)
 
 ggplot(data.frame(year = df$years, TAC.MSE =TAC), aes(x = year, y = TAC*1e-5))+geom_line()+

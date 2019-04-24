@@ -226,7 +226,7 @@ for (time in 1:simyears){
   Catch.save[[time]] <- Catch
   
   # And the fishing mortality
-  F0.save <- Fnew
+  #F0.save <- Fnew
   
   #  print(year.future[year])
   #SSB.test.om[[time]] <- rowSums(sim.data$SSB)
@@ -266,7 +266,7 @@ df.ret <- list(Catch = sim.data$Catch,  # All output is from the OM
                SSB.mid = sim.data$SSB.all[,3,],
                SSB.hes = SSB.hes,
                Survey.om = sim.data$survey,
-               F0 = F0.save,
+               F0 = sim.data$Fsave,
                parms = parms.save,
                ams = ams,
                amc = amc

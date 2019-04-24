@@ -150,10 +150,12 @@ vector<Type>Meq = cumsum(M);
 //
 Nzero(0) = Rinit;
 for(int i=1;i<(nage-1);i++){
-    Nzero(i) = Rinit * exp(-(M(i-1)*age(i)));
+    Nzero(i) = Rinit * exp(-(M(i)*age(i)));
   }
 //
-Nzero(nage-1) = Rinit*exp(-(M(nage-2)*age(nage-2)))/(Type(1.0)-exp(-M(nage-1)));//*exp(initN(nage-2)); // Plus group
+// Nzero(nage-1) = Rinit*exp(-(M(nage-2)*age(nage-2)))/(Type(1.0)-exp(-M(nage-1)));//*exp(initN(nage-2)); // Plus group
+
+Nzero(nage-1) = (Nzero(nage-2)*exp(-(M(nage-2))))/(Type(1.0)-exp(-M(nage-1)));
 
 array<Type> SSBage(nage);
 array<Type> Catchinit(nage);
@@ -204,17 +206,21 @@ CatchN.setZero();
 vector<Type> Myear = M*Msel; // Natural mortality (if we want to change it later)
 //
 vector<Type> Fyear(tEnd);
+vector<Type>Fyear_hybrid(tEnd); 
 vector<Type> Freal(nage);
 vector<Type> Z(nage);
 vector<Type>pmax_catch_save(tEnd);
 vector<Type>psel_fish_zero = psel_fish;
+vector<Type>Catchsave(tEnd);
+vector<Type>Fpope(tEnd);
 
 Type SSBtmp = 0;
 vector<Type>Ntmp(nage);
 vector<Type>Nmid(nage); // Numbers at the middle of the season
+// vector<Type>Bmid(nage); // Biomass at the middle of the year
 
 
-for(int time=0;time<tEnd;time++){ // Start time loop
+for(int time=0;time<(tEnd);time++){ // Start time loop
 
     Type Ntot_survey = 0;
     pmax_catch_save(time) = pmax_catch;
@@ -240,34 +246,81 @@ for(int time=0;time<tEnd;time++){ // Start time loop
              }
            }
          }
+
+         Type Bmid = 0; // Initialize the middle of the year biomass
+
          if (time == 0){
-             for(int j=0;j<(nage);j++){ // Fix the Catch selectivity
-             Ntmp(j) = Ninit(j);
+             for(int j=1;j<(nage);j++){
+             Ntmp(j) = Ninit(j-1);
 
-             if(j >0){
-             Nmid(j) = Ninit(j-1)*exp(-Myear(j)*0.5);
-             }else{
-             Nmid(j) = 0;
+             //if(j >0){
+             Nmid(j) = Ninit(j-1)*exp(-Myear(j-1)*0.5);
+             Bmid += Nmid(j)*catchselec(j)*wage_mid(j);
+             //}else{
+
            }
-         }
-             SSBtmp = SSBinit;
-         }else{
-           for(int j=0;j<(nage);j++){ //
-            Ntmp(j) = N(j,time-1);
-            if(j >0){
-            Nmid(j) = N(j,time-1)*exp(-Myear(j)*0.5);
-           }else{
-            Nmid(j) = 0;
-          }
 
+         Nmid(0,time) = 0;
+         SSBtmp = SSBinit;
+        }else{
+           for(int j=1;j<(nage);j++){ //
+
+            Ntmp(j) = N(j-1,time-1);
+            Nmid(j) = N(j-1,time-1)*exp(-Myear(j-1)*0.5);
+            Bmid += Nmid(j)*catchselec(j)*wage_mid(j);
          }
-             SSBtmp = SSB(time-1);
-       }
+
+          SSBtmp = SSB(time-1);
+          Ntmp(0) = 0;
+                   }
   Catch(time) = 0;
 
-  // Calculate fishing Mortality
+  // Calculate fishing Mortality (hybrid stuff)
+
+  Type temp = Catchobs(time)/(Bmid+0.1*Catchobs(time));
+  Type join = 1/(1+exp((30*(temp-0.95))));
+  Type temp2 = join*temp+0.95*(1-join);
+  Type Ftmp = -log(1-temp2);
+  vector<Type> Ctmpage(nage);
+  vector<Type>Ztmp(nage);
+  vector<Type>survive(nage);
+  Type Ctmp = 0;
+  Type Zadj = 0;
+  Type temp3 = 0;
+  Type Ftmp2 = 0;
+  Type Fnew = 0;
+  vector<Type>Zprime(nage);
+  vector<Type>surv_prime(nage);
+  Type join2 = 0;
+
+  for(int k=0;k<4;k++){ // 4 iterations to achieve match between obs and est
+  //
+    for(int i=0;i<(nage);i++){ // Loop over other ages
+      Ztmp(i) = Ftmp*catchselec(i)+Myear(i);
+      survive(i) = (1-exp(-Ztmp(i)))/Ztmp(i);
+      Ctmpage(i) = (Ftmp*catchselec(i)/Z(i))*Nmid(i)*wage_catch(i)*survive(i);
+      Ctmp += Ctmpage(i);
+      Zadj = Catchobs(time)/(Ctmp+0.0001);
+      Zprime(i) = Myear(i)+Zadj*(Ztmp(i)-Myear(i));
+      surv_prime(i) = (1-exp(-Zprime(i)))/(Zprime(i));
+
+      temp3 += Nmid(i)*wage_catch(i)*catchselec(i)*surv_prime(i);
+    }
+    Ftmp2 = Catchobs(time)/(temp3+0.0001);
+    join2 = 1/(1+exp(30*(Ftmp2-0.95*0.999)));
+
+    Fnew = join2*Ftmp2+(1-join2)*0.9999;
+  }
+
+  REPORT(Ztmp)
+  REPORT(survive)
+  REPORT(Ctmp)
+
 
   Fyear(time) = F0(time);
+  Fyear_hybrid(time) = Fnew;
+  Catchsave(time) = Ctmp/Catchobs(time);
+
 
   for(int i=0;i<(nage);i++){ // Loop over other ages
   Freal(i) = Fyear(time)*catchselec(i);
@@ -277,6 +330,7 @@ for(int time=0;time<tEnd;time++){ // Start time loop
   selectivity_save(i,time) = catchselec(i);
   Zsave(i,time) = Z(i);
   }
+
 
   if(flag_survey(time) == 1){ // Flag if  there was a measurement that year
 
@@ -289,8 +343,6 @@ for(int time=0;time<tEnd;time++){ // Start time loop
     }
   }  //Recruitment
 
-
-
     R(time) = (4*h*Rinit*SSBtmp/(SSBzero*(1-h)+ SSBtmp*(5*h-1)))*exp(-0.5*b(time)*SDR*SDR+logR(time));
 
     N(0,time) = R(time); // First one is recruits
@@ -301,19 +353,19 @@ for(int time=0;time<tEnd;time++){ // Start time loop
     // Plus group
     N(nage-1, time) = Ntmp(nage-2)*exp(-Z(nage-2))+Ntmp(nage-1)*exp(-Z(nage-1));
     //
-    Catch(time) = 0;
-
-    for(int i=0;i<nage;i++){ // Loop over other ages
-    CatchAge(i,time)= (Freal(i)/(Z(i)))*(1-exp(-Z(i)))*N(i,time)*wage_catch(i,time);// Calculate the catch in kg
-    CatchNAge(i,time)= (Freal(i)/(Z(i)))*(1-exp(-Z(i)))*N(i,time);// Calculate the catch in kg
-    Catch(time) += CatchAge(i,time);
-    CatchN(time) += CatchNAge(i,time);
-    }
 
     for(int i=0;i<nage;i++){ // Loop over other ages
       SSB(time) += N(i,time)*Matsel(i)*0.5; // hat
     }
     // //
+    Catch(time) = 0;
+
+    for(int i=0;i<nage;i++){ // Loop over other ages
+        CatchAge(i,time)= (Freal(i)/(Z(i)))*(1-exp(-Z(i)))*Nmid(i)*wage_catch(i,time);// Calculate the catch in kg
+        CatchNAge(i,time)= (Freal(i)/(Z(i)))*(1-exp(-Z(i)))*Nmid(i);// Calculate the catch in kg
+        Catch(time) += CatchAge(i,time);
+        CatchN(time) += CatchNAge(i,time);
+      }
 
     if(flag_catch(time) == 1){ // Flag if  there was a measurement that year
 
@@ -460,6 +512,7 @@ ADREPORT(ans_tot)
 
 REPORT(SSB)
 REPORT(Fyear)
+REPORT(Fyear_hybrid)
 REPORT(N)
 REPORT(Catch)
 REPORT(R)
@@ -469,7 +522,10 @@ REPORT(Zsave)
 REPORT(age_survey_est)
 REPORT(age_catch_est)
 REPORT(CatchN)
-
+REPORT(selectivity_save)
+REPORT(surveyselc)
+REPORT(Catchsave)
+REPORT(Nmid)
 
   return ans;
 }

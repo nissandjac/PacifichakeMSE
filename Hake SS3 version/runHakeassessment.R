@@ -19,14 +19,14 @@ catches.obs <- read.csv('catches.csv')
 
 df <- load_data()
 years <- df$years
-
+df$logphi_survey <- log(10)
 
 #U[2,] <- 0.01
 parms <- getParameters(TRUE)
 
-compile("runHakeassessment_new.cpp")
-dyn.load(dynlib("runHakeassessment_new"))
-obj <-MakeADFun(df,parms,DLL="runHakeassessment_new")#, )
+compile("runHakeassessment_3.cpp")
+dyn.load(dynlib("runHakeassessment_3"))
+obj <-MakeADFun(df,parms,DLL="runHakeassessment_3")#, )
 
 # compile("hake_old.cpp")
 # dyn.load(dynlib("hake_old"))
@@ -36,6 +36,13 @@ obj <-MakeADFun(df,parms,DLL="runHakeassessment_new")#, )
 Ninit <- obj$report()$Ninit
 Nass <- obj$report()$N
 SSBass <- obj$report()$SSB
+Rass <- obj$report()$R
+
+age_survey  <- obj$report()$age_survey_est
+age_catch <- obj$report()$age_catch
+# Compare the comps with ss3
+
+
 plot(df$years,SSBass)
 lines(assessment$year,assessment$SSB)
 
@@ -60,10 +67,10 @@ system.time(rep<-sdreport(obj))
 rep
 
 #xx<- Check_Identifiable_vs2(obj)
-
-tt <- TMBhelper::Optimize(obj,fn = obj$fn,obj$gr,lower=lower,upper=upper,
-                          control = list(iter.max = 1e8, eval.max = 1e8,
-                                         rel.tol = 1e-10))
+# 
+# tt <- TMBhelper::Optimize(obj,fn = obj$fn,obj$gr,lower=lower,upper=upper,
+#                            control = list(iter.max = 1e8, eval.max = 1e8,
+#                                           rel.tol = 1e-10))
 plot(tt$diagnostics$final_gradient)
 #rep
 sdrep <- summary(rep)
@@ -87,7 +94,7 @@ SSB$name <- SSB$name*1e-6
 SSB$min <- SSB$min*1e-6
 SSB$max <- SSB$max*1e-6
 
-#png('Figures/SSB.png', width = 16, height = 12, unit = 'cm', res =400)
+png('Figures/SSB.png', width = 16, height = 12, unit = 'cm', res =400)
 plotValues(SSB, data.frame(x= assessment$year, y= assessment$SSB*1e-6),'SSB')
 dev.off()
 
@@ -180,7 +187,11 @@ ggplot(df.plot.parms, aes(x = name, y = value, colour = model))+
   geom_point(size = 2)+geom_linerange(aes(ymin = min, ymax = max))+theme_classic()+facet_wrap(~name, scale = 'free')+
   theme(strip.text.x = element_blank())+scale_x_discrete('')
 #dev.off()
-
+png('Figures/parameters_estimated.png', width = 16, height = 12, unit = 'cm', res =400)
+ggplot(df.plot.parms[df.plot.parms$name %in% c('Rinit', 'h', 'Minit', 'SDsurv'),], aes(x = name, y = value, colour = model))+
+  geom_point(size = 2)+geom_linerange(aes(ymin = min, ymax = max))+theme_classic()+facet_wrap(~name, scale = 'free')+
+  theme(strip.text.x = element_blank())+scale_x_discrete('')
+dev.off()
 # plot the base and survey selectivity 
 source('getSelec.R')
 
@@ -201,3 +212,17 @@ dev.off()
 # 
 # fit <- tmbstan(obj = obj, chains = 1, init = unlist(parms), lower = lower, upper = upper)
 # launch_shinystan(fit)
+
+## Compare with non-added age 
+Spawndata <-read.csv('spawnbio.csv')
+
+Spawndata <- Spawndata
+plot(Spawndata$Yr,Spawndata$SpawnBio*1e-6*0.5)
+lines(df$year,SSB$name)
+lines(assessment$year,assessment$SSB*1e-6, col = 'red')
+lines(df$year,SSBass*1e-6, col = 'green')
+
+
+plot(Rass)
+lines(assessment$R, col ='red')
+lines(R$name, col = 'green')

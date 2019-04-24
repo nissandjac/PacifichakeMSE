@@ -52,29 +52,29 @@ sim.data <- run.agebased.true.catch(df)
 simdata0 <- sim.data # The other one is gonna get overwritten. 
 
 # ### Loop MSE's with different errors in future survey and recruitment
-# ls.save <- list()
-# ls.converge <- matrix(0, nruns)
-# #
-# for (i in 61:nruns){
-#   tmp <- try(run_multiple_MSEs(simyears = 30, 
-#                            seed = seeds[i],
-#                            moveparms = NA,
-#                            TAC = 1))
-#   #tmp <- run_multiple_MSEs(simyears = 30, seeds[i])
-#   print(i)
-# 
-#   if(is.list(tmp)){
-#   ls.save[[i]] <-tmp
-#   ls.converge[i] <- 1
-#   }else{
-#     ls.save[[i]] <- NA
-#     ls.converge[i] <- 0
-#   }
-# 
-# 
-# }
-# # # # # 
-# save(ls.save,file = 'MSErun_move_JTC.Rdata')
+ls.save <- list()
+ls.converge <- matrix(0, nruns)
+#
+for (i in 1:nruns){
+  tmp <- try(run_multiple_MSEs(simyears = 30,
+                           seed = seeds[i],
+                           moveparms = NA,
+                           TAC = 1))
+  #tmp <- run_multiple_MSEs(simyears = 30, seeds[i])
+  print(i)
+
+  if(is.list(tmp)){
+  ls.save[[i]] <-tmp
+  ls.converge[i] <- 1
+  }else{
+    ls.save[[i]] <- NA
+    ls.converge[i] <- 0
+  }
+
+
+}
+# # # #
+save(ls.save,file = 'MSErun_move_JTC.Rdata')
 
 # ### Loop MSE's with different errors in future survey and recruitment
 ls.save <- list()
