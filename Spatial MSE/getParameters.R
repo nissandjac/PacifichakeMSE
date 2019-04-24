@@ -4,11 +4,11 @@ getParameters <- function(trueparms = TRUE,df){
 
   if (trueparms == TRUE){
     
-    initN <- rev(read.csv('Ninit_MLE.csv')[,1])
-    Rdev <- read.csv('Rdev_MLE.csv')[,1]
-    PSEL <- as.matrix(read.csv('p_MLE.csv'))
+    initN <- rev(read.csv('data/Ninit_MLE.csv')[,1])
+    Rdev <- read.csv('data/Rdev_MLE.csv')[,1]
+    PSEL <- as.matrix(read.csv('data/p_MLE.csv'))
     
-    assessment <- read.csv('asssessment_MLE.csv')
+    assessment <- read.csv('data/asssessment_MLE.csv')
     assessment <- assessment[assessment$year > 1965 &assessment$year < 2018 ,]
     F0 <- assessment$F0
     

@@ -3,38 +3,18 @@ library(TMB)
 compile("runHakeassessment.cpp")
 dyn.load(dynlib("runHakeassessment"))
 
+# Set the seed
 seedz <- 12345
 set.seed(seedz)
-# Run the simulation model
-source('run_agebased_model_true_Catch.R')
 
+source('load_files.R')
 
-####  Plotting and uncertainty calculation functions #### 
-source('ylimits.R')
-source('plotUncertainty.R')
-source('getUncertainty.R')
-source('plotValues.R')
-source('run_multiple_MSEs.R')
-source('getSelec.R') # Calculate hake selectivity
+parms.true <- getParameters(TRUE) # Load parameters from assessment
 
-source('load_data_seasons.R') # Loads data for Operating model
-source('create_TMB_data.R') # Compiles operating model data to tmb data
+df <- load_data_seasons(move = TRUE, nseason = 4, nspace = 2) # Prepare data for operating model
 
-source('getRefpoint.R') # Calculate refrence points 
-source('Check_Identifiable_vs2.R') # see if hessian is positive definite 
+df$Catch <- Catch.obs$Fishery # Add the observed catch
 
-source('getParameters.R')
-source('calcSSB0.R')
-
-assessment <- read.csv('asssessment_MLE.csv')
-assessment <- assessment[assessment$year > 1965 &assessment$year < 2018 ,]
-
-parms.true <- getParameters(TRUE)
-Catch.obs <- read.csv('hake_totcatch.csv')
-
-df <- load_data_seasons(move = TRUE, nseason = 4, nspace = 2)
-
-df$Catch <- Catch.obs$Fishery
 time <- 1
 yrinit <- df$nyear
 nruns <- 100
@@ -42,13 +22,12 @@ seeds <- floor(runif(n = nruns, min = 1, max = 1e6))
 ### Run the OM and the EM for x number of years in the MSE 
 ### Set targets for harvesting etc 
 #
-# df$parms$Rin <- df$parms$Rin*0
-# df$F0 <- 0*df$F0
 
-simyears <- 30 # Project 25 years into the future (2048 that year)
+simyears <- 30 # Project 30 years into the future (2048 that year)
 year.future <- c(df$years,(df$years[length(df$years)]+1):(df$years[length(df$years)]+simyears))
 N0 <- NA
-sim.data <- run.agebased.true.catch(df)
+sim.data <- run.agebased.true.catch(df) # Run the operating model until 2018
+
 simdata0 <- sim.data # The other one is gonna get overwritten. 
 
 # ### Loop MSE's with different errors in future survey and recruitment
@@ -74,7 +53,7 @@ for (i in 1:nruns){
 
 }
 # # # #
-save(ls.save,file = 'MSErun_move_JTC.Rdata')
+save(ls.save,file = 'results/MSErun_move_JTC.Rdata')
 
 # ### Loop MSE's with different errors in future survey and recruitment
 ls.save <- list()
@@ -96,7 +75,7 @@ for (i in 1:nruns){
   
 }
 # # # # 
-save(ls.save,file = 'MSErun_move_JMC.Rdata')
+save(ls.save,file = 'results/MSErun_move_JMC.Rdata')
 
 ls.save <- list()
 ls.converge <- matrix(0, nruns)
@@ -119,7 +98,7 @@ for (i in 1:nruns){
   
 }
 # # # # 
-save(ls.save,file = 'MSErun_move_realized.Rdata')
+save(ls.save,file = 'results/MSErun_move_realized.Rdata')
 
 ls.save <- list()
 ls.converge <- matrix(0, nruns)
@@ -142,7 +121,7 @@ for (i in 1:nruns){
   
 }
 # # # # 
-save(ls.save,file = 'MSErun_move_realized_move1.Rdata')
+save(ls.save,file = 'results/MSErun_move_realized_move1.Rdata')
 
 for (i in 1:nruns){
   tmp <- try(run_multiple_MSEs(simyears = 30, seeds[i],moveparms = c(0.75,5),
@@ -159,7 +138,7 @@ for (i in 1:nruns){
   
 }
 # # # # 
-save(ls.save,file = 'MSErun_move_realized_move2.Rdata')
+save(ls.save,file = 'results/MSErun_move_realized_move2.Rdata')
 
 
 for (i in 1:nruns){
@@ -176,7 +155,10 @@ for (i in 1:nruns){
   
 }
 # # # # 
-save(ls.save,file = 'MSErun_move_realized_move3.Rdata')
+save(ls.save,file = 'results/MSErun_move_realized_move3.Rdata')
+
+### Old trash to plot some data
+
 ###  Plot the true SSB ###
 #load('MSErun_nomove.Rdata')
 # yr <- 1966:(2017+simyears-1)
