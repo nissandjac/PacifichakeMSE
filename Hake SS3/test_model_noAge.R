@@ -1,29 +1,18 @@
 # Run the hake assessment 
-setwd("~/GitHub/PacifichakeMSE/Hake SS3 version")
-
-library(TMB)
-#library(TMBdebug)
-library(ggplot2)
-source('plotValues.R')
-source('getUncertainty.R')
-source('load_data.R')
-source('ylimits.R')
-source('parameters_TRUE.R')
-source('Check_Identifiable_vs2.R')
-source('getParms_noAge.R')
+source('load_files.R')
 
 # Read the assessment data 
-assessment <- read.csv('asssessment_MLE.csv')
+assessment <- read.csv('data/asssessment_MLE.csv')
 assessment <- assessment[assessment$year > 1965 &assessment$year < 2018 ,]
-load('hake2018_no_ageerror_fixtheta.RData')
-catches.obs <- read.csv('catches.csv')
+load('data/hake2018_no_ageerror_fixtheta.RData')
+catches.obs <- read.csv('data/catches.csv')
 
 df <- load_data()
 years <- df$years
 df$logphi_survey <- log(10)
 parms <- getParms_noage(hake2018b)
 
-compile("runHakeassessment_4.cpp")
+compile("runHakeassessment_4.cpp") # Assessment where phi is constant 
 dyn.load(dynlib("runHakeassessment_4"))
 obj <-MakeADFun(df,parms,DLL="runHakeassessment_4")#, )
 vals <- obj$report()

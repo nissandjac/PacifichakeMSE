@@ -198,16 +198,4 @@ dev.off()
 # fit <- tmbstan(obj = obj, chains = 1, init = unlist(parms), lower = lower, upper = upper)
 # launch_shinystan(fit)
 
-## Compare with non-added age 
-Spawndata <-read.csv('spawnbio.csv')
 
-Spawndata <- Spawndata
-plot(Spawndata$Yr,Spawndata$SpawnBio*1e-6*0.5)
-lines(df$year,SSB$name)
-lines(assessment$year,assessment$SSB*1e-6, col = 'red')
-lines(df$year,SSBass*1e-6, col = 'green')
-
-
-plot(Rass)
-lines(assessment$R, col ='red')
-lines(R$name, col = 'green')
