@@ -60,8 +60,8 @@ load_data_seasons <- function(move = TRUE,
 
   
   # weight at age 
-  wage <- read.csv('waa.csv')
-  wage_unfished <- read.csv('unfished_waa.csv')
+  wage <- read.csv('data/waa.csv')
+  wage_unfished <- read.csv('data/unfished_waa.csv')
   
   # Make the weight at ages the same length as the time series 
   wage_ssb = rbind(matrix(rep(as.numeric(wage_unfished[2:(nage+1)]),each = 9), nrow = 9),
@@ -76,20 +76,20 @@ load_data_seasons <- function(move = TRUE,
   # wage <- melt(wage, id = c("year", "fleet"), value.name = 'growth', variable.name = 'age')
   
   # Catch
-  catch <- read.csv('hake_totcatch.csv')
+  catch <- read.csv('data/hake_totcatch.csv')
   
   # Survey abundance
-  df.survey <- read.csv('acoustic survey.csv')
+  df.survey <- read.csv('data/acoustic survey.csv')
   # Maturity
-  mat <- read.csv('maturity.csv')
+  mat <- read.csv('data/maturity.csv')
   
   
   
   # Age comps
   
-  age_survey.df <- read.csv('agecomps_survey.csv')
+  age_survey.df <- read.csv('data/agecomps_survey.csv')
   age_survey.df$flag <- 1
-  age_catch.df <- read.csv('agecomps_fishery.csv')
+  age_catch.df <- read.csv('data/agecomps_fishery.csv')
   age_catch.df$flag <- 1
   surveyseason <- 2
   
@@ -119,9 +119,9 @@ load_data_seasons <- function(move = TRUE,
   
   # Load parameters from the assessment 
   
-  initN <- rev(read.csv('Ninit_MLE.csv')[,1])
-  Rdev <- read.csv('Rdev_MLE.csv')[,1]
-  PSEL <- as.matrix(read.csv('p_MLE.csv'))
+  initN <- rev(read.csv('data/Ninit_MLE.csv')[,1])
+  Rdev <- read.csv('data/Rdev_MLE.csv')[,1]
+  PSEL <- as.matrix(read.csv('data/p_MLE.csv'))
   Fin <- assessment$F0
   
   b <- matrix(0,length(years))

@@ -133,7 +133,7 @@ if(((SSBy/SSB_0) <= 0.4) & ((SSBy/SSB_0) >= 0.1)){
 #   Cnew <- 500000
 # }
 # Adjust TAC by JMC/Utilization 
-TAC.obs <- read.csv('adjusted_tac_fn.csv')
+TAC.obs <- read.csv('data/adjusted_tac_fn.csv')
 
 
 if(TAC == 1){
