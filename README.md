@@ -5,7 +5,7 @@ This code runs a management strategy evaluation (MSE) of Pacific hake. The code 
 
 ## Spatial MSE
 The Spatial MSE folder runs the MSE with a spatial operating model and the estimation model used in the hake assessment using the file run_MSE_all.R
-The file runs six hake management strategy evaluations, with 3 different harvest control rules, and 3 different movement rates. 
+The file runs six hake management strategy evaluations, with 3 different harvest control rules, and 3 different movement rates. Run the file 'compare_MSE.R'to plot the results of the MSEs
 
 ## Hake SS3
 The hake SS3 folder is the hake stock assessment. The official stock assessment has been rewritten in TMB. The assessment can be run from the file runHakeassessment.R
