@@ -6,18 +6,18 @@ require(dplyr)
 require(scales)
 require(RColorBrewer)
 
-load('MSErun_move_JMC.Rdata')
+load('results/MSErun_move_JMC.Rdata')
 ls.JMC <- ls.save 
-load('MSErun_move_JTC.Rdata')
+load('results/MSErun_move_JTC.Rdata')
 ls.JTC <- ls.save
-load('MSErun_move_realized.Rdata')
+load('results/MSErun_move_realized.Rdata')
 ls.Realized <- ls.save
-load('sim_data.Rdata')
-load('MSErun_move_realized_move1.Rdata')
+load('results/sim_data.Rdata')
+load('results/MSErun_move_realized_move1.Rdata')
 ls.move1 <- ls.save
-load('MSErun_move_realized_move2.Rdata')
+load('results/MSErun_move_realized_move2.Rdata')
 ls.move2 <- ls.save
-load('MSErun_move_realized_move3.Rdata')
+load('results/MSErun_move_realized_move3.Rdata')
 ls.move3 <- ls.save
 simyears <- 30
 yr <- 1966:(2017+simyears-1)
