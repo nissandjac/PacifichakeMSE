@@ -150,10 +150,12 @@ vector<Type>Meq = cumsum(M);
 //
 Nzero(0) = Rinit;
 for(int i=1;i<(nage-1);i++){
-    Nzero(i) = Rinit * exp(-(M(i-1)*age(i)));
+    Nzero(i) = Rinit * exp(-(M(i)*age(i)));
   }
 //
-Nzero(nage-1) = Rinit*exp(-(M(nage-2)*age(nage-2)))/(Type(1.0)-exp(-M(nage-1)));//*exp(initN(nage-2)); // Plus group
+// Nzero(nage-1) = Rinit*exp(-(M(nage-2)*age(nage-2)))/(Type(1.0)-exp(-M(nage-1)));//*exp(initN(nage-2)); // Plus group
+
+Nzero(nage-1) = (Nzero(nage-2)*exp(-(M(nage-2))))/(Type(1.0)-exp(-M(nage-1)));
 
 array<Type> SSBage(nage);
 array<Type> Catchinit(nage);
@@ -245,7 +247,7 @@ for(int time=0;time<tEnd;time++){ // Start time loop
              Ntmp(j) = Ninit(j);
 
              if(j >0){
-             Nmid(j) = Ninit(j-1)*exp(-Myear(j)*0.5);
+             Nmid(j) = Ninit(j-1)*exp(-Myear(j)*0);
              }else{
              Nmid(j) = 0;
            }
@@ -255,7 +257,7 @@ for(int time=0;time<tEnd;time++){ // Start time loop
            for(int j=0;j<(nage);j++){ //
             Ntmp(j) = N(j,time-1);
             if(j >0){
-            Nmid(j) = N(j,time-1)*exp(-Myear(j)*0.5);
+            Nmid(j) = N(j,time-1)*exp(-Myear(j)*0);
            }else{
             Nmid(j) = 0;
           }
@@ -469,6 +471,8 @@ REPORT(Zsave)
 REPORT(age_survey_est)
 REPORT(age_catch_est)
 REPORT(CatchN)
+REPORT(selectivity_save)
+REPORT(surveyselc)
 
 
   return ans;

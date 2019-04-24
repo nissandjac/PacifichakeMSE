@@ -19,9 +19,6 @@ load('MSErun_move_realized_move2.Rdata')
 ls.move2 <- ls.save
 load('MSErun_move_realized_move3.Rdata')
 ls.move3 <- ls.save
-
-
-
 simyears <- 30
 yr <- 1966:(2017+simyears-1)
 nruns <- 100
@@ -29,8 +26,6 @@ nruns <- 100
 source('hake_objectives.R')
 obj.JMC <- hake_objectives(ls.JMC,sim.data, move = 1)
 obj.JMC[[2]]$HCR <- 'JMC'
-
-
 
 obj.JTC <- hake_objectives(ls.JTC,sim.data, move = 1)
 obj.JTC[[2]]$HCR <- 'HCR'
@@ -93,12 +88,20 @@ df.catch.1$run <- ordered(df.catch.1$run, levels = c("HCR", "JMC", "Realized"))
 df.catch.2$run <- ordered(df.catch.2$run, levels = c('Move 1','Move 2','Move 3'))
 
 cols <- brewer.pal(6, 'Dark2')
-p2.1 <- ggplot(df.catch.1, aes(x = year, y = med*1e-6, color = run))+geom_line(size = 2)+
-  geom_ribbon(aes(ymin = p5*1e-6, ymax = p95*1e-6, color = run), linetype = 2, fill = NA)+
-  scale_color_manual(values=cols[1:3])+scale_y_continuous(name = 'Catch (million tonnes)')
+p2.1 <- ggplot(df.catch.1, aes(x = year, y = med*1e-6))+geom_line(size = 2)+
+  geom_ribbon(aes(ymin = p5*1e-6, ymax = p95*1e-6), linetype = 2, fill = alpha())+
+  scale_color_manual(values=cols[1:3])+scale_y_continuous(name = 'Catch (million tonnes)')+
+  geom_line(aes(y = p5*1e-6, color = run), linetype = 2)+geom_line(aes(y = p95*1e-6, color = run), linetype = 2)+
+  facet_wrap(~run)
+
+p2.1
+
+
 p2.2 <- ggplot(df.catch.2, aes(x = year, y = med*1e-6, color = run))+geom_line(size = 2)+
-  geom_ribbon(aes(ymin = p5*1e-6, ymax = p95*1e-6, color = run), linetype = 2, fill = NA)+
-  scale_color_manual(values=cols[4:6])+scale_y_continuous(name = 'Catch (million tonnes)')
+  #geom_ribbon(aes(ymin = p5*1e-6, ymax = p95*1e-6, color = run), linetype = 2, fill = NA)+
+  scale_color_manual(values=cols[4:6])+scale_y_continuous(name = 'Catch (million tonnes)')+
+  geom_line(aes(y = p5*1e-6, color = run), linetype = 2)+geom_line(aes(y = p95*1e-6, color = run), linetype = 2)
+
 #  scale_fill_manual(values = alpha(cols, alpha = 0.2), name="fill")
 
 png('catch_MSE_1.png', width = 12, height =8, res = 400, unit = 'cm')
@@ -111,33 +114,57 @@ p2.2
 dev.off()
 
 
-df.ams <- rbind(ls.HCR.plot[[3]]$amsplot, ls.JMC.plot[[3]]$amsplot,ls.real.plot[[3]]$amsplot,
-                  ls.move1.plot[[3]]$amsplot,ls.move2.plot[[3]]$amsplot, ls.move3.plot[[3]]$amsplot)
-df.ams$run <- ordered(df.ams$run, levels = c("HCR", "JMC", "Realized",'Move 1','Move 2','Move 3'))
+df.ams.1 <- rbind(ls.HCR.plot[[3]]$amsplot, ls.JMC.plot[[3]]$amsplot,ls.real.plot[[3]]$amsplot)
+df.ams.2 <- rbind(ls.move1.plot[[3]]$amsplot,ls.move2.plot[[3]]$amsplot, ls.move3.plot[[3]]$amsplot)
+df.ams.1$run <- ordered(df.ams.1$run, levels = c("HCR", "JMC", "Realized"))
+df.ams.2$run <- ordered(df.ams.2$run, levels = c('Move 1','Move 2','Move 3'))
 
-rm.idx <- which(is.na(df.ams$med))
-p3 <- ggplot(df.ams[-rm.idx,], aes(x = year, y = med, color = run))+geom_line(size = 2)+
-  geom_ribbon(aes(ymin = p5, ymax = p95, color = run), linetype = 2, fill = NA)+
-  scale_color_manual(values=cols)+scale_y_continuous(name = 'Average age in survey')
+rm.idx.1 <- which(is.na(df.ams.1$med))
+rm.idx.2 <- which(is.na(df.ams.2$med))
+
+p3.1 <- ggplot(df.ams.1[-rm.idx.1,], aes(x = year, y = med, color = run))+geom_line(size = 2)+
+#  geom_ribbon(aes(ymin = p5, ymax = p95, color = run), linetype = 2, fill = NA)+
+  scale_color_manual(values=cols)+scale_y_continuous(name = 'Average age in survey')+
+  geom_line(aes(y = p5, color = run), linetype = 2)+geom_line(aes(y = p95, color = run), linetype = 2)
+
 #  scale_fill_manual(values = alpha(cols, alpha = 0.2), name="fill")
-png('age_s.png', width = 12, height =8, res = 400, unit = 'cm')
-
-p3
-
-
+png('age_s_move1.png', width = 12, height =8, res = 400, unit = 'cm')
+p3.1
 dev.off()
 
-df.amc <- rbind(ls.HCR.plot[[3]]$amcplot, ls.JMC.plot[[3]]$amcplot,ls.real.plot[[3]]$amcplot,
-                ls.move1.plot[[3]]$amcplot,ls.move2.plot[[3]]$amcplot, ls.move3.plot[[3]]$amcplot)
-df.amc$run <- ordered(df.amc$run, levels = c("HCR", "JMC", "Realized",'Move 1','Move 2','Move 3'))
-
-p4 <- ggplot(df.amc, aes(x = year, y = med, color = run))+geom_line(size = 2)+
-  geom_ribbon(aes(ymin = p5, ymax = p95, color = run), linetype = 2, fill = NA)+
-  scale_color_manual(values=cols)+scale_y_continuous(name = 'Average age in catch')
+p3.2 <- ggplot(df.ams.2[-rm.idx.2,], aes(x = year, y = med, color = run))+geom_line(size = 2)+
+#  geom_ribbon(aes(ymin = p5, ymax = p95, color = run), linetype = 2, fill = NA)+
+  scale_color_manual(values=cols)+scale_y_continuous(name = 'Average age in survey')+
+  geom_line(aes(y = p5, color = run), linetype = 2)+geom_line(aes(y = p95, color = run), linetype = 2)
 #  scale_fill_manual(values = alpha(cols, alpha = 0.2), name="fill")
-png('age_c.png', width = 12, height =8, res = 400, unit = 'cm')
-p4
+png('age_s_move2.png', width = 12, height =8, res = 400, unit = 'cm')
+p3.2
 dev.off()
+
+df.amc.1 <- rbind(ls.HCR.plot[[3]]$amcplot, ls.JMC.plot[[3]]$amcplot,ls.real.plot[[3]]$amcplot)
+df.amc.2 <-rbind(ls.move1.plot[[3]]$amcplot,ls.move2.plot[[3]]$amcplot, ls.move3.plot[[3]]$amcplot)
+
+df.amc.1$run.1 <- ordered(df.amc.1$run, levels = c("HCR", "JMC", "Realized"))
+df.amc.2$run.2 <- ordered(df.amc.1$run, levels = c('Move 1','Move 2','Move 3'))
+
+p4.1 <- ggplot(df.amc.1, aes(x = year, y = med, color = run))+geom_line(size = 2)+
+#  geom_ribbon(aes(ymin = p5, ymax = p95, color = run), linetype = 2, fill = NA)+
+  scale_color_manual(values=cols)+scale_y_continuous(name = 'Average age in catch')+
+  geom_line(aes(y = p5, color = run), linetype = 2)+geom_line(aes(y = p95, color = run), linetype = 2)
+#  scale_fill_manual(values = alpha(cols, alpha = 0.2), name="fill")
+png('age_c_move1.png', width = 12, height =8, res = 400, unit = 'cm')
+p4.1
+dev.off()
+
+p4.2 <- ggplot(df.amc.2, aes(x = year, y = med, color = run))+geom_line(size = 2)+
+#  geom_ribbon(aes(ymin = p5, ymax = p95, color = run), linetype = 2, fill = NA)+
+  scale_color_manual(values=cols)+scale_y_continuous(name = 'Average age in catch')+
+  geom_line(aes(y = p5, color = run), linetype = 2)+geom_line(aes(y = p95, color = run), linetype = 2)
+#  scale_fill_manual(values = alpha(cols, alpha = 0.2), name="fill")
+png('age_c_move2.png', width = 12, height =8, res = 400, unit = 'cm')
+p4.2
+dev.off()
+
 
 ### SSB in the middle of the year 
 df.all.mid <- rbind(ls.HCR.plot[[3]]$SSBmid, ls.JMC.plot[[3]]$SSBmid,ls.real.plot[[3]]$SSBmid,
@@ -181,14 +208,14 @@ df.amc.space <- rbind(ls.HCR.plot[[3]]$amc.space, ls.JMC.plot[[3]]$amc.space,ls.
                       ls.move1.plot[[3]]$amc.space,ls.move2.plot[[3]]$amc.space, ls.move3.plot[[3]]$amc.space)
 
 # df.amc2 <- melt(df.amc, id.vars = c(1,8))
-df.amc.space$run <- ordered(df.amc$run, levels = c("HCR", "JMC", "Realized",'Move 1','Move 2','Move 3'))
+df.amc.space$run <- ordered(df.amc.space$run, levels = c("HCR", "JMC", "Realized",'Move 1','Move 2','Move 3'))
 # rbs <- c('p95.can','p5.can','p95.US','p5.US')
 
 p7 <- ggplot(df.amc.space,aes(x = year, y = med.can))+geom_line(size = 2, color = cols[1])+
   geom_ribbon(aes(ymin = p5.can, ymax = p95.can), linetype = 0, fill = alpha(cols[1], alpha = 0.2), color = cols[1])+
   geom_line(aes(y = med.us), size = 2, color = cols[2])+
   geom_ribbon(aes(ymin = p5.us, ymax = p95.us), linetype = 0, fill = alpha(cols[2], alpha = 0.2), color = cols[2])+
-  scale_y_continuous(name = 'Average age in survey')+
+  scale_y_continuous(name = 'Average age in catch')+
   facet_wrap(~run)+theme(legend.position = 'n')+
   theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
 
@@ -237,5 +264,44 @@ p8
 dev.off()
 
 
-## Also just plot the total SSB 
+## Plot the fishing mortality rates 
 
+
+df.all <- ls.HCR.plot[[1]]
+df.all <- df.all[df.all$year>2017,]
+
+p9 <- ggplot(ls.HCR.plot[[3]]$SSBtot, aes(x = year, y = med/sum(sim.data$SSB0)))+geom_line(size= 1.2)+
+  geom_line(aes(y = avg/sum(sim.data$SSB0)), linetype = 2, size = 1.1)+
+  geom_ribbon(aes(ymin = p5/sum(sim.data$SSB0),ymax = p95/sum(sim.data$SSB0)),
+              fill = alpha(colour = 'darkred', alpha = 0.2))+
+  geom_line(data = df.all[1:180,], aes(x = year, y= SSBtot/sum(sim.data$SSB0), group = run), color = alpha('black', 0.9))+
+  scale_y_continuous('SSB/SSB0')+coord_cartesian(ylim = c(0,1.2))
+
+
+png('SSB.png', width = 12, height =8, res = 400, unit = 'cm')
+p9
+dev.off()
+
+load('MSErun_move_JTC.Rdata')
+
+df.plot <- df_lists(ls.save, 'HCR')
+
+df.all <- df.plot[[1]]
+df.F0 <- df.plot[[3]]$F0
+
+p9 <- ggplot(df.F0, aes(x = year, y = med.can))+geom_line(size= 1.2, col = 'darkred')+
+  geom_line(aes(y = med.us), linetype = 1, size = 1.1, col = 'blue4')+
+  geom_ribbon(aes(ymax = p95.us, ymin = p5.us), fill = alpha('blue', alpha = 0.2))+
+  geom_ribbon(aes(ymax = p95.can, ymin = p5.can),fill = alpha('red', alpha = 0.2))+
+  scale_y_continuous('F0')+coord_cartesian(ylim = c(0,0.7), xlim = c(2017,2050))
+
+p9
+
+png('F0.png', width = 12, height =8, res = 400, unit = 'cm')
+p9
+dev.off()
+# 
+#   geom_line(aes(y = p95.can), col = 'darkred', linetype = 2)+  
+#   geom_line(aes(y = p5.can), col = 'darkred', linetype = 2)+
+#   geom_line(aes(y = p95.us), col = 'blue4', linetype = 2)+  
+#   geom_line(aes(y = p5.us), col = 'blue4', linetype = 2)+
