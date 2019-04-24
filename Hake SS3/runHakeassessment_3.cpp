@@ -61,7 +61,7 @@ Type objective_function<Type>::operator() ()
 
   PARAMETER(logphi_catch);
   //PARAMETER(logphi_survey);
-  DATA_SCALAR(logphi_survey);
+  PARAMETER(logphi_survey);
   PARAMETER_VECTOR(psel_fish);
   PARAMETER_VECTOR(psel_surv);
   PARAMETER_VECTOR(initN);

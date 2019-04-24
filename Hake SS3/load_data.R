@@ -13,11 +13,11 @@ F0 <- assessment$F0
 nage <- length(age)
 msel <- rep(1,nage)
 # Maturity
-mat <- read.csv('maturity.csv')
+mat <- read.csv('data/maturity.csv')
 
 # weight at age 
-wage <- read.csv('waa.csv')
-wage_unfished <- read.csv('unfished_waa.csv')
+wage <- read.csv('data/waa.csv')
+wage_unfished <- read.csv('data/unfished_waa.csv')
 
 # Make the weight at ages the same length as the time series 
 wage_ssb = rbind(matrix(rep(as.numeric(wage_unfished[2:(nage+1)]),each = 9), nrow = 9),
@@ -33,19 +33,19 @@ wage_mid = rbind(matrix(rep(as.numeric(wage_unfished[2:(nage+1)]),each = 9), nro
 
 # Catch
 # catch <- read.csv('hake_totcatch.csv')
-catches.obs <- read.csv('catches.csv')
+catches.obs <- read.csv('data/catches.csv')
 catch <- catches.obs$Total
 
 # Survey abundance
-df.survey <- read.csv('acoustic survey.csv')
+df.survey <- read.csv('data/acoustic survey.csv')
 
 
 
 # Age comps
 
-age_survey.df <- read.csv('agecomps_survey.csv')
+age_survey.df <- read.csv('data/agecomps_survey.csv')
 age_survey.df$flag <- 1
-age_catch.df <- read.csv('agecomps_fishery.csv')
+age_catch.df <- read.csv('data/agecomps_fishery.csv')
 age_catch.df$flag <- 1
 # Insert dummy years
 

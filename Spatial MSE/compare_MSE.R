@@ -50,7 +50,7 @@ df.obj <- data.frame(rbind(obj.JMC[[2]],obj.JTC[[2]],obj.real[[2]],
 df.obj$HCR <- ordered(df.obj$HCR, levels = c("HCR", "JMC", "real",'move1','move2','move3'))
 df.obj$indicator <- paste(rep(c('A) ','B) ','C) ','D) ','E) ','F) ','G) ','H) '),6),df.obj$indicator)
 
-png('objective_bars.png', width = 16, height =18, res = 400, unit = 'cm')
+png('Figs/objective_bars.png', width = 16, height =18, res = 400, unit = 'cm')
 ggplot(df.obj, aes(x = HCR,y = value))+geom_bar(stat = 'identity', aes(fill = HCR))+facet_wrap(~indicator, scales = 'free', ncol = 2)+
   scale_x_discrete(name = '')+  scale_y_continuous(name = '')+
   theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5), legend.position = 'none')
@@ -104,11 +104,11 @@ p2.2 <- ggplot(df.catch.2, aes(x = year, y = med*1e-6, color = run))+geom_line(s
 
 #  scale_fill_manual(values = alpha(cols, alpha = 0.2), name="fill")
 
-png('catch_MSE_1.png', width = 12, height =8, res = 400, unit = 'cm')
+png('Figs/catch_MSE_1.png', width = 12, height =8, res = 400, unit = 'cm')
 
 p2.1
 dev.off()
-png('catch_MSE_2.png', width = 12, height =8, res = 400, unit = 'cm')
+png('Figs/catch_MSE_2.png', width = 12, height =8, res = 400, unit = 'cm')
 
 p2.2
 dev.off()
@@ -128,7 +128,7 @@ p3.1 <- ggplot(df.ams.1[-rm.idx.1,], aes(x = year, y = med, color = run))+geom_l
   geom_line(aes(y = p5, color = run), linetype = 2)+geom_line(aes(y = p95, color = run), linetype = 2)
 
 #  scale_fill_manual(values = alpha(cols, alpha = 0.2), name="fill")
-png('age_s_move1.png', width = 12, height =8, res = 400, unit = 'cm')
+png('Figs/age_s_move1.png', width = 12, height =8, res = 400, unit = 'cm')
 p3.1
 dev.off()
 
@@ -137,7 +137,7 @@ p3.2 <- ggplot(df.ams.2[-rm.idx.2,], aes(x = year, y = med, color = run))+geom_l
   scale_color_manual(values=cols)+scale_y_continuous(name = 'Average age in survey')+
   geom_line(aes(y = p5, color = run), linetype = 2)+geom_line(aes(y = p95, color = run), linetype = 2)
 #  scale_fill_manual(values = alpha(cols, alpha = 0.2), name="fill")
-png('age_s_move2.png', width = 12, height =8, res = 400, unit = 'cm')
+png('Figs/age_s_move2.png', width = 12, height =8, res = 400, unit = 'cm')
 p3.2
 dev.off()
 
@@ -152,7 +152,7 @@ p4.1 <- ggplot(df.amc.1, aes(x = year, y = med, color = run))+geom_line(size = 2
   scale_color_manual(values=cols)+scale_y_continuous(name = 'Average age in catch')+
   geom_line(aes(y = p5, color = run), linetype = 2)+geom_line(aes(y = p95, color = run), linetype = 2)
 #  scale_fill_manual(values = alpha(cols, alpha = 0.2), name="fill")
-png('age_c_move1.png', width = 12, height =8, res = 400, unit = 'cm')
+png('Figs/age_c_move1.png', width = 12, height =8, res = 400, unit = 'cm')
 p4.1
 dev.off()
 
@@ -161,7 +161,7 @@ p4.2 <- ggplot(df.amc.2, aes(x = year, y = med, color = run))+geom_line(size = 2
   scale_color_manual(values=cols)+scale_y_continuous(name = 'Average age in catch')+
   geom_line(aes(y = p5, color = run), linetype = 2)+geom_line(aes(y = p95, color = run), linetype = 2)
 #  scale_fill_manual(values = alpha(cols, alpha = 0.2), name="fill")
-png('age_c_move2.png', width = 12, height =8, res = 400, unit = 'cm')
+png('Figs/age_c_move2.png', width = 12, height =8, res = 400, unit = 'cm')
 p4.2
 dev.off()
 
@@ -200,7 +200,7 @@ p6 <- ggplot(df.ams.space,aes(x = year, y = med.can))+geom_line(size = 2, color 
   theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
 
 #  scale_fill_manual(values = alpha(cols, alpha = 0.2), name="fill")
-png('age_s_space.png', width = 12, height =8, res = 400, unit = 'cm')
+png('Figs/age_s_space.png', width = 12, height =8, res = 400, unit = 'cm')
 p6
 dev.off()
 
@@ -220,7 +220,7 @@ p7 <- ggplot(df.amc.space,aes(x = year, y = med.can))+geom_line(size = 2, color 
   theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
 
 #  scale_fill_manual(values = alpha(cols, alpha = 0.2), name="fill")
-png('age_c_space.png', width = 12, height =8, res = 400, unit = 'cm')
+png('Figs/age_c_space.png', width = 12, height =8, res = 400, unit = 'cm')
 
 p7
 dev.off()
@@ -258,7 +258,7 @@ p8  <- ggplot(ls.plot, aes(x = year, y = E5))+theme_classic()+
   geom_ribbon(aes(ymin =E05, ymax = E95), fill = alpha('gray', alpha = 0.5))+
   scale_y_continuous(limit = c(-0.5,0.5), name = 'Standard error')
 
-png('SE_SSB.png', width = 12, height =8, res = 400, unit = 'cm')
+png('Figs/SE_SSB.png', width = 12, height =8, res = 400, unit = 'cm')
 
 p8
 dev.off()
@@ -278,11 +278,11 @@ p9 <- ggplot(ls.HCR.plot[[3]]$SSBtot, aes(x = year, y = med/sum(sim.data$SSB0)))
   scale_y_continuous('SSB/SSB0')+coord_cartesian(ylim = c(0,1.2))
 
 
-png('SSB.png', width = 12, height =8, res = 400, unit = 'cm')
+png('Figs/SSB.png', width = 12, height =8, res = 400, unit = 'cm')
 p9
 dev.off()
 
-load('MSErun_move_JTC.Rdata')
+load('Figs/MSErun_move_JTC.Rdata')
 
 df.plot <- df_lists(ls.save, 'HCR')
 
@@ -297,7 +297,7 @@ p9 <- ggplot(df.F0, aes(x = year, y = med.can))+geom_line(size= 1.2, col = 'dark
 
 p9
 
-png('F0.png', width = 12, height =8, res = 400, unit = 'cm')
+png('Figs/F0.png', width = 12, height =8, res = 400, unit = 'cm')
 p9
 dev.off()
 # 

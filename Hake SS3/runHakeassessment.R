@@ -1,25 +1,15 @@
 # Run the hake assessment 
-setwd("~/GitHub/PacifichakeMSE/Hake SS3 version")
-
-library(TMB)
-#library(TMBdebug)
-library(ggplot2)
-source('plotValues.R')
-source('getUncertainty.R')
-source('load_data.R')
-source('ylimits.R')
-source('parameters_TRUE.R')
-source('Check_Identifiable_vs2.R')
+source('load_files.R')
 
 # Read the assessment data 
-assessment <- read.csv('asssessment_MLE.csv')
+assessment <- read.csv('data/asssessment_MLE.csv')
 assessment <- assessment[assessment$year > 1965 &assessment$year < 2018 ,]
 
-catches.obs <- read.csv('catches.csv')
+catches.obs <- read.csv('data/catches.csv') # Read the historical catches
 
 df <- load_data()
+
 years <- df$years
-df$logphi_survey <- log(10)
 
 #U[2,] <- 0.01
 parms <- getParameters(TRUE)
@@ -27,10 +17,6 @@ parms <- getParameters(TRUE)
 compile("runHakeassessment_3.cpp")
 dyn.load(dynlib("runHakeassessment_3"))
 obj <-MakeADFun(df,parms,DLL="runHakeassessment_3")#, )
-
-# compile("hake_old.cpp")
-# dyn.load(dynlib("hake_old"))
-# obj <-MakeADFun(df,parms,DLL="hake_old")#, )
 
 
 Ninit <- obj$report()$Ninit
@@ -71,7 +57,6 @@ rep
 # tt <- TMBhelper::Optimize(obj,fn = obj$fn,obj$gr,lower=lower,upper=upper,
 #                            control = list(iter.max = 1e8, eval.max = 1e8,
 #                                           rel.tol = 1e-10))
-plot(tt$diagnostics$final_gradient)
 #rep
 sdrep <- summary(rep)
 rep.values<-rownames(sdrep)
