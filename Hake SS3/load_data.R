@@ -124,6 +124,11 @@ Prior_Like =  (1.0-Bprior)*log(Pconst+hrange-hmin) +
               (1.0-Aprior)*log(Pconst+hmax-hprior)
 
 
+## Load the ageing error 
+age_err <- read.csv('data/age_error_head.csv')
+names(age_err)[1] <- 'age'
+
+# 
 
 
 df <-list(      #### Parameters #####
@@ -171,7 +176,8 @@ df <-list(      #### Parameters #####
                 logphi_survey = log(11.33),
                 Bprior= tau*mu,
                 Aprior = tau*(1-mu),
-                b = b[Yr >= years[1]]
+                b = b[Yr >= years[1]],
+                ageerr = as.matrix(age_err[,2:22])
 )
 
 
