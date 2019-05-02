@@ -1,6 +1,6 @@
 ###### Run the HAKE MSE ####### 
 run_multiple_MSEs <- function(simyears = NULL,seed = 12345,
-                              moveparms = NA, TAC = 1){
+                              moveparms = NA, TAC = 1, df = NA){
 require(ggplot2)
   
 if(is.null(simyears)){
@@ -8,18 +8,17 @@ if(is.null(simyears)){
   simyears <- 30
 }
   
-  if(is.na(moveparms[1])){
-df <- load_data_seasons(move = TRUE,
-                        nseason = 4, nspace = 2)
-  }else{
-    if(length(moveparms) != 2){
-      stop('Wrong number of movement parameters')
-    }
-    df <- load_data_seasons(move =TRUE,
-                            nseason = 4, nspace = 2,movemaxinit = moveparms[1],movefiftyinit = moveparms[2])
-  }
+#   if(is.na(moveparms[1])){
+# df <- load_data_seasons(move = TRUE,
+#                         nseason = 4, nspace = 2)
+#   }else{
+#     if(length(moveparms) != 2){
+#       stop('Wrong number of movement parameters')
+#     }
+#     df <- load_data_seasons(move =TRUE,
+#                             nseason = 4, nspace = 2,movemaxinit = moveparms[1],movefiftyinit = moveparms[2])
+#   }
 
-df$Catch <- Catch.obs$Fishery
 time <- 1
 yrinit <- df$nyear
 
@@ -28,29 +27,20 @@ N0 <- NA
 sim.data <- run.agebased.true.catch(df,seed)
 simdata0 <- sim.data # The other one is gonna get overwritten. 
 
-# 
-# save(sim.data,file = 'simulated_space_OM.Rdata')
-# save(df,file = 'sim_data_parms.Rdata')
-
 F40.save<- array(NA,simyears)
 
 # Save some stuff
 SSB.save <- list()
 R.save <- list()
 Catch.save <- list()
-S.year.future <- seq(2019,2019+simyears, by = 2)
+S.year.future <- seq(2019,2019+simyears, by = df$nsurvey)
 # Save som OM stuff 
-# SSB.save.om <- array(NA, df$nyear+simyears)
-# R.save.om <- array(NA, df$nyear+simyears)
-# Catch.save.om <- array(NA, df$nyear+simyears)
+
 
 # Save the estimated parameters from the EM (exclude time varying) 
 parms.save <- array(NA, dim = c(simyears, 4))
 
 # Before the MSE starts 
-# SSB.save.om[1:df$tEnd] <- sim.data$SSB
-# R.save.om[1:df$nyear] <- sim.data$N.save[1,]
-# Catch.save.om[1:df$nyear] <- sim.data$Catch
 F0.save <- df$fmort
 years <- df$years
 model.save <- list()

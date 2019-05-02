@@ -1,5 +1,6 @@
-df_lists <- function(ls.save, nms){
+df_lists <- function(ls.save, nms, simyears){
 source('calcMeanAge.R')
+yr <- 1966:(2017+simyears-1)
   
 nruns <- length(ls.save)
 nfailed <- rep(1, nruns)
