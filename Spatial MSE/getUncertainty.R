@@ -1,4 +1,4 @@
-getUncertainty <- function(name,data){
+getUncertainty <- function(name,data,sdrep){
   
   df <- data.frame(name = sdrep[rep.values == name,1])
   df$SE <- sdrep[rep.values == name,2]
@@ -6,7 +6,7 @@ getUncertainty <- function(name,data){
   df$max <- df$name+2*df$SE
   
   if(dim(df)[1] == data$nyear){
-    df$year <- data$year
+    df$year <- data$years
   }
   
   return(df)  
