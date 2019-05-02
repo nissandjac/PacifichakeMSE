@@ -10,7 +10,7 @@ Type objective_function<Type>::operator() ()
   DATA_ARRAY(wage_catch); // Weight in catch
   DATA_ARRAY(wage_survey); // Weight in survey
   DATA_ARRAY(wage_mid); // Weight in the middle of the year
-  DATA_ARRAY(agerr); // Ageing error 
+  DATA_ARRAY(ageerr); // Ageing error
 // //
 // // // Age
   DATA_INTEGER(nage); // Plus group
@@ -215,7 +215,8 @@ vector<Type>psel_fish_zero = psel_fish;
 Type SSBtmp = 0;
 vector<Type>Ntmp(nage);
 vector<Type>Nmid(nage); // Numbers at the middle of the season
-
+vector<Type>Ntrue(age_maxage); // Placeholder for ageing error
+REPORT(ageerr)
 
 for(int time=0;time<tEnd;time++){ // Start time loop
 
@@ -280,6 +281,13 @@ for(int time=0;time<tEnd;time++){ // Start time loop
   selectivity_save(i,time) = catchselec(i);
   Zsave(i,time) = Z(i);
   }
+
+  // Ageing error fix
+  for(int i=0;i<(nage);i++){ // Loop over other ages
+  //
+
+
+
 
   if(flag_survey(time) == 1){ // Flag if  there was a measurement that year
 

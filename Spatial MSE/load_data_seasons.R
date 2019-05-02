@@ -2,7 +2,8 @@
 # year and age input 
 load_data_seasons <- function(move = TRUE,
                               nseason = 4, nspace = 2,
-                              movemaxinit = 0.5, movefiftyinit = 5){
+                              movemaxinit = 0.5, movefiftyinit = 5, 
+                              nsurvey = 2){
   
   
   years <- 1966:2017
@@ -213,6 +214,7 @@ load_data_seasons <- function(move = TRUE,
                   Smax = 6,
                   Smax_survey = 6,
                   surveyseason = surveyseason,
+                  nsurvey = nsurvey, # Frequency of survey years (e.g., 2 is every second year)
                   # survey
                   survey = c(rep(1,df.survey$Year[1]-years[1]),df.survey$obs), # Make sure the survey has the same length as the catch time series
                   survey_x = c(rep(-2,df.survey$Year[1]-years[1]),df.survey$fleet), # Is there a survey in that year?
@@ -246,7 +248,8 @@ load_data_seasons <- function(move = TRUE,
                   # Parameters from the estimation model 
               
   )
-  
+  Catch.obs <- read.csv('data/hake_totcatch.csv') # Total catch
+  df$Catch <- Catch.obs$Fishery # Add the observed catch
   
   return(df)
   

@@ -244,7 +244,7 @@ load_data_seasons_move <- function(move = TRUE, movemaxinit = 0.5, movefiftyinit
                   # Parameters from the estimation model 
                   
   )
-  
+
   
   # Correct for future years 
   
