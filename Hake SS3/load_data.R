@@ -125,25 +125,25 @@ Prior_Like =  (1.0-Bprior)*log(Pconst+hrange-hmin) +
 
 
 ## Load the ageing error 
-age_err <- read.csv('data/age_error_head.csv')
-names(age_err)[1] <- 'age'
-age_err <- apply(age_err, 2, rev)
-
-# fix the input matrices to  add ageing error 
-## survey 
-survey_age <- matrix(-1, tEnd,nage-1)
-
-for(i in 1:tEnd){
-  if(age_survey$flag[i] == 1){
-    for(j in 1:20){
-      survey_age[i,j] <- age_survey[i,j+2]
-      
-    }  
-
-  }
-  
-  
-}
+# age_err <- read.csv('data/age_error_head.csv')
+# names(age_err)[1] <- 'age'
+# age_err <- apply(age_err, 2, rev)
+# 
+# # fix the input matrices to  add ageing error 
+# ## survey 
+# survey_age <- matrix(-1, tEnd,nage-1)
+# 
+# for(i in 1:tEnd){
+#   if(age_survey$flag[i] == 1){
+#     for(j in 1:20){
+#       survey_age[i,j] <- age_survey[i,j+2]
+#       
+#     }  
+# 
+#   }
+#   
+#   
+# }
 
 df <-list(      #### Parameters #####
                 wage_ssb = t(wage_ssb),
@@ -190,8 +190,8 @@ df <-list(      #### Parameters #####
                 logphi_survey = log(11.33),
                 Bprior= tau*mu,
                 Aprior = tau*(1-mu),
-                b = b[Yr >= years[1]],
-                ageerr = as.matrix(age_err[,2:22])
+                b = b[Yr >= years[1]]#,
+            #    ageerr = as.matrix(age_err[,2:22])
 )
 
 

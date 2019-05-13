@@ -2,6 +2,17 @@
 #include <TMB.hpp>
 #include <iostream>
 
+
+template <class Type> // Add a cumsum function
+vector<Type> cumsum(vector<Type> x) {
+  int n = x.size();
+  vector<Type> ans(n);
+  ans[0] = x[0];
+  for (int i = 1; i < n; i++) ans[i] = x[i] + x[i-1];
+  return ans;
+}
+
+
 template<class Type>
 Type objective_function<Type>::operator() ()
 {
