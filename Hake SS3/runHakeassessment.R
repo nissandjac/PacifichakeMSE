@@ -19,6 +19,7 @@ compile("runHakeassessment_3.cpp")
 dyn.load(dynlib("runHakeassessment_3"))
 obj <-MakeADFun(df,parms,DLL="runHakeassessment_3")#, )
 
+vars <- obj$report()
 
 age_survey  <- obj$report()$age_survey_est
 age_catch <- obj$report()$age_catch
