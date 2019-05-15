@@ -22,7 +22,7 @@ source('getParameters.R')
 source('calcSSB0.R')
 source('hake_objectives.R')
 source('df_lists.R')
-
+source('getSelec.R')
 
 assessment <- read.csv('data/asssessment_MLE.csv') ## Read the data from the assesment for comparison 
 assessment <- assessment[assessment$year > 1965 &assessment$year < 2018 ,]

@@ -289,13 +289,14 @@ for(int time=0;time<(tEnd);time++){ // Start time loop
     N_beg(0,time) = R(time); // First one is recruits
     //
 
+    Type smul = Type(1);
 
     for(int i=0;i<(nage-1);i++){ // Loop over other ages
-    N_mid(i,time) = N_beg(i,time)*exp(-Z(i)*0.5);
+    N_mid(i,time) = N_beg(i,time)*exp(-Z(i)*smul);
     N_beg(i+1,time+1) = N_beg(i,time)*exp(-Z(i));
     }
     // // Plus group
-    N_mid(nage-1, time) = N_beg(nage-2,time)*exp(-Z(nage-2)*0.5)+N_beg(nage-1,time)*exp(-Z(nage-1)*0.5);
+    N_mid(nage-1, time) = N_beg(nage-2,time)*exp(-Z(nage-2)*0.5)+N_beg(nage-1,time)*exp(-Z(nage-1)*smul);
     N_beg(nage-1, time+1) = N_beg(nage-2,time)*exp(-Z(nage-2))+N_beg(nage-1,time)*exp(-Z(nage-1));
 
     Catch(time) = 0;
