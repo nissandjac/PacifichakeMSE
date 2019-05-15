@@ -15,18 +15,18 @@ years <- df$years
 parms <- getParameters(TRUE)
 
 
-compile("runHakeassessment_3.cpp")
-dyn.load(dynlib("runHakeassessment_3"))
-obj <-MakeADFun(df,parms,DLL="runHakeassessment_3")#, )
+compile("runHakeassessment.cpp")
+dyn.load(dynlib("runHakeassessment"))
+obj <-MakeADFun(df,parms,DLL="runHakeassessment")#, )
 
 vars <- obj$report()
 
 age_survey  <- obj$report()$age_survey_est
 age_catch <- obj$report()$age_catch
 # Compare the comps with ss3
+SSBass <- vars$SSB
 
-
-plot(df$years,SSBass)
+plot(df$years,SSBass*0.5)
 lines(assessment$year,assessment$SSB)
 
 plot(df$years,df$Catchobs)
@@ -77,7 +77,7 @@ SSB$min <- SSB$min*1e-6
 SSB$max <- SSB$max*1e-6
 
 png('Figures/SSB.png', width = 16, height = 12, unit = 'cm', res =400)
-plotValues(SSB, data.frame(x= assessment$year, y= assessment$SSB*1e-6),'SSB')
+plotValues(SSB, data.frame(x= assessment$year, y= assessment$SSB*1e-6*2),'SSB')
 dev.off()
 
 plotValues(Catch, data.frame(x = df$years,y =df$Catchobs), 'Catch')

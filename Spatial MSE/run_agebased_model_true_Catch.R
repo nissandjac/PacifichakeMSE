@@ -63,21 +63,12 @@ run.agebased.true.catch <- function(df, seed = 100){
   N0tmp <- rep(NA,nagetmp)
   
   N0tmp[1:(nagetmp-1)] = R0*exp(-agetmp[1:(nagetmp-1)]*M0)
-  N0tmp[nagetmp] =  N0tmp[nagetmp-1]*exp(-M0)/(1-exp(-M0))
+  N0tmp[nagetmp] =  R0*exp(-M0*age[nagetmp])/(1-exp(-M0))
   
   N0 <- matrix(NA,nage)
   N0[1:(nage-1)] <- N0tmp[1:(nage-1)]
   N0[nage] <- sum(N0tmp[nage:nagetmp])
   
-  # N0test <- rep(NA,nage)
-  # 
-  # N0test[1:(nage-1)] = R0*exp(-age[1:(nage-1)]*M0)
-  # N0test[nage] =  N0test[nage-1]*exp(-M0)/(1-exp(-M0))
-  # 
-  # plot(N0test/N0)
-  # 
-  
-  #SSB_0 <- rowSums(matrix(rep(N0,each =nspace),nrow = nspace)*matrix(rep(df$Matsel,each =nspace),nrow = nspace)*move.init)*0.5
   SSB_0 <- NA
   
   for(i in 1:nspace){
@@ -88,23 +79,23 @@ run.agebased.true.catch <- function(df, seed = 100){
   # Used the inital recruitment devs to get a start
   
   
-  Ninit <- rep(NA,nage)
-  Ninit_dev <- (df$parms$initN)
-  Ninit[1] <- R0
-  Ninit[2:(nage-1)] <-R0 * exp(-M[2:(nage-1)]*age[2:(nage-1)])*exp(-0.5*SDR^2*0+Ninit_dev[1:(nage-2)])
-  Ninit[nage] <- R0*exp(-(M[nage-1]*age[nage-1]))/(1-exp(-M[nage]))*exp(-0.5*SDR^2*0+Ninit_dev[nage-1])# Plus group (ignore recruitment dev's in first year )
-  
+  # Ninit <- rep(NA,nage)
+  # Ninit_dev <- (df$parms$initN)
+  # Ninit[1] <- R0
+  # Ninit[2:(nage-1)] <-R0 * exp(-M[2:(nage-1)]*age[2:(nage-1)])*exp(-0.5*SDR^2*0+Ninit_dev[1:(nage-2)])
+  # Ninit[nage] <- R0*exp(-(M[nage-1]*age[nage-1]))/(1-exp(-M[nage]))*exp(-0.5*SDR^2*0+Ninit_dev[nage-1])# Plus group (ignore recruitment dev's in first year )
+  # 
   # Create containers to save the data
-  SSB_init <- NA
-  
-  for(i in 1:nspace){
-    SSB_init[i] <- sum(df$Matsel*Ninit*move.init[i], na.rm =T)*0.5
-  }
-  
+  # SSB_init <- NA
+  # 
+  # for(i in 1:nspace){
+  #   SSB_init[i] <- sum(df$Matsel*Ninit*move.init[i], na.rm =T)*0.5
+  # }
+  # 
   
   #Ninit[1] <- sum((4*h*R_0*SSB_init/(SSB_0*(1-h)+ SSB_init*(5*h-1)))*exp(-0.5*1*SDR^2+df$parms$Rin[1]), na.rm = T)
   
-  
+
   SSB <- matrix(NA,nyear+1, nspace)
   SSB.all <- array(NA, dim = c(nyear+1, nseason , nspace))
   Biomass.save <- matrix(NA,nyear+1, nspace)
@@ -118,6 +109,8 @@ run.agebased.true.catch <- function(df, seed = 100){
   Fseason.save <- array(NA,dim = c( nyear+1, nseason,nspace))
   
   N.save.age <- array(NA,dim = c(nage,nyear+1, nspace, nseason))
+  N.save.age.mid <- array(NA,dim = c(nage,nyear+2, nspace, nseason))
+  
   Catch.save.age <- array(NA,dim = c(nage,nyear+1, nspace, nseason))
   CatchN.save.age <- array(NA,dim = c(nage,nyear+1, nspace, nseason))
   
@@ -134,20 +127,7 @@ run.agebased.true.catch <- function(df, seed = 100){
   age_comps_OM <- array(NA, dim = c(df$nage,nyear+1, nspace,nseason))
   
   Z.save <- array(NA, dim = c(df$nage, nyear+1,nspace,nseason))
-  
-  # Distribute over space 
-  for (space in 1:nspace){
-    for (season in 1:nseason){
-      if (season == 1){
-      N.save.age[,1,space,season] <- Ninit*move.init[space] # Just to initialize 
-      }else{
-      N.save.age[,1,space,season] <- N.save.age[,1,space,season-1]*exp(-M/nseason)
-      }
-    }
-    SSB[1,space] <-sum(N.save.age[,1,space,nseason]*Mat.sel, na.rm = T)*0.5
-    SSB.all[1,nseason,space]<- sum(N.save.age[,1,space,nseason]*Mat.sel, na.rm = T)*0.5
-  }
-  
+
   Z.save <- array(NA, dim = c(df$nage, nyear+1,nspace,nseason))
   Z.save[,1,1,1] <- M
   Catch.age[,1] <- 0 # Assumed no fishing before data started 
@@ -305,10 +285,37 @@ run.agebased.true.catch <- function(df, seed = 100){
         
         if (season == 1){
         
-          
+          if(yr == 1){
+            # Distribute over space 
+            Ninit <- rep(NA,nage)
+            Ninit_dev <- rev(df$parms$initN)
+            
+            Ninit[2:(nage-1)] <-R0 * exp(-Mage[2:(nage-1)])*exp(-0.5*SDR^2*1+Ninit_dev[1:(nage-2)])
+            Ninit[nage] <- R0*exp(-(M[nage]*age[nage]))/(1-exp(-M[nage]))*exp(-0.5*SDR^2*0+Ninit_dev[nage-1])# Plus group (ignore recruitment dev's in first year )
+            
+            
+            
+            for (space in 1:nspace){
+              for (season in 1:nseason){
+                # if (season == 1){
+                N.save.age[,1,space,season] <- Ninit*move.init[space] # Just to initialize 
+                N.save.age.mid[,1,space,season] <- N.save.age[,1,space,season]*exp(-0.5*(M/nseason))
+                # }else{
+                #   N.save.age[,1,space,season] <- N.save.age[,1,space,season-1]*exp(-M/nseason)
+                #   N.save.age.mid[,1,space,season] <- N.save.age[,1,space,season]*exp(-0.5*(M/nseason))
+                # }
+                # }
+              }
+            }
+            
+        
+        SSB[yr,space] <-sum(N.save.age[,yr,space,nseason]*Mat.sel, na.rm = T)*0.5
+        SSB.all[1,season,space]<- sum(N.save.age[,1,space,nseason]*Mat.sel, na.rm = T)*0.5
+        
         # Recruitment only in season 1  
-        R <- (4*h*R_0[space]*SSB[idx-1,space]/
-                (SSB_0[space]*(1-h)+ SSB[idx-1,space]*(5*h-1)))*exp(-0.5*df$b[yr]*SDR^2+Ry)#*recruitmat[space]
+        R <- (4*h*R_0[space]*SSB[yr,space]/
+                (SSB_0[space]*(1-h)+ SSB[yr,space]*(5*h-1)))*exp(-0.5*df$b[yr]*SDR^2+Ry)#*recruitmat[space]
+        
         N.save.age[1,idx,space,season] <- R
 
         
