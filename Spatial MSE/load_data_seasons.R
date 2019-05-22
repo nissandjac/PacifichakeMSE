@@ -25,7 +25,7 @@ load_data_seasons <- function(nseason = 4, nspace = 2,
   moveslope <- 0.5
   movemax <- rep(movemaxinit,nseason)
   
-  movemat <- array(0, dim = c(nspace, nage, nseason)) # Chances of moving in to the other grid cell 
+  movemat <- array(0, dim = c(nspace, nage, nseason, nyear)) # Chances of moving in to the other grid cell 
   
   if(nspace == 1){
     move = FALSE
@@ -37,17 +37,17 @@ load_data_seasons <- function(nseason = 4, nspace = 2,
     
     for(j in 1:nspace){
       for(i in 1:nseason){
-        movemat[j,,i] <- movemax[i]/(1+exp(-moveslope*(age-movefifty)))
+        movemat[j,,i,] <- movemax[i]/(1+exp(-moveslope*(age-movefifty)))
         
       }
     }
     
     if(nseason == 4){ # For the standard model
-    movemat[,1:2,] <- 0 # Recruits and 1 year olds don't move
+    movemat[,1:2,,] <- 0 # Recruits and 1 year olds don't move
     
-    movemat[1,3:nage,2:3] <- 0.05 # Don't move south during the year
-    movemat[1,3:nage,nseason] <- 0.8
-    movemat[2,3:nage,nseason] <- 0.05
+    movemat[1,3:nage,2:3,] <- 0.05 # Don't move south during the year
+    movemat[1,3:nage,nseason,] <- 0.8
+    movemat[2,3:nage,nseason,] <- 0.05
 }
     # movemat[1,11:nage,nseason] <- 0
     # movemat[2,11:nage,nseason] <- 0
