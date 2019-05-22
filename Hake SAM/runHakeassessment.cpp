@@ -2,6 +2,8 @@
 #include <TMB.hpp>
 #include <iostream>
 
+
+
 template<class Type>
 Type objective_function<Type>::operator() ()
 {
@@ -47,7 +49,6 @@ Type objective_function<Type>::operator() ()
 //   // Mortality
   DATA_VECTOR(Msel); // How mortality scales with age
   DATA_VECTOR(Matsel); // Maturity ogive
-
   // Priors
   DATA_SCALAR(Bprior);
   DATA_SCALAR(Aprior)
@@ -56,12 +57,13 @@ Type objective_function<Type>::operator() ()
   PARAMETER(logRinit); // Recruitment at
   PARAMETER(logh); // Steepness
   PARAMETER(logMinit); // Natural mortality
+  PARAMETER(logSDR);
   PARAMETER(logSDsurv); // Survey uncertainty
   //PARAMETER(logSDR);
 
   PARAMETER(logphi_catch);
+  //PARAMETER(logphi_survey);
   PARAMETER(logphi_survey);
-  //DATA_SCALAR(logphi_survey);
   PARAMETER_VECTOR(psel_fish);
   PARAMETER_VECTOR(psel_surv);
   PARAMETER_VECTOR(initN);
@@ -96,12 +98,12 @@ Type objective_function<Type>::operator() ()
 for(int j=0;j<(tEnd-1);j++){
       logR(j)=Rin(j);
 }
-logR(tEnd-1) = Type(0.0);
+logR(tEnd-1) = 0;
 
 // selectivity
 // survey
 vector<Type>surveyselc(nage);
-Type pmax = max(cumsum(psel_surv));
+Type pmax = sum(psel_surv);
 Type ptmp = 0;
 
 for(int j=0;j<nage;j++){ // Fix the survey selectivity
@@ -122,7 +124,7 @@ for(int j=0;j<nage;j++){ // Fix the survey selectivity
 }
 // Fishing mortality
 vector<Type> catchselec(nage);
-Type pmax_catch = max(cumsum(psel_fish));
+Type pmax_catch = sum(psel_fish);
 Type ptmp_catch = 0;
 //
 for(int time=0;time<tEnd;time++){ // Start time loop
@@ -146,14 +148,16 @@ for(int time=0;time<tEnd;time++){ // Start time loop
 
 
 vector<Type> Nzero(nage); // Numbers with no fishing
-vector<Type>Meq = cumsum(M);
+//vector<Type>Meq = cumsum(M);
 //
 Nzero(0) = Rinit;
 for(int i=1;i<(nage-1);i++){
-    Nzero(i) = Rinit * exp(-(Meq(i-1)));
+    Nzero(i) = Rinit * exp(-(M(i)*age(i)));
   }
 //
-Nzero(nage-1) = Rinit*exp(-(Meq(nage-2)))/(Type(1.0)-exp(-M(nage-1)));//*exp(initN(nage-2)); // Plus group
+// Nzero(nage-1) = Rinit*exp(-(M(nage-2)*age(nage-2)))/(Type(1.0)-exp(-M(nage-1)));//*exp(initN(nage-2)); // Plus group
+
+Nzero(nage-1) = (Rinit*exp(-(M(nage-2)*age(nage-1))))/(Type(1.0)-exp(-M(nage-1)));
 
 array<Type> SSBage(nage);
 array<Type> Catchinit(nage);
@@ -162,35 +166,34 @@ Type SSBzero = 0;
 vector<Type> Zzero = M;
 
 for(int i=0;i<nage;i++){ // Loop over ages
-    SSBzero += Matsel(i)*Nzero(i)*0.5;
+    SSBzero += Matsel(i)*Nzero(i);
   }
 // Run the initial distribution
-array<Type>Ninit(nage,nage);
-array<Type>SSBinit(nage);
+ REPORT(SSBzero);
 
-REPORT(SSBzero);
-
-for(int i=0;i<(nage);i++){ // Loop over other ages
-    Ninit(i,0) = Nzero(i);
-  }
-  SSBinit(0) = SSBzero;
-
-Ninit(0,nage-1) = Rinit;
-for(int i=1;i<(nage-1);i++){
-    Ninit(i,nage-1) = Rinit * exp(-(Meq(i-1)))*exp(-0.5*0*SDR*SDR+initN(i-1));
-  }
+// Type SSBinit = 0;
 //
-Ninit(nage-1,nage-1) = Rinit*exp(-(Meq(nage-2)))/(Type(1.0)-exp(-M(nage-1)))*exp(-0.5*0*SDR*SDR+initN(nage-2));
-
-  for(int i=0;i<(nage-1);i++){ // Loop over other ages
-    SSBinit(nage-1) += Ninit(i,nage-1)*Matsel(i)*0.5;
-}
+// // for(int i=0;i<(nage);i++){ // Loop over other ages
+// //     Ninit(i,0) = Nzero(i);
+// //   }
+// Ninit(0) = Rinit;
+// for(int i=1;i<(nage-1);i++){
+//     Ninit(i) = Rinit * exp(-(M(i)*age(i)))*exp(-0.5*0*SDR*SDR+initN(i-1));
+//   }
+// //
+// Ninit(nage-1) = Rinit*exp(-(M(nage-1)*age(nage-1)))/(Type(1.0)-exp(-M(nage-1)))*exp(-0.5*0*SDR*SDR+initN(nage-2));
+//
+// for(int i=0;i<(nage);i++){ // Loop over other ages
+//   SSBinit += Ninit(i)*Matsel(i)*0.5;
+// }
 
 // Plus group
 vector<Type>Catch(tEnd);
 vector<Type>CatchN(tEnd);
-array<Type> N(nage,tEnd);
-
+array<Type> N_beg(nage,tEnd+1);
+array<Type> N_mid(nage,tEnd+1);
+N_beg.setZero();
+N_mid.setZero();
 // }
 // // Run the model over time
 array<Type> SSB(tEnd);
@@ -198,7 +201,12 @@ array<Type>Surveyobs(tEnd); // Survey observed Surveyobs
 array<Type>Surveyobs_tot(tEnd); // Total Surveyobs over age 2
 array<Type>age_survey_est(age_maxage,tEnd);
 array<Type>age_catch_est(age_maxage,tEnd);
+array<Type>Zsave(nage,tEnd);
 //
+age_survey_est.setZero();
+age_catch_est.setZero();
+Catch.setZero();
+CatchN.setZero();
 vector<Type> Myear = M*Msel; // Natural mortality (if we want to change it later)
 //
 vector<Type> Fyear(tEnd);
@@ -206,13 +214,15 @@ vector<Type> Freal(nage);
 vector<Type> Z(nage);
 vector<Type>pmax_catch_save(tEnd);
 vector<Type>psel_fish_zero = psel_fish;
+vector<Type>Catchsave(tEnd);
+//vector<Type>Fpope(tEnd);
 
-Type SSBtmp = 0;
-vector<Type>Ntmp(nage);
-vector<Type>Nmid(nage); // Numbers at the middle of the season
+// vector<Type>Bmid(nage); // Biomass at the middle of the year
+// // vector<Type>test(3);
+// // test = cumsum(test);
+// REPORT(test)
 
-
-for(int time=0;time<tEnd;time++){ // Start time loop
+for(int time=0;time<(tEnd);time++){ // Start time loop
 
     Type Ntot_survey = 0;
     pmax_catch_save(time) = pmax_catch;
@@ -221,7 +231,7 @@ for(int time=0;time<tEnd;time++){ // Start time loop
            for(int i=0;i<psel_fish.size();i++){
            psel_fish(i) = psel_fish_zero(i)+PSEL(i,time-selYear+1);
            }
-           pmax_catch = max(cumsum(psel_fish));
+           pmax_catch = sum(psel_fish);
            pmax_catch_save(time) = pmax_catch;
 
            for(int j=0;j<(nage);j++){ // Fix the Catch selectivity
@@ -238,70 +248,72 @@ for(int time=0;time<tEnd;time++){ // Start time loop
              }
            }
          }
-  if (time == 0){
-      for(int j=0;j<(nage);j++){ // Fix the Catch selectivity
-      Ntmp(j) = Ninit(j,nage-1);
+
+
+       Catch(time) = 0;
+
+       Fyear(time) = F0(time);
+
+
+
+    if (time == 0){
+      for(int i=1;i<(nage-1);i++){
+        N_beg(i,time) = Rinit * exp(-0.5*0*SDR*SDR+initN(i-1))*exp(-Myear(i)*age(i));
+      }
+        N_beg(nage-1, time) = Rinit * exp(-0.5*0*SDR*SDR+initN(nage-2)) * exp(-Myear(nage-1) * age(nage-1)) / (1 - exp(-Myear(nage-1)));
+
     }
-      SSBtmp = SSBinit(nage-1);
-  }else{
-    for(int j=0;j<(nage);j++){ // Fix the Catch selectivity
-     Ntmp(j) = N(j,time-1);
-  }
-      SSBtmp = SSB(time-1);
-}
-  Catch(time) = 0;
 
-  // Calculate fishing Mortality
+    for(int i=0;i<nage;i++){ // Loop over other ages
+         SSB(time) += N_beg(i,time)*Matsel(i); // hat
+      }
 
-  Fyear(time) = F0(time);
+    for(int i=0;i<(nage);i++){ // Loop over other ages
+          Freal(i) = Fyear(time)*catchselec(i);
+          Z(i) = Freal(i)+Myear(i);
+          selectivity_save(i,time) = catchselec(i);
+          Zsave(i,time) = Z(i);
 
-  for(int i=0;i<(nage);i++){ // Loop over other ages
-  Freal(i) = Fyear(time)*catchselec(i);
-  Z(i) = Freal(i)+Myear(i);
 
-  selectivity_save(i,time) = catchselec(i);
-  }
+     }
 
-  //Recruitment
-    R(time) = (4*h*Rinit*SSBtmp/(SSBzero*(1-h)+ SSBtmp*(5*h-1)))*exp(-0.5*b(time)*SDR*SDR+logR(time));
-
-    N(0,time) = R(time); // First one is recruits
+    R(time) = (4*h*Rinit*SSB(time)/(SSBzero*(1-h)+ SSB(time)*(5*h-1)))*exp(-0.5*b(time)*SDR*SDR+logR(time));
+    N_beg(0,time) = R(time); // First one is recruits
     //
-    for(int i=1;i<(nage-1);i++){ // Loop over other ages
-    N(i,time) = Ntmp(i-1)*exp(-Z(i-1));
+
+    Type smul = Type(1);
+
+    for(int i=0;i<(nage-1);i++){ // Loop over other ages
+    N_mid(i,time) = N_beg(i,time)*exp(-Z(i)*smul);
+    N_beg(i+1,time+1) = N_beg(i,time)*exp(-Z(i));
     }
-    // Plus group
-    N(nage-1, time) = Ntmp(nage-2)*exp(-Z(nage-2))+Ntmp(nage-1)*exp(-Z(nage-1));
-    //
+    // // Plus group
+    N_mid(nage-1, time) = N_beg(nage-2,time)*exp(-Z(nage-2)*0.5)+N_beg(nage-1,time)*exp(-Z(nage-1)*smul);
+    N_beg(nage-1, time+1) = N_beg(nage-2,time)*exp(-Z(nage-2))+N_beg(nage-1,time)*exp(-Z(nage-1));
+
     Catch(time) = 0;
 
     for(int i=0;i<nage;i++){ // Loop over other ages
-    CatchAge(i,time)= (Freal(i)/(Z(i)))*(1-exp(-Z(i)))*N(i,time)*wage_catch(i,time);// Calculate the catch in kg
-    CatchNAge(i,time)= (Freal(i)/(Z(i)))*(1-exp(-Z(i)))*N(i,time);// Calculate the catch in kg
-    Catch(time) += CatchAge(i,time);
-    CatchN(time) += CatchNAge(i,time);
-    
-    Surveyobs(time) += surveyselc(i)*wage_survey(i,time)*N(i,time)*q;
-    Ntot_survey += surveyselc(i)*N(i,time); // To use with age comps
-    }
+        CatchAge(i,time)= (Freal(i)/(Z(i)))*(1-exp(-Z(i)))*N_beg(i,time)*wage_catch(i,time);// Calculate the catch in kg
+        CatchNAge(i,time)= (Freal(i)/(Z(i)))*(1-exp(-Z(i)))*N_beg(i,time);// Calculate the catch in kg
+        Catch(time) += CatchAge(i,time);
+        CatchN(time) += CatchNAge(i,time);
 
-    if(flag_survey(time) == 1){ // Flag if  there was a measurement that year
-      
-      for(int i=0;i<(nage-1);i++){ // Loop over other ages
-        if(i < age_maxage){
-          age_survey_est(i,time) = ((surveyselc(i+1)*N(i+1,time))/Ntot_survey);
-        }else{
-          age_survey_est(age_maxage-1,time) += ((surveyselc(i+1)*N(i+1,time))/Ntot_survey);
-        }
+        Surveyobs(time) += surveyselc(i)*wage_survey(i,time)*N_mid(i,time)*q;
+        Ntot_survey += surveyselc(i)*N_mid(i,time); // To use with age comps
       }
-    }
-    
-    
-    
-    for(int i=0;i<nage;i++){ // Loop over other ages
-    SSB(time) += N(i,time)*Matsel(i)*0.5; // Change zero to time later
-    }
-    // //
+
+
+      if(flag_survey(time) == 1){ // Flag if  there was a measurement that year
+
+        for(int i=0;i<(nage-1);i++){ // Loop over other ages
+          if(i < age_maxage){
+          age_survey_est(i,time) = (surveyselc(i+1)*N_mid(i+1,time))/Ntot_survey;
+          }else{
+          age_survey_est(age_maxage-1,time) += (surveyselc(i+1)*N_mid(i+1,time))/Ntot_survey;
+          }
+        }
+      }  //Recruitment
 
     if(flag_catch(time) == 1){ // Flag if  there was a measurement that year
 
@@ -314,6 +326,7 @@ for(int time=0;time<tEnd;time++){ // Start time loop
      }
    }
  }
+
 
 // // // Make the observation model
 // using namespace density;
@@ -431,12 +444,11 @@ Type ans = ans_SDR+ans_psel+ans_catch+ans_survey-ans_survcomp-ans_catchcomp+ans_
 // Type ans = 0.0;
 // Report calculations
 ADREPORT(SSB)
-ADREPORT(N)
+//ADREPORT(N)
 ADREPORT(Catch)
 ADREPORT(logF)
 ADREPORT(R)
 ADREPORT(Surveyobs)
-ADREPORT(Ninit)
 ADREPORT(Fyear)
 ADREPORT(surveyselc)
 ADREPORT(catchselec)
@@ -448,10 +460,18 @@ ADREPORT(ans_tot)
 
 REPORT(SSB)
 REPORT(Fyear)
-REPORT(N)
 REPORT(Catch)
 REPORT(R)
-
+REPORT(Nzero)
+REPORT(ans_tot)
+REPORT(Zsave)
+REPORT(age_survey_est)
+REPORT(age_catch_est)
+REPORT(CatchN)
+REPORT(selectivity_save)
+REPORT(surveyselc)
+REPORT(N_beg)
+REPORT(N_mid)
 
   return ans;
 }

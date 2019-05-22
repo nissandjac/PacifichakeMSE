@@ -13,11 +13,11 @@ F0 <- assessment$F0
 nage <- length(age)
 msel <- rep(1,nage)
 # Maturity
-mat <- read.csv('maturity.csv')
+mat <- read.csv('data/maturity.csv')
 
 # weight at age 
-wage <- read.csv('waa.csv')
-wage_unfished <- read.csv('unfished_waa.csv')
+wage <- read.csv('data/waa.csv')
+wage_unfished <- read.csv('data/unfished_waa.csv')
 
 # Make the weight at ages the same length as the time series 
 wage_ssb = rbind(matrix(rep(as.numeric(wage_unfished[2:(nage+1)]),each = 9), nrow = 9),
@@ -33,19 +33,19 @@ wage_mid = rbind(matrix(rep(as.numeric(wage_unfished[2:(nage+1)]),each = 9), nro
 
 # Catch
 # catch <- read.csv('hake_totcatch.csv')
-catches.obs <- read.csv('catches.csv')
+catches.obs <- read.csv('data/catches.csv')
 catch <- catches.obs$Total
 
 # Survey abundance
-df.survey <- read.csv('acoustic survey.csv')
+df.survey <- read.csv('data/acoustic survey.csv')
 
 
 
 # Age comps
 
-age_survey.df <- read.csv('agecomps_survey.csv')
+age_survey.df <- read.csv('data/agecomps_survey.csv')
 age_survey.df$flag <- 1
-age_catch.df <- read.csv('agecomps_fishery.csv')
+age_catch.df <- read.csv('data/agecomps_fishery.csv')
 age_catch.df$flag <- 1
 # Insert dummy years
 
@@ -103,8 +103,47 @@ for(j in 2:length(Yr)){
   # }
 }  
 
+### h prior distribution
+hmin <- 0.2
+hmax <- 1
+hprior <- 0.777
+hsd <- 0.117
+
+mu <- (hprior-hmin)/(hmax-hmin)
+tau <- ((hprior-hmin)*(hmax-hprior))/hsd^2-1
 
 
+Bprior= tau*mu
+Aprior = tau*(1-mu)
+Pconst <- 1e-6
+hrange <- seq(0.2,1, length.out = 100)
+
+Prior_Like =  (1.0-Bprior)*log(Pconst+hrange-hmin) + 
+              (1.0-Aprior)*log(Pconst+hmax-hrange)-
+              (1.0-Bprior)*log(Pconst+hprior-hmin) - 
+              (1.0-Aprior)*log(Pconst+hmax-hprior)
+
+
+## Load the ageing error 
+# age_err <- read.csv('data/age_error_head.csv')
+# names(age_err)[1] <- 'age'
+# age_err <- apply(age_err, 2, rev)
+# 
+# # fix the input matrices to  add ageing error 
+# ## survey 
+# survey_age <- matrix(-1, tEnd,nage-1)
+# 
+# for(i in 1:tEnd){
+#   if(age_survey$flag[i] == 1){
+#     for(j in 1:20){
+#       survey_age[i,j] <- age_survey[i,j+2]
+#       
+#     }  
+# 
+#   }
+#   
+#   
+# }
 
 df <-list(      #### Parameters #####
                 wage_ssb = t(wage_ssb),
@@ -116,7 +155,7 @@ df <-list(      #### Parameters #####
                 Matsel= mat$mat,
                 nage = nage,
                 age = age,
-                year_sel = length(1991:2010), # Years to model time varying sel
+                year_sel = length(1991:years[length(years)]), # Years to model time varying sel
                 selYear = 26,
                 tEnd = length(years), # The extra year is to initialize 
                 logQ = log(1.135767),   # Analytical solution
@@ -140,7 +179,7 @@ df <-list(      #### Parameters #####
                 flag_catch =age_catch$flag,
                 age_catch = t(as.matrix(age_catch[,3:17])*0.01),
                 # variance parameters
-                logSDcatch = log(0.03),
+                logSDcatch = log(0.01),
                 logSDR = log(1.4), # Fixed in stock assessment ,
                 F0 = F0,
                 #logphi_survey = log(0.91),
@@ -149,7 +188,10 @@ df <-list(      #### Parameters #####
                 years = years,
                 logphi_catch = log(0.8276), # log(0.8276)
                 logphi_survey = log(11.33),
-                b = b[Yr >= years[1]]
+                Bprior= tau*mu,
+                Aprior = tau*(1-mu),
+                b = b[Yr >= years[1]]#,
+            #    ageerr = as.matrix(age_err[,2:22])
 )
 
 

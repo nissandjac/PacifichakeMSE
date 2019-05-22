@@ -1,5 +1,5 @@
-direc <- "~/GitHub/PacifichakeMSE/Spatial MSE_vs3/Model condition/"
-setwd(direc)
+# direc <- "~/GitHub/PacifichakeMSE/Spatial MSE_vs3/Model condition/"
+# setwd(direc)
 ###### Initialize the operating model ###### 
 library(TMB)
 library(dplyr)
@@ -19,11 +19,12 @@ source('load_data_seasons.R')
 source('create_TMB_data.R')
 source('getRefpoint_biomass.R')
 source('Check_Identifiable_vs2.R')
-assessment <- read.csv('asssessment_MLE.csv')
+source('getF.R')
+assessment <- read.csv('data/asssessment_MLE.csv')
 assessment <- assessment[assessment$year > 1965 &assessment$year < 2018 ,]
-Catch.obs <- read.csv('hake_totcatch.csv')
+Catch.obs <- read.csv('data/hake_totcatch.csv')
 
-df <- load_data_seasons(move = TRUE, nseason  = 4,nspace = 2)
+df <- load_data_seasons(move = FALSE, nseason  = 1,nspace = 1)
 df$Catch <- Catch.obs$Fishery
 time <- 1
 yrinit <- df$nyear
@@ -43,7 +44,7 @@ simdata0 <- sim.data # The other one is gonna get overwritten.
 # 
 plot(sim.data$Fsel[1,1,1:15], col = 'red', type ='l')
 lines(sim.data$Fsel[1,2,1:15], col = 'blue')
-SSB0.ass <- 
+#SSB0.ass <- 
 # Plot the biomass in ggplot 
 df.plot <- data.frame(years = rep(df$years,2), 
                       SSB = c(rowSums(sim.data$SSB),assessment$SSB)*1e-6, 
