@@ -286,8 +286,8 @@ run.agebased.true.catch <- function(df, seed = 100){
         
         if(season <nseason){
         N.save.age[,yr,space,season+1] <- N.save.age[,yr,space,season]*exp(-Z)-
-          N.save.age[, yr,space,season]*exp(-Z)*(movemat[space,,season])+ # Remove the ones that leave
-          N.save.age[, yr,spaceidx,season]*exp(-Z)*(movemat[spaceidx,,season])# add the ones come to the surrounding areas
+          N.save.age[, yr,space,season]*exp(-Z)*(movemat[space,,season,yr])+ # Remove the ones that leave
+          N.save.age[, yr,spaceidx,season]*exp(-Z)*(movemat[spaceidx,,season,yr])# add the ones come to the surrounding areas
         
         age_comps_OM[,yr,space,season] <- N.save.age[, yr,space,season]/sum(N.save.age[, yr,space,season])
         
@@ -298,19 +298,19 @@ run.agebased.true.catch <- function(df, seed = 100){
         
         }else{
           N.save.age[2:(nage-1),yr+1,space,1] <- N.save.age[1:(nage-2),yr,space,season]*exp(-Z[1:(nage-2)])-
-            N.save.age[1:(nage-2), yr,space,season]*exp(-Z[1:(nage-2)])*(movemat[space,1:(nage-2),season])+ # Remove the ones that leave
-            N.save.age[1:(nage-2), yr,spaceidx,season]*exp(-Z[1:(nage-2)])*(movemat[spaceidx,1:(nage-2),season])# add the ones come to the surrounding areas
+            N.save.age[1:(nage-2), yr,space,season]*exp(-Z[1:(nage-2)])*(movemat[space,1:(nage-2),season,yr])+ # Remove the ones that leave
+            N.save.age[1:(nage-2), yr,spaceidx,season]*exp(-Z[1:(nage-2)])*(movemat[spaceidx,1:(nage-2),season,yr])# add the ones come to the surrounding areas
           
           # Plus group 
           Nsurvive.plus <- (N.save.age[nage-1, yr,space, nseason]*exp(-Z[nage-1])+
                               N.save.age[nage, yr,space, nseason]*exp(-Z[nage]))
           
-          Nout.plus <- Nsurvive.plus*(movemat[space,nage, season]) # Leaving
+          Nout.plus <- Nsurvive.plus*(movemat[space,nage, season,yr]) # Leaving
 
           
           Nin.plus <- (N.save.age[nage-1, yr,spaceidx,nseason]*exp(-Z[nage-1])+
                          N.save.age[nage, yr,spaceidx,nseason]*exp(-Z[nage]))*
-                          (movemat[spaceidx,nage, season]) # Incoming
+                          (movemat[spaceidx,nage, season,yr]) # Incoming
 
           N.save.age[nage,yr+1,space,1] <- Nsurvive.plus- Nout.plus + Nin.plus
           

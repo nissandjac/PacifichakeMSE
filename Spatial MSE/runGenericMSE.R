@@ -23,7 +23,7 @@ df <- load_data_seasons(nseason = 4, nspace = 2,
 
 
 ###### Run the MSE using the data above #####
-ls <- fnMSE(df, simyears = 50, TAC = 1, nruns = 10) # TAC 1) HCR, 2) JTC, 3) Realized catch
+ls <- fnMSE(df, simyears = 50, TAC = 1, nruns = 100) # TAC 1) HCR, 2) JTC, 3) Realized catch
 MSE <- ls[[1]]
 sim.data <- ls[[2]]
 

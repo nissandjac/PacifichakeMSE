@@ -8,12 +8,11 @@ seedz <- 12345
 set.seed(seedz)
 
 source('load_files.R')
+source('load_files_OM.R')
 
 parms.true <- getParameters(TRUE) # Load parameters from assessment
 
-df <- load_data_seasons(move = TRUE, nseason = 4, nspace = 2) # Prepare data for operating model
-
-df$Catch <- Catch.obs$Fishery # Add the observed catch
+df <- load_data_seasons(nseason = 4, nspace = 2) # Prepare data for operating model
 
 time <- 1
 yrinit <- df$nyear
@@ -38,7 +37,7 @@ for (i in 1:nruns){
   tmp <- try(run_multiple_MSEs(simyears = 30,
                            seed = seeds[i],
                            moveparms = NA,
-                           TAC = 1))
+                           TAC = 1, df = df))
   #tmp <- run_multiple_MSEs(simyears = 30, seeds[i])
   print(i)
 
@@ -61,7 +60,7 @@ ls.converge <- matrix(0, nruns)
 #
 for (i in 1:nruns){
   tmp <- try(run_multiple_MSEs(simyears = 30, seeds[i],moveparms = NA,
-                               TAC = 2),silent = FALSE)
+                               TAC = 2, df =df),silent = FALSE)
   #tmp <- run_multiple_MSEs(simyears = 30, seeds[i])
   print(i)
   if(is.list(tmp)){
@@ -82,7 +81,7 @@ ls.converge <- matrix(0, nruns)
 
 for (i in 1:nruns){
   tmp <- try(run_multiple_MSEs(simyears = 30, seeds[i],moveparms = NA,
-                               TAC = 3),silent = FALSE)
+                               TAC = 3, df =df),silent = FALSE)
   #tmp <- run_multiple_MSEs(simyears = 30, seeds[i])
   print(i)
   #tmp <- run_multiple_MSEs(simyears = 30, seeds[i])
@@ -104,7 +103,7 @@ ls.save <- list()
 ls.converge <- matrix(0, nruns)
 for (i in 1:nruns){
   tmp <- try(run_multiple_MSEs(simyears = 30, seeds[i],moveparms = c(0.1,5),
-                               TAC = 2),silent = FALSE)
+                               TAC = 2, df =df),silent = FALSE)
   #tmp <- run_multiple_MSEs(simyears = 30, seeds[i])
   print(i)
   
@@ -125,7 +124,7 @@ save(ls.save,file = 'results/MSErun_move_realized_move1.Rdata')
 
 for (i in 1:nruns){
   tmp <- try(run_multiple_MSEs(simyears = 30, seeds[i],moveparms = c(0.75,5),
-                               TAC = 2),silent = FALSE)
+                               TAC = 2, df =df),silent = FALSE)
   #tmp <- run_multiple_MSEs(simyears = 30, seeds[i])
   print(i)
   if(is.list(tmp)){
@@ -142,7 +141,7 @@ save(ls.save,file = 'results/MSErun_move_realized_move2.Rdata')
 
 
 for (i in 1:nruns){
-  tmp <- try(run_multiple_MSEs(simyears = 30, seeds[i],moveparms = c(0.5,2), TAC = 2),silent = FALSE)
+  tmp <- try(run_multiple_MSEs(simyears = 30, seeds[i],moveparms = c(0.5,2), TAC = 2, df =df),silent = FALSE)
   #tmp <- run_multiple_MSEs(simyears = 30, seeds[i])
   print(i)
   if(is.list(tmp)){
