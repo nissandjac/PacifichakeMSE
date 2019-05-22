@@ -1,7 +1,6 @@
 ## Load the hake data
 # year and age input 
-load_data_seasons <- function(move = TRUE,
-                              nseason = 4, nspace = 2,
+load_data_seasons <- function(nseason = 4, nspace = 2,
                               movemaxinit = 0.5, movefiftyinit = 5, 
                               nsurvey = 2){
   
@@ -27,6 +26,12 @@ load_data_seasons <- function(move = TRUE,
   movemax <- rep(movemaxinit,nseason)
   
   movemat <- array(0, dim = c(nspace, nage, nseason)) # Chances of moving in to the other grid cell 
+  
+  if(nspace == 1){
+    move = FALSE
+  }else{
+    move = TRUE
+  }
   
   if(move == TRUE){
     
@@ -92,7 +97,14 @@ load_data_seasons <- function(move = TRUE,
   age_survey.df$flag <- 1
   age_catch.df <- read.csv('data/agecomps_fishery.csv')
   age_catch.df$flag <- 1
-  surveyseason <- 2
+  
+  if(nseason == 4){
+  surveyseason <- 3
+  
+  }else{
+    surveyseason <- floor(nseason/2)
+  }
+  
   
   if(nseason == 1){
     surveyseason = 1
@@ -123,16 +135,17 @@ load_data_seasons <- function(move = TRUE,
   initN <- rev(read.csv('data/Ninit_MLE.csv')[,1])
   Rdev <- read.csv('data/Rdev_MLE.csv')[,1]
   PSEL <- as.matrix(read.csv('data/p_MLE.csv'))
-  Fin <- assessment$F0
+  #Fin <- assessment$F0
   
-  b <- matrix(0,length(years))
-  Yr <- years#1966:max(years)
+  b <- matrix(NA, nyear)
+  Yr <- 1946:2017
   # Parameters 
-  yb_1 <- 1966 #_last_early_yr_nobias_adj_in_MPD
+  yb_1 <- 1965 #_last_early_yr_nobias_adj_in_MPD
   yb_2 <- 1971 #_first_yr_fullbias_adj_in_MPD
   yb_3 <- 2016 #_last_yr_fullbias_adj_in_MPD
   yb_4 <- 2017 #_first_recent_yr_nobias_adj_in_MPD
   b_max <- 0.87 #_max_bias_adj_in_MPD
+  
   b[1] <- 0
   for(j in 2:length(Yr)){
     
@@ -157,19 +170,20 @@ load_data_seasons <- function(move = TRUE,
     #   stop('why')
     # }
   }  
+  
   #b <- matrix(1, tEnd)
   
  
   
-  if(move == TRUE){
-     mul <- 1.015
-  }else{
-   mul <- 1
-   }
+  # if(move == TRUE){
+  #    mul <- 1.015
+  # }else{
+  #  mul <- 1
+  #  }
 
   
      parms <- list( # Just start all the simluations with the same initial conditions 
-       logRinit = 14.5614*mul,
+       logRinit = 14.5614,
        logh = log(0.861909),
        logMinit = log(0.213686),
        logSDsurv = log(0.257246),
@@ -231,9 +245,9 @@ load_data_seasons <- function(move = TRUE,
                   # variance parameters
                   logSDcatch = log(0.01),
                   logSDR = log(1.4), # Fixed in stock assessment ,
-                  logphi_survey = log(0.91),
+                  logphi_survey = log(10),
                   years = years,
-                  b = b,
+                  b = b[Yr >= years[1]],
                   #logh = log(0.8),
                   # Space parameters 
                   nspace = nspace,
@@ -242,7 +256,7 @@ load_data_seasons <- function(move = TRUE,
                   move = move,
                   recruitmat = recruitmat,
                   move.init = move.init,
-                  F0 = Fin,
+                 # F0 = Fin,
                   psel = psel,
                   parms = parms
                   # Parameters from the estimation model 

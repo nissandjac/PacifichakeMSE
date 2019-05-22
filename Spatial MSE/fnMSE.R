@@ -1,5 +1,5 @@
 ###### Initialize the operating model ###### 
-fnMSE <- function(parms, simyears = 30, TAC = 1, seedz = NA, nruns = 100){
+fnMSE <- function(df, simyears = 30, TAC = 1, seedz = NA, nruns = 100){
 
 
 # Set the seed
@@ -11,7 +11,6 @@ if(is.na(seedz)){
 
 parms.true <- getParameters(TRUE) # Load parameters from assessment
 
-df <- parms
 time <- 1
 yrinit <- df$nyear
 seeds <- floor(runif(n = nruns, min = 1, max = 1e6))

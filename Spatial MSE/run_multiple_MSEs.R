@@ -51,6 +51,8 @@ SSB.test.om <- list() # Test if SSB is the same in the OM
 start.time <- Sys.time()
 
 for (time in 1:simyears){
+  
+
   year <- yrinit+(time-1)
   #print(year.future[year])
   
@@ -93,35 +95,48 @@ for (time in 1:simyears){
       
     }
     
-    PSEL <- matrix(0,5, length(1991:years[length(years)]))
-    initN <- rep(0,df$nage-1)
-    F0 <- rep(0.01, df$nyear)
-    Rdev <- rep(0, df$nyear-1) # Can't predict last year
-    
-    parms <- list( # Just start all the simluations with the same initial conditions
-      logRinit = 15,
-      logh = log(0.5),
-      logMinit = log(0.3),
-      logSDsurv = log(0.3),
-      logphi_catch = log(0.8276),
-      logphi_survey = log(11.33),
-      # Selectivity parameters
-      psel_fish = c(2.486490, 0.928255,0.392144,0.214365,0.475473),
-      psel_surv = c(0.568618,-0.216172,0.305286 ,0.373829),
-      initN = initN,
-      Rin = Rdev,
-      F0 = F0,
-      PSEL = PSEL
-    )
-    
+    # PSEL <- matrix(0,5, length(1991:years[length(years)]))
+    # initN <- rep(0,df$nage-1)
+    # F0 <- rep(0.01, df$nyear)
+    # Rdev <- rep(0, df$nyear-1) # Can't predict last year
+    # 
+    # parms <- list( # Just start all the simluations with the same initial conditions
+    #   logRinit = 15,
+    #   logh = log(0.5),
+    #   logMinit = log(0.3),
+    #   logSDsurv = log(0.3),
+    #   logphi_catch = log(0.8276),
+    #   logphi_survey = log(11.33),
+    #   # Selectivity parameters
+    #   psel_fish = c(2.486490, 0.928255,0.392144,0.214365,0.475473),
+    #   psel_surv = c(0.568618,-0.216172,0.305286 ,0.373829),
+    #   initN = initN,
+    #   Rin = Rdev,
+    #   F0 = F0,
+    #   PSEL = PSEL
+    # )
+    # 
+  
+    parms <- getParameters(TRUE)
     
     ##  Create a data frame to send to runHakeassessment 
     
     df.new <- create_TMB_data(sim.data, df)
     
-    parms.new <- df$parms
+    parms.new <- parms
+    
+    if(time == 1){
+      F0 <- parms$F0
+      Rdev <- parms$Rin
+    }else{
+      F0 <- c(F0,0.2)
+      Rdev <- c(Rdev, 0)
+    }
+    
     parms.new$F0 <- F0#rowSums(sim.data$Fsave, na.rm = TRUE)
     parms.new$Rin <- Rdev#parms.new$Rin[1:(length(parms.new$Rin)-1)]
+                
+      
     
     obj <-MakeADFun(df.new,parms.new,DLL="runHakeassessment", silent = TRUE) # Run the assessment 
     
@@ -137,21 +152,18 @@ for (time in 1:simyears){
     upper[names(upper) == 'PSEL'] <- 5
     upper[names(upper) == 'logh'] <- log(0.999)
     upper[names(upper) == 'F0'] <- 2
-    upper[names(upper) == "logphi_survey"]<- log(8)
+    #upper[names(upper) == "logphi_survey"]<- log(8)
     lower[names(lower) == 'logSDsurv'] <- log(0.01)
     lower[names(lower) == 'F0'] <- 0.01
-    
+    #lower[names(lower) == 'logMinit'] <- log(0.2)
     if(df$Catch[length(df$Catch)] == 1){
       lower[names(lower) == 'F0'] <- 1e-10
     }
-      # 
-    # plot(reps$SSB)
-    # lines(rowSums(sim.data$SSB))
     
     system.time(opt<-nlminb(obj$par,obj$fn,obj$gr,lower=lower,upper=upper,
                             control = list(iter.max = 1e6, 
                                            eval.max = 1e6))) # If error one of the random effects is unused
-    
+
     
     if(opt$convergence != 0){
       print(paste('year',df$years[length(df$years)], 'did not converge'))
@@ -164,14 +176,14 @@ for (time in 1:simyears){
   
   SSB <- reps$SSB
   Fyear <- reps$Fyear
-  N <- reps$N
+  N <- reps$N_beg
   Catch <- reps$Catch
   R <- reps$R
   
   
-  # plot(SSB)
-  # lines(assessment$SSB)
-  # lines(rowSums(sim.data$SSB), col = 'red')
+    plot(df$years,SSB)
+    lines(df$years,rowSums(sim.data$SSB))
+  # # lines(rowSums(sim.data$SSB), col = 'red')
   # # #Uncertainty
   
 
@@ -205,6 +217,9 @@ for (time in 1:simyears){
   #Fnew <- 0.3
   print(paste('new quota = ',Fnew[[1]]))
   # Update the data data frame
+  if(Fnew[[1]] == 1){
+    stop('fishery closed')
+  }
   
   Ntmp <- sim.data$Nout
   

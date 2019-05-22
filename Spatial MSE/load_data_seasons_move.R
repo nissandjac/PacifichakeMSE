@@ -174,7 +174,7 @@ load_data_seasons_move <- function(move = TRUE, movemaxinit = 0.5, movefiftyinit
   }
   
   parms <- list( # Just start all the simluations with the same initial conditions 
-    logRinit = 14.5614*1.015,
+    logRinit = 14.5614,
     logh = log(0.861909),
     logMinit = log(0.213686),
     logSDsurv = log(0.257246),

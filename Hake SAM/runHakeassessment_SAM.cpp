@@ -40,7 +40,7 @@ Type objective_function<Type>::operator() ()
   DATA_ARRAY(age_catch); // Age comps
 
   DATA_SCALAR(logSDcatch); // Error on catch
-  DATA_SCALAR(logSDR); // Can it be estimated as a fixed effect?
+  //DATA_SCALAR(logSDR); // Can it be estimated as a fixed effect?
   DATA_SCALAR(sigma_psel); // selectivity SD
 
 //
@@ -52,6 +52,7 @@ Type objective_function<Type>::operator() ()
   PARAMETER(logRinit); // Recruitment at
   PARAMETER(logh); // Steepness
   PARAMETER(logMinit); // Natural mortality
+  PARAMETER(logSDR); 
   PARAMETER(logSDsurv); // Survey uncertainty
   //PARAMETER(logSDR);
 
