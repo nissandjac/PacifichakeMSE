@@ -18,12 +18,12 @@ source('fnMSE.R')
 
 
 ###### Load the data to run the MSE ######
-parms <- load_data_seasons(move = TRUE, nseason = 4, nspace = 2,
+df <- load_data_seasons(nseason = 4, nspace = 2,
                         nsurvey= 2) # Prepare data for operating model 
 
 
 ###### Run the MSE using the data above #####
-ls <- fnMSE(parms, simyears = 50, TAC = 1, nruns = 10) # TAC 1) HCR, 2) JTC, 3) Realized catch
+ls <- fnMSE(df, simyears = 50, TAC = 1, nruns = 10) # TAC 1) HCR, 2) JTC, 3) Realized catch
 MSE <- ls[[1]]
 sim.data <- ls[[2]]
 
