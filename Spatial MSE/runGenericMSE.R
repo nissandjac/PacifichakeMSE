@@ -13,6 +13,7 @@ require(RColorBrewer)
 compile("runHakeassessment.cpp")
 dyn.load(dynlib("runHakeassessment"))
 source('load_files.R')
+source('load_files_OM.R')
 source('fnMSE.R')
 
 
