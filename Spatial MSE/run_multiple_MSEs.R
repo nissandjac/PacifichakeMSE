@@ -168,7 +168,7 @@ for (time in 1:simyears){
     if(opt$convergence != 0){
       print(paste('year',df$years[length(df$years)], 'did not converge'))
       stop('Model not converged')
-      xx<- Check_Identifiable_vs2(obj)
+      #xx<- Check_Identifiable_vs2(obj)
       
     }
   
@@ -181,8 +181,7 @@ for (time in 1:simyears){
   R <- reps$R
   
   
-    plot(df$years,SSB)
-    lines(df$years,rowSums(sim.data$SSB))
+
   # # lines(rowSums(sim.data$SSB), col = 'red')
   # # #Uncertainty
   
@@ -217,10 +216,10 @@ for (time in 1:simyears){
   #Fnew <- 0.3
   print(paste('new quota = ',Fnew[[1]]))
   # Update the data data frame
-  if(Fnew[[1]] == 1){
-    stop('fishery closed')
-  }
-  
+  # if(Fnew[[1]] == 1){
+  #   stop('fishery closed')
+  # }
+  # 
   Ntmp <- sim.data$Nout
   
   
