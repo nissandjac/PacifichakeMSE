@@ -7,8 +7,9 @@ years <- 1966:2017
 tEnd <- length(years)
 age <- 0:20
 
-F0 <- assessment$F0
-
+# F0 <- assessment$F0
+# F0 <- mod$derived_quants$Value[grep('F_1966',mod$derived_quants$Label):grep('F_2017',mod$derived_quants$Label)]
+F0 <- mod$catch$F[mod$catch$Yr >1965 & mod$catch$Yr <2018]
 
 nage <- length(age)
 msel <- rep(1,nage)
@@ -184,6 +185,7 @@ df <-list(      #### Parameters #####
                 F0 = F0,
                 #logphi_survey = log(0.91),
                 sigma_psel = 1.4,
+                smul = 1,
                 logh = log(0.8),
                 years = years,
                 logphi_catch = log(0.8276), # log(0.8276)

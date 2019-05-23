@@ -44,6 +44,7 @@ Type objective_function<Type>::operator() ()
   DATA_VECTOR(flag_survey); // Were ages sampled this year
   DATA_ARRAY(age_survey); // Age compositions
   DATA_INTEGER(age_maxage); // Last age included in age comps
+  DATA_SCALAR(smul); // Multiplier for survey selectivity
  // Catches
   DATA_VECTOR(Catchobs); // Total catch
   DATA_VECTOR(ss_catch); // age comp sample size
@@ -237,7 +238,7 @@ for(int time=0;time<(tEnd);time++){ // Start time loop
     // Take care of selectivity
     if ((time >= (selYear-1)) & (years(time) < 2018)){
            for(int i=0;i<psel_fish.size();i++){
-           psel_fish(i) = psel_fish_zero(i)+PSEL(i,time-selYear+1);
+           psel_fish(i) = psel_fish_zero(i)+PSEL(i,time-selYear+1)*sigma_psel;
            }
            pmax_catch = sum(psel_fish);
            pmax_catch_save(time) = pmax_catch;
@@ -289,7 +290,7 @@ for(int time=0;time<(tEnd);time++){ // Start time loop
     N_beg(0,time) = R(time); // First one is recruits
     //
 
-    Type smul = Type(0.5);
+    //Type smul = Type(0.58);
 
     for(int i=0;i<(nage-1);i++){ // Loop over other ages
     N_mid(i,time) = N_beg(i,time)*exp(-Z(i)*smul);
@@ -465,6 +466,7 @@ ADREPORT(age_catch_est)
 ADREPORT(age_survey)
 ADREPORT(age_survey_est)
 ADREPORT(ans_tot)
+ADREPORT(SSBzero)
 
 REPORT(SSB)
 REPORT(Fyear)

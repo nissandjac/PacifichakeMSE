@@ -1,14 +1,15 @@
 # Run the hake assessment 
 source('load_files.R')
-
+library(r4ss)
 # Read the assessment data 
 assessment <- read.csv('data/asssessment_MLE.csv')
 assessment <- assessment[assessment$year > 1965 &assessment$year < 2018 ,]
 
 catches.obs <- read.csv('data/catches.csv') # Read the historical catches
+mod <- SS_output(paste(getwd(),'/data/', sep =''), printstats=FALSE, verbose = FALSE)
 
 df <- load_data()
-
+df$smul <- 1
 years <- df$years
 
 #U[2,] <- 0.01
@@ -28,6 +29,11 @@ SSBass <- vars$SSB
 
 plot(df$years,SSBass*0.5)
 lines(assessment$year,assessment$SSB)
+
+# Compare selectivity in year 1993
+plot(vars$selectivity_save[,which(df$years == 1992)])
+lines(mod$ageselex[mod$ageselex$Yr == 1992 & mod$ageselex$Fleet == 1])
+
 
 plot(df$years,df$Catchobs)
 lines(df$years,obj$report()$Catch)
@@ -70,15 +76,24 @@ Surveyobs <- getUncertainty('Surveyobs',df)
 R <- getUncertainty('R',df)
 surveyselec.est <- getUncertainty('surveyselc', df)
 catchselec.est <- getUncertainty('catchselec', df)
+SSB0 <- getUncertainty('SSBzero', df)
 
 
 SSB$name <- SSB$name*1e-6
 SSB$min <- SSB$min*1e-6
 SSB$max <- SSB$max*1e-6
 
-png('Figures/SSB.png', width = 16, height = 12, unit = 'cm', res =400)
-plotValues(SSB, data.frame(x= assessment$year, y= assessment$SSB*1e-6*2),'SSB')
+
+SSB.ss3 <- mod$derived_quants$Value[grep('SSB_1966', mod$derived_quants$Label):grep('SSB_2017', mod$derived_quants$Label)]*1e-6
+
+
+png('Figures/SSB_survey_mid.png', width = 16, height = 12, unit = 'cm', res =400)
+plotValues(SSB, data.frame(x= assessment$year, y= SSB.ss3),'SSB')
 dev.off()
+
+
+## Do the same plot with 
+df.plot <- data.frame(SSB = SSB$name/(SSB0$name*1e-6))
 
 plotValues(Catch, data.frame(x = df$years,y =df$Catchobs), 'Catch')
 

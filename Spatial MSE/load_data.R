@@ -7,7 +7,7 @@ years <- 1966:2017
 tEnd <- length(years)
 age <- 0:20
 
-F0 <- assessment$F0
+#F0 <- assessment$F0
 
 
 nage <- length(age)
@@ -181,7 +181,7 @@ df <-list(      #### Parameters #####
                 # variance parameters
                 logSDcatch = log(0.01),
                 logSDR = log(1.4), # Fixed in stock assessment ,
-                F0 = F0,
+                #F0 = F0,
                 #logphi_survey = log(0.91),
                 sigma_psel = 1.4,
                 logh = log(0.8),
