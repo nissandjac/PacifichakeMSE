@@ -17,8 +17,11 @@ source('fnMSE.R')
 
 ###### Load the data to run the MSE ######
 df <- load_data_seasons(nseason = 4, nspace = 2,
-                           nsurvey= 2) # Prepare data for operating model 
+                           nsurvey= 2, movemaxinit = 0.5, movefiftyinit = 5) # Prepare data for operating model 
 
 
 ###### Run the MSE using the data above #####
 ls <- fnMSE(df, simyears = 50, TAC = 1, nruns = 1, seedz = 12345) # TAC 1) HCR, 2) JTC, 3) Realized catch
+
+
+# Realized Catch in Canada and the US vs TAC catch

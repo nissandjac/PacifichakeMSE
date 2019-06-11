@@ -2,7 +2,8 @@
 
 ###### Initialize the operating model ###### 
 source('load_files_OM.R')
-
+source('load_data_seasons_future.R')
+assessment <- read.csv('data/asssessment_MLE.csv')
 plot.figures = FALSE # Set true for printing to file 
 # Run the simulation model
 
@@ -16,15 +17,15 @@ df <- load_data_seasons_future(yr.future)
 Catch.future <- c(df$Catch, rep(206507.8, yr.future))
 df$Catch <- Catch.future
 
-sim.data <- run.agebased.true.catch(df,seed =  2)
+sim.data <- run.agebased.true.catch(df,seed =  12345)
 SSB0 <- sum(sim.data$SSB_0)
 
-plot(sim.data$SSB[,2])
-lines(assessment$SSB)
+plot(df$years,rowSums(sim.data$SSB)*0.5)
+lines(assessment$year,assessment$SSB)
 
 SSB.save <- matrix(NA, df$nyear, nruns)
 survey.save <- matrix(NA, df$nyear, nruns)
-R.save <- matrix(NA, df$nyear, nruns)
+R.save <- matrix(NA, df$nyear+1, nruns)
 Catch.save <- matrix(NA,df$nyear,nruns)
 run.true <- matrix(1, nruns)
 
@@ -37,7 +38,7 @@ for(i in 1:nruns){
   df <- load_data_seasons_future(yr.future)
   df$Catch <- Catch.future
   
-  sim.data <- try(run.agebased.true.catch(df,seed =  seedz[i]), silent = TRUE)
+  sim.data <- try(run.agebased.true.catch(df,seed =  seedz[i]), silent = FALSE)
   
   if(is.list(sim.data)){
   SSB.save[,i] <- rowSums(sim.data$SSB)

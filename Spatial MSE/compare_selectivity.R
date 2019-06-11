@@ -3,21 +3,18 @@ source('getParms_noAge.R')
 source('getSelec.R')
 source('load_data.R')
 source('load_data_ss.R')
-
+source('getParameters.R')
 library(reshape2)
 
 mod <- SS_output(paste(getwd(),'/data/', sep =''), printstats=FALSE, verbose = FALSE) # Read the true selectivity 
 
 df <- load_data_ss(mod)
 
-parms <- getParms_noage(mod)
+parms <- getParameters(TRUE, mod = mod, df)
 sel.tmp <- mod$ageselex[mod$ageselex$Factor == 'Asel' & mod$ageselex$Yr > 1989 & mod$ageselex$Yr < 2018 & mod$ageselex$Fleet == 1,]
 # Plot the selectivity 
 sel.ss3 <- melt(sel.tmp, id.vars = 'Yr',measure.vars = paste(0:20), variable.name = 'age', value.name = 'sel')
 sel.ss3$model <- 'ss3'
-
-ggplot(sel.ss3, aes(x = as.numeric(age), y = sel)) + geom_line()+theme_classic()+facet_wrap(~Yr)+
-  coord_cartesian(ylim = c(0, 1.2))
 
 ### Calculate the Nis selectivity ### 
 yrs <- unique(sel.ss3$Yr)
@@ -43,19 +40,13 @@ ggplot(df.plot, aes(x = as.numeric(age), y = sel, color = model)) + geom_line()+
   coord_cartesian(ylim = c(0, 1.2))+geom_point(data = sel.ss3, size = 0.5)
 
 
-
 # From the actual TMB model 
 # Run the hake assessment 
 source('load_files.R')
+
 library(r4ss)
-# Read the assessment data 
-assessment <- read.csv('data/asssessment_MLE.csv')
-assessment <- assessment[assessment$year > 1965 &assessment$year < 2018 ,]
 
-catches.obs <- read.csv('data/catches.csv') # Read the historical catches
-mod <- SS_output(paste(getwd(),'/data/', sep =''), printstats=FALSE, verbose = FALSE)
-
-df <- load_data()
+df <- load_data_ss(mod)
 df$smul <- 1
 years <- df$years
 
@@ -77,9 +68,18 @@ plot(df$years,SSB.obs)
 lines(df$years,SSBass)
 
 # Compare selectivity in year 1993
-plot(vars$selectivity_save[,which(df$years == 1992)])
-lines(mod$ageselex[mod$ageselex$Yr == 1992 & mod$ageselex$Fleet == 1])
+sel.est.tmp <- as.data.frame(t(vars$selectivity_save))
+colnames(sel.est.tmp) <- df$age
+
+sel.est.tmp$Yr <- df$years
+
+sel.est <- melt(sel.est.tmp, id.vars = 'Yr', measure.vars = 0:20, variable.name = 'age', value.name = 'sel' )
+sel.est$model <- 'estimated'
+
+df.plot <- rbind(sel.ss3, sel.tmb, sel.est[sel.est$Yr>1989,])
+
+ggplot(df.plot, aes(x = as.numeric(age), y = sel, color = model)) + geom_line()+theme_classic()+facet_wrap(~Yr)+
+  coord_cartesian(ylim = c(0, 1.2))+geom_point(data = sel.ss3, size = 0.5)
 
 
-plot(df$years,df$Catchobs)
-lines(df$years,obj$report()$Catch)
+

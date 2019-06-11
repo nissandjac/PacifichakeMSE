@@ -1,6 +1,8 @@
 ## Load the hake data
 # year and age input 
-load_data_seasons_future <- function(yr.future, move = TRUE){
+load_data_seasons_future <- function(yr.future, nseason = 4, nspace = 2,
+                                     movemaxinit = 0.5, movefiftyinit = 5, 
+                                     nsurvey = 2){
   
   
   years <- 1966:(2017+yr.future)
@@ -14,7 +16,7 @@ load_data_seasons_future <- function(yr.future, move = TRUE){
   msel <- rep(1,nage)
   
   # Maturity
-  mat <- read.csv('maturity.csv')
+  mat <- read.csv('data/maturity.csv')
   # Spatial stuff
   nspace <- 2 # number of grid cells 
   
@@ -74,9 +76,10 @@ load_data_seasons_future <- function(yr.future, move = TRUE){
   
   
   
-  # weight at age 
-  wage <- read.csv('waa.csv')
-  wage_unfished <- read.csv('unfished_waa.csv')
+  # weight at age # weight at age 
+  wage <- read.csv('data/waa.csv')
+  wage_unfished <- read.csv('data/unfished_waa.csv')
+  
   
   # Make the weight at ages the same length as the time series 
   wage_ssb = rbind(matrix(rep(as.numeric(wage_unfished[2:(nage+1)]),each = 9), nrow = 9),
@@ -96,21 +99,32 @@ load_data_seasons_future <- function(yr.future, move = TRUE){
                    matrix(rep(as.numeric(wage_unfished[2:(nage+1)]),each = yr.future), nrow = yr.future))
   # names(wage)[3:23] <- 0:20
   # wage <- melt(wage, id = c("year", "fleet"), value.name = 'growth', variable.name = 'age')
-  
-  # Catch
-  catch <- read.csv('hake_totcatch.csv')
+  catch <- read.csv('data/hake_totcatch.csv')
   
   # Survey abundance
-  df.survey <- read.csv('acoustic survey.csv')
+  df.survey <- read.csv('data/acoustic survey.csv')
+  # Maturity
+  mat <- read.csv('data/maturity.csv')
   
   
+  # Catch
   
-  # Age comps
-  
-  age_survey.df <- read.csv('agecomps_survey.csv')
+  age_survey.df <- read.csv('data/agecomps_survey.csv')
   age_survey.df$flag <- 1
-  age_catch.df <- read.csv('agecomps_fishery.csv')
+  age_catch.df <- read.csv('data/agecomps_fishery.csv')
   age_catch.df$flag <- 1
+  
+  if(nseason == 4){
+    surveyseason <- 3
+    
+  }else{
+    surveyseason <- floor(nseason/2)
+  }
+  
+  
+  if(nseason == 1){
+    surveyseason = 1
+  }
   # Insert dummy years
   
   age_survey <- as.data.frame(matrix(-1, nyear,dim(age_survey.df)[2]))
@@ -119,7 +133,6 @@ load_data_seasons_future <- function(yr.future, move = TRUE){
   age_catch <- as.data.frame(matrix(-1, nyear,dim(age_catch.df)[2]))
   names(age_catch) <- names(age_catch.df)
   age_catch$year <- years
-  age_catch$nTrips[years > 2017] <- mean(floor(age_catch$nTrips[age_catch$nTrips>0]))
   
   for (i in 1:dim(age_survey.df)[1]){
     idx <- which(age_survey$year == age_survey.df$year[i])
@@ -135,23 +148,20 @@ load_data_seasons_future <- function(yr.future, move = TRUE){
   
   # Load parameters from the assessment 
   
-  Rdev <- read.csv('Rdev.csv')[,2]
-  initN <- read.csv('initN.csv', header = F)[,2]
+  initN <- rev(read.csv('data/Ninit_MLE.csv')[,1])
+  Rdev <- read.csv('data/Rdev_MLE.csv')[,1]
+  PSEL <- as.matrix(read.csv('data/p_MLE.csv'))
+  #Fin <- assessment$F0
   
-  PSEL <- as.matrix(read.csv('p_estimated.csv'))
-  
-  b <- matrix(0,length(years))
-  Yr <- years#1966:max(years)
+  b <- matrix(NA, nyear)
+  Yr <- 1946:2017
   # Parameters 
   yb_1 <- 1965 #_last_early_yr_nobias_adj_in_MPD
   yb_2 <- 1971 #_first_yr_fullbias_adj_in_MPD
   yb_3 <- 2016 #_last_yr_fullbias_adj_in_MPD
   yb_4 <- 2017 #_first_recent_yr_nobias_adj_in_MPD
-  yb_3 <- years[nyear-1]
-  yb_4 <- years[nyear]
-   
-  
   b_max <- 0.87 #_max_bias_adj_in_MPD
+  
   b[1] <- 0
   for(j in 2:length(Yr)){
     
@@ -176,6 +186,7 @@ load_data_seasons_future <- function(yr.future, move = TRUE){
     #   stop('why')
     # }
   }  
+  
   #b <- matrix(1, tEnd)
   
   psel<- matrix(NA,nspace, 5) 
@@ -185,7 +196,7 @@ load_data_seasons_future <- function(yr.future, move = TRUE){
   }
   
   parms <- list( # Just start all the simluations with the same initial conditions 
-    logRinit = 14.5614*1.015,
+    logRinit = 14.5614,
     logh = log(0.861909),
     logMinit = log(0.213686),
     logSDsurv = log(0.257246),
@@ -244,6 +255,7 @@ load_data_seasons_future <- function(yr.future, move = TRUE){
                   logphi_survey = log(0.91),
                   move = move,
                   years = years,
+                  smul = 0.6,
                   b = b,
                   # Space parameters 
                   nspace = nspace,
@@ -257,6 +269,8 @@ load_data_seasons_future <- function(yr.future, move = TRUE){
   )
   
   
+  Catch.obs <- read.csv('data/hake_totcatch.csv') # Total catch
+  df$Catch <- Catch.obs$Fishery # Add the observed catch
 # Correct for future years 
   
   if(max(years) > 2017){

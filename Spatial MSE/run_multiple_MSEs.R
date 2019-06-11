@@ -1,5 +1,5 @@
 ###### Run the HAKE MSE ####### 
-run_multiple_MSEs <- function(simyears = NULL,seed = 12345,
+run_multiple_MSEs <- function(simyears = NULL,seeds = 12345,
                               moveparms = NA, TAC = 1, df = NA){
 require(ggplot2)
   
@@ -7,6 +7,7 @@ if(is.null(simyears)){
   print('Number of years to simulate not specified. Simulating 30 years into the future')
   simyears <- 30
 }
+  
   
 #   if(is.na(moveparms[1])){
 # df <- load_data_seasons(move = TRUE,
@@ -24,7 +25,7 @@ yrinit <- df$nyear
 
 year.future <- c(df$years,(df$years[length(df$years)]+1):(df$years[length(df$years)]+simyears))
 N0 <- NA
-sim.data <- run.agebased.true.catch(df,seed)
+sim.data <- run.agebased.true.catch(df,seeds)
 simdata0 <- sim.data # The other one is gonna get overwritten. 
 
 F40.save<- array(NA,simyears)
@@ -83,15 +84,22 @@ for (time in 1:simyears){
       df$wage_mid <- df.new$wage_mid
       df$wage_ssb <- df.new$wage_ssb
       df$Catch <- c(df$Catch, Fnew[[1]])
-      df$b[length(df$b)] <- 0.870
-      df$b <- c(df$b,0.87)
+      df$b[length(df$b)] <- 0.0
+      df$b <- c(df$b,0.0)
       Rdevs <- rnorm(n = 1,mean = 0, sd = exp(df$logSDR))
       #Rdevs <- rep(0, yr.future)
       df$parms$Rin <- c(df$parms$Rin,Rdevs)
+      
+      
+      ### Add movement to the new years
+      move.tmp <- array(0, dim = c(df$nspace,df$nage, df$nseason, df$nyear))
+      move.tmp[,,,1:df$nyear-1] <- df$movemat
+      move.tmp[,,,df$nyear] <- df$movemat[,,,df$nyear-1]
+      df$movemat <- move.tmp
       #df$years <- c(df$years,df$years[length(df$years)]+1)
       
       
-      sim.data <- run.agebased.true.catch(df, seed)
+      sim.data <- run.agebased.true.catch(df, seeds)
       
     }
     
@@ -117,7 +125,7 @@ for (time in 1:simyears){
     # )
     # 
   
-    parms <- getParameters(TRUE)
+    parms <- getParameters(trueparms = FALSE, df = df)
     
     ##  Create a data frame to send to runHakeassessment 
     
@@ -265,7 +273,8 @@ ams <- data.frame(year = year.future[1:year],
                   ams.US  = calcMeanAge(sim.data$age_comps_country[,,2], df$age_maxage),
                   ams.tot = calcMeanAge(sim.data$age_comps_surv, df$age_maxage))
 
-df.ret <- list(Catch = sim.data$Catch,  # All output is from the OM 
+df.ret <- list(Catch = sim.data$Catch, 
+               Catch.quota = sim.data$Catch.quota,# All output is from the OM 
                SSB = sim.data$SSB, 
                SSB.mid = sim.data$SSB.all[,3,],
                SSB.hes = SSB.hes,

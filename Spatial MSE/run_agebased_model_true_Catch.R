@@ -1,6 +1,6 @@
 # Run an agebased model based on the parameters from the estimation model
 
-run.agebased.true.catch <- function(df, seed = 100){
+run.agebased.true.catch <- function(df, seeds = 100){
   # Constant parameters
   # Initialize the stock by age and sex
   
@@ -9,7 +9,7 @@ run.agebased.true.catch <- function(df, seed = 100){
   #   
     
 
-  set.seed(seed)
+  set.seed(seeds)
   
   nseason <- df$nseason
   
@@ -113,6 +113,7 @@ run.agebased.true.catch <- function(df, seed = 100){
   
   Catch.save.age <- array(NA,dim = c(nage,nyear, nspace, nseason))
   CatchN.save.age <- array(NA,dim = c(nage,nyear, nspace, nseason))
+  Catch.quota <- array(NA, dim = c(nyear, nspace, nseason))
   
   survey <- array(NA,dim = c(nyear))
   survey.true <- array(NA, dim = c(nspace, nyear))
@@ -247,7 +248,10 @@ run.agebased.true.catch <- function(df, seed = 100){
         B.tmp <-  sum(N.save.age[,yr,space,season]*exp(-Mseason*pope.mul)*w_catch*Fsel) # Get biomass from previous year
         N.tmp <- N.save.age[,yr,space,season]#
         
-        Fout <- getF(E.temp,B.tmp)
+        Fout <- getF(E.temp,B.tmp,year = df$years[yr], season, space)
+        
+        Catch.quota[yr,space,season] <- E.temp
+        Fout <- Fout[1]
         
         if(E.temp>0){
           Fseason <- Fout*Fsel
@@ -464,6 +468,7 @@ run.agebased.true.catch <- function(df, seed = 100){
                      CatchN.save.age = CatchN.save.age,
                      Catch = Catch, 
                      Catch.age = Catch.age, 
+                     Catch.quota = Catch.quota,
                      Nout = N.save.age, 
                      age_comps_OM = age_comps_OM,
                      age_catch = age_comps_catch,

@@ -1,11 +1,11 @@
-getF <- function(E.temp,B.tmp){
+getF <- function(E.temp,B.tmp, year = 123, season = 1, space = 1, Enew = NA){
 
 if(E.temp > 0){
   
   if(E.temp/B.tmp > 1){
-    #stop(paste('Catch exceeds available biomass in year:',df$years[yr],' and season', season, 'area', space))
-    stop(paste('Catch exceeds available biomass in year:'))#,df$years[yr],' and season', season, 'area', space))
-    
+    #stop(paste('Catch exceeds available biomass season', season, 'area', space))
+    print(paste('Catch exceeds available biomass in year:',year,' and season', season, 'area', space))
+    Enew <- 0.90*B.tmp
   }
   
   temp <- E.temp/(B.tmp + 0.1*E.temp)
@@ -34,6 +34,11 @@ if(E.temp > 0){
   }else{
   Fout <- 0
   }
-
-  return(Fout)
+  
+  if(is.na(Enew)){
+    Enew <- E.temp
+  }
+  
+  
+  return(c(Fout,Enew))
 }

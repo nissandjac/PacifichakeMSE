@@ -2,6 +2,8 @@
 library(TMB)
 compile("runHakeassessment.cpp")
 dyn.load(dynlib("runHakeassessment"))
+library(r4ss)
+mod <- SS_output(paste(getwd(),'/data/', sep =''), printstats=FALSE, verbose = FALSE) # Read the true selectivity 
 
 # Set the seed
 seedz <- 12345
@@ -10,9 +12,9 @@ set.seed(seedz)
 source('load_files.R')
 source('load_files_OM.R')
 
-parms.true <- getParameters(TRUE) # Load parameters from assessment
-
 df <- load_data_seasons(nseason = 4, nspace = 2) # Prepare data for operating model
+
+parms.true <- getParameters(TRUE, mod, df) # Load parameters from assessment
 
 time <- 1
 yrinit <- df$nyear
