@@ -9,7 +9,7 @@ if(is.na(seedz)){
   set.seed(seedz)
 }
 
-parms.true <- getParameters(TRUE) # Load parameters from assessment
+parms.true <- getParameters(trueparms = FALSE,df = df) # Load parameters from assessment
 
 time <- 1
 yrinit <- df$nyear
