@@ -14,7 +14,7 @@ source('load_files_OM.R')
 
 df <- load_data_seasons(nseason = 4, nspace = 2) # Prepare data for operating model
 
-parms.true <- getParameters(TRUE, mod, df) # Load parameters from assessment
+parms.true <- getParameters_OM(TRUE,df) # Load parameters from assessment
 
 time <- 1
 yrinit <- df$nyear
@@ -24,7 +24,7 @@ seeds <- floor(runif(n = nruns, min = 1, max = 1e6))
 ### Set targets for harvesting etc 
 #
 
-simyears <- 30 # Project 30 years into the future (2048 that year)
+simyears <- 50 # Project 30 years into the future (2048 that year)
 year.future <- c(df$years,(df$years[length(df$years)]+1):(df$years[length(df$years)]+simyears))
 N0 <- NA
 sim.data <- run.agebased.true.catch(df) # Run the operating model until 2018
@@ -54,7 +54,7 @@ for (i in 1:nruns){
 
 }
 # # # #
-save(ls.save,file = 'results/MSErun_move_JTC.Rdata')
+save(ls.save,file = 'results/MSErun_move_JTC_b0.Rdata')
 
 # ### Loop MSE's with different errors in future survey and recruitment
 ls.save <- list()

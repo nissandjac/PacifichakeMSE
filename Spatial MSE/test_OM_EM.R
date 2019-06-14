@@ -74,7 +74,7 @@ lines(df$years,df$Catch)
 lines(df$years,repsold$Catch, col = 'red')
 # Compare selectivity 
 # Compare selectivity in year 1993
-selyear <- 2010
+selyear <- 1991
 plot(df$age,repsold$selectivity_save[,which(df$years == selyear)], ylim = c(0,1.2))
 lines(df$age, sim.data$Fsel[which(df$years == selyear),1,])
 idx <- which(mod$ageselex$Yr == selyear & mod$ageselex$Factor == 'Asel')

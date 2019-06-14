@@ -7,7 +7,7 @@ nage <- length(age)
 selectivity <- rep(NA,nage)
 pmax <- sum(psel)
 
-for(j in 1:nage){ # Find the  selectivity
+for(j in 1:6){ # Find the  selectivity
   if (age[j] < Smin){
     selectivity[j] = 0;
   }
