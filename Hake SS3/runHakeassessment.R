@@ -31,8 +31,10 @@ plot(df$years,SSBass*0.5)
 lines(assessment$year,assessment$SSB)
 
 # Compare selectivity in year 1993
-plot(vars$selectivity_save[,which(df$years == 1992)])
-lines(mod$ageselex[mod$ageselex$Yr == 1992 & mod$ageselex$Fleet == 1])
+selyear <- 1995
+plot(df$age,vars$selectivity_save[,which(df$years == selyear)])
+idx <- which(mod$ageselex$Yr == selyear & mod$ageselex$Factor == 'Asel')
+lines(df$age,as.numeric(mod$ageselex[idx,8:28]), col = 'red')
 
 
 plot(df$years,df$Catchobs)

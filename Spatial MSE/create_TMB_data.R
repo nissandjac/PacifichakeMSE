@@ -90,7 +90,7 @@ create_TMB_data <- function(sim.data, df){
                   logSDcatch = df$logSDcatch,
                   logSDR = df$logSDR, # Fixed in stock assessment ,
                   logphi_survey = df$logphi_survey,
-                  sigma_psel = 1,
+                  sigma_psel = 1.4,
                   smul = df$smul,
                   Bprior= tau*mu,
                   Aprior = tau*(1-mu),

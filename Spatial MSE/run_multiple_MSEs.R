@@ -125,7 +125,7 @@ for (time in 1:simyears){
     # )
     # 
   
-    parms <- getParameters(trueparms = FALSE, df = df)
+    parms <- getParameters_OM(trueparms = TRUE, df = df)
     
     ##  Create a data frame to send to runHakeassessment 
     
@@ -134,7 +134,7 @@ for (time in 1:simyears){
     parms.new <- parms
     
     if(time == 1){
-      F0 <- parms$F0
+      F0 <- rowSums(sim.data$Fout)
       Rdev <- parms$Rin
     }else{
       F0 <- c(F0,0.2)
@@ -156,8 +156,8 @@ for (time in 1:simyears){
     #lower[names(lower) == 'logSDsurv'] <- 0.05
     
     upper <- obj$par+Inf
-    upper[names(upper) == 'psel_fish' ] <- 5
-    upper[names(upper) == 'PSEL'] <- 5
+    #upper[names(upper) == 'psel_fish' ] <- 5
+    #upper[names(upper) == 'PSEL'] <- 5
     upper[names(upper) == 'logh'] <- log(0.999)
     upper[names(upper) == 'F0'] <- 2
     #upper[names(upper) == "logphi_survey"]<- log(8)
@@ -188,7 +188,8 @@ for (time in 1:simyears){
   Catch <- reps$Catch
   R <- reps$R
   
-  
+  plot(SSB)
+  lines(rowSums(sim.data$SSB))
 
   # # lines(rowSums(sim.data$SSB), col = 'red')
   # # #Uncertainty
@@ -200,6 +201,7 @@ for (time in 1:simyears){
     rep.values<-rownames(sdrep)
     nyear <- df$tEnd
 
+    R <- data.frame(name = sdrep[rep.values == 'R',1])
     
     SSB <- data.frame(name = sdrep[rep.values == 'SSB',1])
     SSB$SE <- sdrep[rep.values == 'SSB',2]

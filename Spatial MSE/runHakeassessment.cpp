@@ -77,8 +77,8 @@ Type objective_function<Type>::operator() ()
   PARAMETER_VECTOR(psel_surv);
   PARAMETER_VECTOR(initN);
   PARAMETER_VECTOR(Rin); // Time varying stuff
-  PARAMETER_VECTOR(F0);
   PARAMETER_ARRAY(PSEL); // Time varying selectivity
+  PARAMETER_VECTOR(F0);
 
   // Transform out of log space
   Type SDsurv = exp(logSDsurv);
@@ -230,6 +230,7 @@ vector<Type>Catchsave(tEnd);
 // // vector<Type>test(3);
 // // test = cumsum(test);
 // REPORT(test)
+//array<Type> PSEL_save(5,)
 
 for(int time=0;time<(tEnd);time++){ // Start time loop
 
@@ -240,6 +241,7 @@ for(int time=0;time<(tEnd);time++){ // Start time loop
            for(int i=0;i<psel_fish.size();i++){
            psel_fish(i) = psel_fish_zero(i)+PSEL(i,time-selYear+1)*sigma_psel;
            }
+
            pmax_catch = sum(psel_fish);
            pmax_catch_save(time) = pmax_catch;
 
@@ -482,6 +484,8 @@ REPORT(selectivity_save)
 REPORT(surveyselc)
 REPORT(N_beg)
 REPORT(N_mid)
+REPORT(pmax_catch_save)
+REPORT(sigma_psel)
 
   return ans;
 }

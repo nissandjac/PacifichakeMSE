@@ -26,8 +26,9 @@ getParameters <- function(trueparms = TRUE){
       psel_surv = c(0.568618,-0.216172,0.305286 ,0.373829),
       initN = rev(initN),
       Rin = Rdev[1:(length(Rdev)-1)],
-      F0 = F0,
-      PSEL = PSEL
+      PSEL = PSEL,
+      F0 = F0
+      
 )
 
 

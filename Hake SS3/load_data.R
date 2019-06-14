@@ -1,32 +1,46 @@
 ## Load the hake data
 # year and age input 
-load_data <- function(){
+load_data <- function(mod){
 
 
-years <- 1966:2017
+years <- 1966:2018 # Manuually change the years
 tEnd <- length(years)
-age <- 0:20
+age <- 0:mod$accuage
 
 # F0 <- assessment$F0
 # F0 <- mod$derived_quants$Value[grep('F_1966',mod$derived_quants$Label):grep('F_2017',mod$derived_quants$Label)]
-F0 <- mod$catch$F[mod$catch$Yr >1965 & mod$catch$Yr <2018]
+F0 <- mod$catch$F[mod$catch$Yr >1965 & mod$catch$Yr <(max(years)+1)]
 
 nage <- length(age)
 msel <- rep(1,nage)
 # Maturity
-mat <- read.csv('data/maturity.csv')
-
+mat <- as.numeric(mod$ageselex[mod$ageselex$Factor == 'Fecund' & mod$ageselex$Yr == 1963,paste(age)])
 # weight at age 
+wage_ss <- mod$wtatage
 wage <- read.csv('data/waa.csv')
 wage_unfished <- read.csv('data/unfished_waa.csv')
 
+
+wage_ssb <- wage_ss[wage_ss$Fleet == -2,paste(age)]
 # Make the weight at ages the same length as the time series 
-wage_ssb = rbind(matrix(rep(as.numeric(wage_unfished[2:(nage+1)]),each = 9), nrow = 9),
-                        as.matrix(wage[wage$fleet == 0,3:(nage+2)]))
-wage_catch = rbind(matrix(rep(as.numeric(wage_unfished[2:(nage+1)]),each = 9), nrow = 9),
-                   as.matrix(wage[wage$fleet == 1,3:(nage+2)]))
-wage_survey = rbind(matrix(rep(as.numeric(wage_unfished[2:(nage+1)]),each = 9), nrow = 9),
-                    as.matrix(wage[wage$fleet == 2,3:(nage+2)]))
+# wage_ssb = rbind(matrix(rep(as.numeric(wage_unfished[2:(nage+1)]),each = 9), nrow = 9),
+#                         as.matrix(wage[wage$fleet == 0,3:(nage+2)]))
+# 
+# plot(years[1:(length(years)-1)],rowMeans(wage_ssb), type = 'l')
+# lines(years,rowMeans(wage_ssb_ss), col = 'green')
+
+# wage_catch = rbind(matrix(rep(as.numeric(wage_unfished[2:(nage+1)]),each = 9), nrow = 9),
+#                    as.matrix(wage[wage$fleet == 1,3:(nage+2)]))
+# plot(years[1:(length(years)-1)],rowMeans(wage_catch), type = 'l')
+
+wage_catch <- wage_ss[wage_ss$Fleet == 1 & wage_ss$Yr > (years[1]-1) & wage_ss$Yr < years[tEnd]+1, paste(age)]
+
+#lines(years,rowMeans(wage_catch), col = 'green')
+
+
+wage_survey <- wage_ss[wage_ss$Fleet == 2 & wage_ss$Yr > (years[1]-1) & wage_ss$Yr < years[tEnd]+1, paste(age)]
+# lines(years,rowMeans(wage_survey), col = 'green')
+
 wage_mid = rbind(matrix(rep(as.numeric(wage_unfished[2:(nage+1)]),each = 9), nrow = 9),
                  as.matrix(wage[wage$fleet == -1,3:(nage+2)]))
 # names(wage)[3:23] <- 0:20
