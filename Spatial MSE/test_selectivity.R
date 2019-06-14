@@ -36,7 +36,7 @@ obj <-MakeADFun(df.new,parms.true,DLL="runHakeassessment", silent = FALSE) # Run
 repsold <- obj$report()
 
 # Compare selectivity estimations
-selyear <- 2010
+selyear <- 2004
 
 # OM selectivity calc 
 source('getSelec.R')
