@@ -21,7 +21,7 @@ df <- load_data_seasons(nseason = 4, nspace = 2,
 
 
 ###### Run the MSE using the data above #####
-ls <- fnMSE(df, simyears = 50, TAC = 1, nruns = 1, seeds = 12345) # TAC 1) HCR, 2) JTC, 3) Realized catch
+ls <- fnMSE(df, simyears = 30, TAC = 1, nruns = 1, seeds = 12345) # TAC 1) HCR, 2) JTC, 3) Realized catch
 
 
 # Realized Catch in Canada and the US vs TAC catch
