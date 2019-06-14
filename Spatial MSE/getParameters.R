@@ -1,4 +1,4 @@
-getParameters <- function(trueparms = TRUE, mod = NA,df){
+getParameters_OM <- function(trueparms = TRUE, mod = NA,df){
   
   
   

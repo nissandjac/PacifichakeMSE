@@ -72,7 +72,7 @@ run.agebased.true.catch <- function(df, seeds = 100){
   SSB_0 <- NA
   
   for(i in 1:nspace){
-    SSB_0[i] <- sum(df$Matsel*N0*move.init[i])*0.5
+    SSB_0[i] <- sum(df$Matsel*N0*move.init[i])
   }
   
   R_0 <- R0*move.init
@@ -107,6 +107,7 @@ run.agebased.true.catch <- function(df, seeds = 100){
   R.save <- matrix(NA,nyear, nspace)
   Fsel.save <- array(NA,dim = c(nyear,nspace, nage))
   Fseason.save <- array(NA,dim = c(nage, nyear, nseason,nspace))
+  Fout.save <- array(NA, dim = c(nyear,nseason,nspace))
   
   N.save.age <- array(NA,dim = c(nage,nyear+1, nspace, nseason))
   N.save.age.mid <- array(NA,dim = c(nage,nyear+1, nspace, nseason))
@@ -151,6 +152,7 @@ run.agebased.true.catch <- function(df, seeds = 100){
   Ninit[2:(nage-1)] <-R0 * exp(-Mage[2:(nage-1)])*exp(-0.5*SDR^2*0+Ninit_dev[1:(nage-2)])
   Ninit[nage] <- R0*exp(-(M[nage]*age[nage]))/(1-exp(-M[nage]))*exp(-0.5*SDR^2*0+Ninit_dev[nage-1])# Plus group (ignore recruitment dev's in first year )
   
+  p.save <-matrix(NA,tEnd)
   
   
   for (space in 1:nspace){
@@ -235,11 +237,17 @@ run.agebased.true.catch <- function(df, seeds = 100){
         # Get the selectivity of the season and area 
         psel <- df$psel[space,] 
         
+
         if(year[yr] > year[df$selYear-1] & year[yr]<2018){
-          psel <- psel+df$parms$PSEL[,yr-df$selYear+1]
+          pseltmp <- psel+df$parms$PSEL[,yr-df$selYear+1]*df$sigma_psel
+        }else{
+          pseltmp <- psel
         }
+        p.save[yr] <- sum(pseltmp)
         # 
-        Fsel <- getSelec(age,psel,df$Smin,df$Smax) # Constant over space right now 
+        Fsel <- getSelec(age,pseltmp,df$Smin,df$Smax) # Constant over space right now 
+        rm(pseltmp)
+        
         Fsel.save[yr,space,] <- Fsel
         
         E.temp <- df$Catch[yr]*Fnseason[season]*Fspace[space] # Catch distribution in the year
@@ -252,6 +260,7 @@ run.agebased.true.catch <- function(df, seeds = 100){
         
         Catch.quota[yr,space,season] <- E.temp
         Fout <- Fout[1]
+        #Fout <- df$parms$F0[yr]
         
         if(E.temp>0){
           Fseason <- Fout*Fsel
@@ -262,8 +271,8 @@ run.agebased.true.catch <- function(df, seeds = 100){
           Fseason <- 0
         }
         
-     
-      
+        Fout.save[yr,season,space] <- Fout # terminal fishing mortality 
+        
         Fseason.save[,yr,season,space] <- Fseason
       
         Z <- Mseason+Fseason
@@ -469,6 +478,7 @@ run.agebased.true.catch <- function(df, seeds = 100){
                      Catch = Catch, 
                      Catch.age = Catch.age, 
                      Catch.quota = Catch.quota,
+                     Fout = Fout.save,
                      Nout = N.save.age, 
                      age_comps_OM = age_comps_OM,
                      age_catch = age_comps_catch,
@@ -483,6 +493,7 @@ run.agebased.true.catch <- function(df, seeds = 100){
                      Fseason = Fseason.save,
                      Fsel = Fsel.save, 
                      N0 = N0,
+                     p.save = p.save,
                      #Fsave = Fseason.save[2:(nyear+1),,],
                      Ninit = Ninit,
                      SSB0 = SSB_0)

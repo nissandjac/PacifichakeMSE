@@ -1,45 +1,31 @@
 ### Run a bunch of MSE's for the future - uncertainty in Recruitment and survey 
-
-setwd("~/GitHub/PacifichakeMSE/Spatial MSE_vs3")
-
+source('load_files.R')
+source('load_files_OM.R')
+source('getParameters_mod.R')
 ###### Initialize the operating model ###### 
+source('calcMeanAge.R')
+source('load_data_seasons_mod.R')
+library(r4ss)
 library(TMB)
+
+# Read the assessment data 
+# assessment <- read.csv('data/asssessment_MLE.csv')
+# assessment <- assessment[assessment$year > 1965 &assessment$year < 2018 ,]
+mod <- SS_output(paste(getwd(),'/data/', sep =''), printstats=FALSE, verbose = FALSE)
+
 compile("runHakeassessment.cpp")
 dyn.load(dynlib("runHakeassessment"))
 
-# Run the simulation model
-source('run_agebased_model_true_Catch_vs3.R')
 
-####  Plotting and uncertainty calculation functions #### 
-source('ylimits.R')
-source('plotUncertainty.R')
-source('getUncertainty.R')
-source('plotValues.R')
+df <- load_data_seasons_mod(nseason = 4, nspace = 2,
+                        movemaxinit = 0.5, movefiftyinit = 5, 
+                        nsurvey = 2, mod = mod)
 
-source('getSelec.R') # Calculate hake selectivity
-source('calcF.R')
-source('load_data_seasons.R') # Loads data for Operating model
-source('create_TMB_data.R') # Compiles operating model data to tmb data
-
-source('getRefpoint.R') # Calculate refrence points 
-source('Check_Identifiable_vs2.R') # see if hessian is positive definite 
-
-source('getParameters.R')
-source('calcSSB0.R')
-source('run_multiple_MSEs.R')
-source('load_data_seasons_move.R')
-source('calcMeanAge.R')
-
-assessment <- read.csv('asssessment_MLE.csv')
-assessment <- assessment[assessment$year > 1965 &assessment$year < 2018 ,]
-
-#parms.true <- getParameters(TRUE)
-Catch.obs <- read.csv('hake_totcatch.csv')
-
-df <- load_data_seasons(move = FALSE,nseason = 1,nspace = 1)
-df$Catch <- Catch.obs$Fishery
 time <- 1
 yrinit <- df$nyear
+
+parms <- getParameters_mod(TRUE,mod = mod, df= df)
+
 ### Run the OM and the EM for x number of years in the MSE 
 ### Set targets for harvesting etc 
 #
@@ -52,46 +38,48 @@ seed <- 123
 
 sim.data <- run.agebased.true.catch(df)
 
-PSEL <- matrix(0,5, length(1991:df$years[length(df$years)]))
-initN <- rep(0,df$nage-1)
-F0 <- rep(0.1, df$nyear)
-Rdev <- rep(0, df$nyear-1)
+SSB.idx <- grep('SSB_1966', rownames(mod$derived_quants)):grep('SSB_2017', rownames(mod$derived_quants))
+SSB.ss3 <- mod$derived_quants$Value[SSB.idx]
 
-parms <- list( # Just start all the simluations with the same initial conditions 
-  logRinit = 15,
-  logh = log(0.8),
-  logMinit = log(0.3),
-  logSDsurv = log(0.3),
-  logphi_catch = log(0.8276),
-  logphi_survey = log(11.33),
-  # Selectivity parameters 
-  psel_fish = c(2.486490, 0.928255,0.392144,0.214365,0.475473),
-  psel_surv = c(0.568618,-0.216172,0.305286 ,0.373829),
-  initN = initN,
-  Rin = Rdev,
-  F0 = F0,
-  PSEL = PSEL
-)
-
+parms.true <- getParameters_OM(TRUE, df)
+parms.true$F0 <- rowSums(sim.data$Fout)
 ##  Create a data frame to send to runHakeassessment 
 
 df.new <- create_TMB_data(sim.data, df)
 #@df2 <- load_data()
-parms.true <- df$parms
-parms.true$F0 <- sim.data$Fsave
+# parms.true$F0 <- df$parms$F0
 
 if(exists('obj')){
   rm(obj)
 }
 
 
-obj <-MakeADFun(df.new,parms,DLL="runHakeassessment", silent = FALSE) # Run the assessment 
+obj <-MakeADFun(df.new,parms.true,DLL="runHakeassessment", silent = FALSE) # Run the assessment 
 #obj2 <-MakeADFun(df2,parms,DLL="runHakeassessment", silent = TRUE) # Run the assessment 
 
 repsold <- obj$report()
 
-plot(df$years,repsold$CatchN)
-lines(df$years,colSums(sim.data$CatchN.save.age))
+
+plot(repsold$pmax_catch_save)
+lines(sim.data$p.save)
+
+
+
+plot(df$years,rowSums(sim.data$SSB), type ='l')
+lines(df$years, SSB.ss3)
+lines(df$years,repsold$SSB, col = 'red')
+
+plot(df$years,sim.data$Catch)
+lines(df$years,df$Catch)
+lines(df$years,repsold$Catch, col = 'red')
+# Compare selectivity 
+# Compare selectivity in year 1993
+selyear <- 2010
+plot(df$age,repsold$selectivity_save[,which(df$years == selyear)], ylim = c(0,1.2))
+lines(df$age, sim.data$Fsel[which(df$years == selyear),1,])
+idx <- which(mod$ageselex$Yr == selyear & mod$ageselex$Factor == 'Asel')
+lines(df$age,as.numeric(mod$ageselex[idx,8:28]), col = 'red')
+
 
 plot(df$years,repsold$Catch)
 lines(df$years,sim.data$Catch)
@@ -100,33 +88,8 @@ lines(df$years,df$Catch, col = 'red')
 #lines(df$years, rep(1, df$nyear))
 
 
-plot(df$age,repsold$N[,1]/sim.data$N.save.age[,1])
+#plot(df$age,repsold$N[,1]/sim.data$N.save.age[,1])
 
-
-age.ass <- calcMeanAge(repsold$age_catch_est,df.new$age_maxage)
-age.sim <- calcMeanAge(df.new$age_catch,df.new$age_maxage)
-
-plot(df$years,repsold$age_catch_est[5,]/df.new$age_catch[5,])
-
-plot(df$years,age.ass/age.sim)
-
-AS.ass <- calcMeanAge(repsold$age_survey_est,df.new$age_maxage)
-AS.sim <- calcMeanAge(df.new$age_survey,df.new$age_maxage)
-AS.sim[is.na(AS.sim)] <- 0
-
-plot(df$years[AS.ass >0],AS.ass[AS.ass >0]/AS.sim[AS.sim >0])
-#lines(df$years[AS.sim >0],, col = 'red',type = )
-
-plot(df$years,sim.data$survey.true/repsold$Surveyobs)
-
-plot(df$years,sim.data$survey)
-lines(df$years,repsold$Surveyobs)
-
-plot(df$years, repsold$Catch/sim.data$Catch)
-#lines(df$years, sim.data$Catch)
-#lines(df$years, df$Catch, col = 'red')
-
-plot(df$years,repsold$Zsave[15,]/sim.data$Z[15,])
 
 lower <- obj$par-Inf
 upper <- obj$par+Inf
@@ -167,8 +130,8 @@ R <- reps$R
 
 
 plot(SSB)
-lines(assessment$SSB)
-lines((sim.data$SSB), col = 'red')
+lines(SSB.ss3)
+lines(rowSums(sim.data$SSB), col = 'red')
 
 # Plot all the fitted data 
 

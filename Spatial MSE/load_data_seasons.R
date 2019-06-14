@@ -190,7 +190,7 @@ load_data_seasons <- function(nseason = 4, nspace = 2,
        logSDsurv = log(0.257246),
        #logSDR = log(1.4),
        logphi_catch = log(0.8276),
-       logphi_survey = log(11.33),
+       #logphi_survey = log(11.33),
        # logSDF = log(0.1),
        # Selectivity parameters 
        psel_fish = c(2.486490, 0.928255,0.392144,0.214365,0.475473),
@@ -252,7 +252,7 @@ load_data_seasons <- function(nseason = 4, nspace = 2,
                   #logh = log(0.8),
                   # Space parameters 
                   smul = 0.6, # Annual survey timing 
-                  
+                  sigma_psel = 1.4,
                   nspace = nspace,
                   #TAC = TAC,
                   movemat = movemat,
