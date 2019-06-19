@@ -1,4 +1,4 @@
-hake_objectives <- function(ls.MSE, sim.data,simyears = NA, move = NA){
+hake_objectives <- function(ls.MSE, SSB0,simyears = NA, move = NA){
   #'   
   #' @ls.mse # A list of individual MSE runs. Should contain Biomass, Catch, and df with parameters    
   # sim.data # Initial years of the operating model   
@@ -9,14 +9,23 @@ hake_objectives <- function(ls.MSE, sim.data,simyears = NA, move = NA){
   }
   yr <- 1966:(2017+simyears-1)
   
+  idx <- 1
+  
+  if(all(is.na(ls.MSE[[idx]]))){
+    idx <- 2
+  }
+  if(all(is.na(ls.MSE[[idx]]))){
+    idx <- 3
+  }
+  
   if(is.na(move)){
-    SSB.plot <- data.frame(SSB = (ls.MSE[[1]]$SSB)/(sim.data$SSB_0), year = yr, run = paste('run',1, sep=''))
+    SSB.plot <- data.frame(SSB = (ls.MSE[[idx]]$SSB)/(sim.data$SSB_0), year = yr, run = paste('run',1, sep=''))
   }else{
-    SSB.plot <- data.frame(SSB = rowSums(ls.MSE[[1]]$SSB)/sum(sim.data$SSB_0), year = yr, run = paste('run',1, sep=''))
+    SSB.plot <- data.frame(SSB = rowSums(ls.MSE[[idx]]$SSB)/sum(sim.data$SSB_0), year = yr, run = paste('run',1, sep=''))
   }  
   
-  Catch.plot <- data.frame(Catch = ls.MSE[[1]]$Catch, year = yr, run = paste('run',1, sep=''))
-  AAV.plot  <- data.frame(AAV = abs(ls.MSE[[1]]$Catch[2:length(yr)]-ls.MSE[[1]]$Catch[1:(length(yr)-1)])/ls.MSE[[1]]$Catch[1:(length(yr)-1)], 
+  Catch.plot <- data.frame(Catch = ls.MSE[[idx]]$Catch, year = yr, run = paste('run',1, sep=''))
+  AAV.plot  <- data.frame(AAV = abs(ls.MSE[[idx]]$Catch[2:length(yr)]-ls.MSE[[idx]]$Catch[1:(length(yr)-1)])/ls.MSE[[idx]]$Catch[1:(length(yr)-1)], 
                           year = yr[2:length(yr)], run = paste('run',1, sep=''))
   
   for(i in 2:nruns){

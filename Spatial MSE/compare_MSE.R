@@ -5,6 +5,8 @@ require(ggplot2)
 require(dplyr)
 require(scales)
 require(RColorBrewer)
+require(cowplot)
+source('load_files_OM.R')
 
 load('results/MSErun_move_JMC.Rdata')
 ls.JMC <- ls.save 
@@ -12,35 +14,41 @@ load('results/MSErun_move_JTC.Rdata')
 ls.JTC <- ls.save
 load('results/MSErun_move_realized.Rdata')
 ls.Realized <- ls.save
-load('results/sim_data.Rdata')
+#load('results/sim_data.Rdata')
 load('results/MSErun_move_realized_move1.Rdata')
 ls.move1 <- ls.save
 load('results/MSErun_move_realized_move2.Rdata')
 ls.move2 <- ls.save
-load('results/MSErun_move_realized_move3.Rdata')
+#load('results/MSErun_move_realized_move3.Rdata')
 ls.move3 <- ls.save
 simyears <- 30
 yr <- 1966:(2017+simyears-1)
 nruns <- 100
 
+
+df <- load_data_seasons(nseason = 4, nspace = 2) # Prepare data for operating model
+sim.data <- run.agebased.true.catch(df)
+
+
+
 source('hake_objectives.R')
-obj.JMC <- hake_objectives(ls.JMC,sim.data, move = 1)
+obj.JMC <- hake_objectives(ls.JMC,sim.data$SSB0, move = 1, simyears = 30)
 obj.JMC[[2]]$HCR <- 'JMC'
 
-obj.JTC <- hake_objectives(ls.JTC,sim.data, move = 1)
+obj.JTC <- hake_objectives(ls.JTC,sim.data$SSB0, move = 1, simyears = 30)
 obj.JTC[[2]]$HCR <- 'HCR'
 
-obj.real <- hake_objectives(ls.Realized,sim.data, move = 1) 
+obj.real <- hake_objectives(ls.Realized,sim.data, move = 1, simyears = 30) 
 obj.real[[2]]$HCR <- 'real'
 
-obj.move1 <- hake_objectives(ls.move1,sim.data, move = 1) 
+obj.move1 <- hake_objectives(ls.move1,sim.data, move = 1, simyears = 30) 
 obj.move1[[2]]$HCR <- 'move1'
 
-obj.move2 <- hake_objectives(ls.move2,sim.data, move = 1) 
+obj.move2 <- hake_objectives(ls.move2,sim.data, move = 1, simyears = 30) 
 
 obj.move2[[2]]$HCR <- 'move2'
 
-obj.move3 <- hake_objectives(ls.move3,sim.data, move = 1) 
+obj.move3 <- hake_objectives(ls.move3,sim.data, move = 1, simyears = 30)
 obj.move3[[2]]$HCR <- 'move3'
 
 
@@ -61,12 +69,12 @@ dev.off()
 
 ### Plot the future spawning biomass 
 
-ls.HCR.plot <- df_lists(ls.JTC, 'HCR')
-ls.JMC.plot <- df_lists(ls.JMC, 'JMC')
-ls.real.plot <- df_lists(ls.Realized, 'Realized')
-ls.move1.plot <- df_lists(ls.move1, 'Move 1')
-ls.move2.plot <- df_lists(ls.move2, 'Move 2')
-ls.move3.plot <- df_lists(ls.move3, 'Move 3')
+ls.HCR.plot <- df_lists(ls.JTC[-1], 'HCR',simyears = 30)
+ls.JMC.plot <- df_lists(ls.JMC, 'JMC',simyears = 30)
+ls.real.plot <- df_lists(ls.Realized[-1], 'Realized',simyears = 30)
+ls.move1.plot <- df_lists(ls.move1, 'Move 1',simyears = 30)
+ls.move2.plot <- df_lists(ls.move2, 'Move 2',simyears = 30)
+ls.move3.plot <- df_lists(ls.move3, 'Move 3',simyears = 30)
 
 df.all <- rbind(ls.HCR.plot[[3]]$SSBplot, ls.JMC.plot[[3]]$SSBplot,ls.real.plot[[3]]$SSBplot,
                 ls.move1.plot[[3]]$SSBplot,ls.move2.plot[[3]]$SSBplot, ls.move3.plot[[3]]$SSBplot
@@ -89,7 +97,7 @@ df.catch.2$run <- ordered(df.catch.2$run, levels = c('Move 1','Move 2','Move 3')
 
 cols <- brewer.pal(6, 'Dark2')
 p2.1 <- ggplot(df.catch.1, aes(x = year, y = med*1e-6))+geom_line(size = 2)+
-  geom_ribbon(aes(ymin = p5*1e-6, ymax = p95*1e-6), linetype = 2, fill = alpha())+
+  #geom_ribbon(aes(ymin = p5*1e-6, ymax = p95*1e-6), linetype = 2, fill = alpha(alpha =0.2, colour = cols))+
   scale_color_manual(values=cols[1:3])+scale_y_continuous(name = 'Catch (million tonnes)')+
   geom_line(aes(y = p5*1e-6, color = run), linetype = 2)+geom_line(aes(y = p95*1e-6, color = run), linetype = 2)+
   facet_wrap(~run)

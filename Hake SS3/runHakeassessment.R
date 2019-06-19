@@ -31,11 +31,6 @@ plot(df$years,SSBass*0.5)
 lines(assessment$year,assessment$SSB)
 
 # Compare selectivity in year 1993
-selyear <- 1995
-plot(df$age,vars$selectivity_save[,which(df$years == selyear)])
-idx <- which(mod$ageselex$Yr == selyear & mod$ageselex$Factor == 'Asel')
-lines(df$age,as.numeric(mod$ageselex[idx,8:28]), col = 'red')
-
 
 plot(df$years,df$Catchobs)
 lines(df$years,obj$report()$Catch)
@@ -44,7 +39,7 @@ lower <- obj$par-Inf
 
 lower[names(lower) == 'F0'] <- 0.001
 upper <- obj$par+Inf
-#upper[names(upper) == 'psel_fish' ] <- 5
+upper[names(upper) == 'psel_fish' ] <- 5
 upper[names(upper) == 'PSEL'] <- 9
 upper[names(upper) == 'logh'] <- log(0.999)
 upper[names(upper) == 'F0'] <- 2
@@ -89,9 +84,9 @@ SSB$max <- SSB$max*1e-6
 SSB.ss3 <- mod$derived_quants$Value[grep('SSB_1966', mod$derived_quants$Label):grep('SSB_2017', mod$derived_quants$Label)]*1e-6
 
 
-png('Figures/SSB_survey_mid.png', width = 16, height = 12, unit = 'cm', res =400)
+#png('Figures/SSB_survey_mid.png', width = 16, height = 12, unit = 'cm', res =400)
 plotValues(SSB, data.frame(x= assessment$year, y= SSB.ss3),'SSB')
-dev.off()
+#dev.off()
 
 
 ## Do the same plot with 

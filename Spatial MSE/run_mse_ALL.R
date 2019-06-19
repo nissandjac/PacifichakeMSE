@@ -54,7 +54,7 @@ for (i in 1:nruns){
 
 }
 # # # #
-save(ls.save,file = 'results/MSErun_move_JTC_b0.Rdata')
+save(ls.save,file = 'results/MSErun_move_JTC.Rdata')
 
 # ### Loop MSE's with different errors in future survey and recruitment
 ls.save <- list()
@@ -103,8 +103,10 @@ save(ls.save,file = 'results/MSErun_move_realized.Rdata')
 
 ls.save <- list()
 ls.converge <- matrix(0, nruns)
+df <- load_data_seasons(nseason = 4, nspace = 2,movemaxinit = 0.15, movefiftyinit = 5) # Prepare data for operating model
+
 for (i in 1:nruns){
-  tmp <- try(run_multiple_MSEs(simyears = 30, seeds[i],moveparms = c(0.1,5),
+  tmp <- try(run_multiple_MSEs(simyears = 30, seeds[i],
                                TAC = 2, df =df),silent = FALSE)
   #tmp <- run_multiple_MSEs(simyears = 30, seeds[i])
   print(i)
@@ -124,8 +126,14 @@ for (i in 1:nruns){
 # # # # 
 save(ls.save,file = 'results/MSErun_move_realized_move1.Rdata')
 
+ls.save <- list()
+ls.converge <- matrix(0, nruns)
+
+df <- load_data_seasons(nseason = 4, nspace = 2,movemaxinit = 0.3, movefiftyinit = 5) # Prepare data for operating model
+
+
 for (i in 1:nruns){
-  tmp <- try(run_multiple_MSEs(simyears = 30, seeds[i],moveparms = c(0.75,5),
+  tmp <- try(run_multiple_MSEs(simyears = 30, seeds[i],
                                TAC = 2, df =df),silent = FALSE)
   #tmp <- run_multiple_MSEs(simyears = 30, seeds[i])
   print(i)
@@ -141,9 +149,13 @@ for (i in 1:nruns){
 # # # # 
 save(ls.save,file = 'results/MSErun_move_realized_move2.Rdata')
 
+ls.save <- list()
+ls.converge <- matrix(0, nruns)
+df <- load_data_seasons(nseason = 4, nspace = 2,movemaxinit = 0.05, movefiftyinit = 2) # Prepare data for operating model
+
 
 for (i in 1:nruns){
-  tmp <- try(run_multiple_MSEs(simyears = 30, seeds[i],moveparms = c(0.5,2), TAC = 2, df =df),silent = FALSE)
+  tmp <- try(run_multiple_MSEs(simyears = 30, seeds[i], TAC = 2, df =df),silent = FALSE)
   #tmp <- run_multiple_MSEs(simyears = 30, seeds[i])
   print(i)
   if(is.list(tmp)){

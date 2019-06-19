@@ -10,9 +10,11 @@ if(E.temp > 0){
       Enew <- 0.90*B.tmp
   }
   
+  if(is.na(Enew)){
+    Enew <- E.temp
+  }
   
-  
-  temp <- E.temp/(B.tmp + 0.1*E.temp)
+  temp <- Enew/(B.tmp + 0.1*E.temp)
   join <- (1+exp(30*(temp-0.95)))^-1
   temp2 <- join*temp+0.95*(1-join)
   Fout <- -log(1-temp)
@@ -39,9 +41,7 @@ if(E.temp > 0){
   Fout <- 0
   }
   
-  if(is.na(Enew)){
-    Enew <- E.temp
-  }
+
   
   
   return(c(Fout,Enew))

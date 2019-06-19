@@ -15,9 +15,10 @@ run_multiple_OMs <- function(simyears = 30,seed = 12345,moveparms = NA, Catchin)
   #     }
   # df <- load_data_seasons_move(move = TRUE,movemaxinit = moveparms[1], moveparms[2])
   #   }
-  df <- load_data_seasons(move =TRUE,
-                          nseason = 4, nspace = 2, movemaxinit = moveparms[1], movefiftyinit = moveparms[2])
-  df$Catch <- Catch.obs$Fishery
+  df <- load_data_seasons(nseason = 4, 
+                          nspace = 2, 
+                          movemaxinit = moveparms[1], 
+                          movefiftyinit = moveparms[2])
   time <- 1
   yrinit <- df$nyear
   
@@ -80,13 +81,18 @@ run_multiple_OMs <- function(simyears = 30,seed = 12345,moveparms = NA, Catchin)
       df$wage_mid <- df.new$wage_mid
       df$wage_ssb <- df.new$wage_ssb
       df$Catch <- c(df$Catch, Catchin[time])
-      df$b[length(df$b)] <- 0.870
-      df$b <- c(df$b,0.87)
+      df$b[length(df$b)] <- 0.0
+      df$b <- c(df$b,0.0)
       Rdevs <- rnorm(n = 1,mean = 0, sd = exp(df$logSDR))
       #Rdevs <- rep(0, yr.future)
       df$parms$Rin <- c(df$parms$Rin,Rdevs)
-      #df$years <- c(df$years,df$years[length(df$years)]+1)
       
+      
+      ### Add movement to the new years
+      move.tmp <- array(0, dim = c(df$nspace,df$nage, df$nseason, df$nyear))
+      move.tmp[,,,1:df$nyear-1] <- df$movemat
+      move.tmp[,,,df$nyear] <- df$movemat[,,,df$nyear-1]
+      df$movemat <- move.tmp
       
       sim.data <- run.agebased.true.catch(df, seed)
       

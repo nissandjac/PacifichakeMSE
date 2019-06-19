@@ -3,7 +3,7 @@
 load_data_ss <- function(mod){
   
   
-  years <- 1966:2018 # Manuually change the years
+  years <- mod$startyr:mod$endyr
   tEnd <- length(years)
   age <- 0:mod$accuage
   
@@ -27,10 +27,6 @@ load_data_ss <- function(mod){
   wage_mid <- wage_ss[wage_ss$Fleet == -1 & wage_ss$Yr > (years[1]-1) & wage_ss$Yr < years[tEnd]+1, paste(age)]
   
   
-  # # catch <- read.csv('hake_totcatch.csv')
-  # catches.obs <- read.csv('data/catches.csv')
-  # catch <- catches.obs$Total
-  # 
   catch <- mod$catch$ret_bio[mod$catch$Yr> (years[1]-1) & (mod$catch$Yr < years[tEnd]+1)]
   # Survey abundance
   df.survey <- read.csv('data/acoustic survey.csv')
@@ -67,12 +63,26 @@ load_data_ss <- function(mod){
     
   }
   
-  age_survey_ss <- (data.frame(year = mod$agedbase$Yr, age = mod$agedbase$Bin, obs = mod$agedbase$Obs))
+  survey.ss <- mod$agedbase[mod$agedbase$Fleet == 2,]
   
-  age_survey_ss <- melt(age_survey_ss,id.vars = 'age', measure.vars = 'obs')
-  age_survey_ss[age_survey_ss == 1] <- -1
+  age_survey_ss <- (data.frame(year = survey.ss$agedbase$Yr, age = survey.ss$agedbase$Bin, obs = survey.ss$agedbase$Obs))
   
-  ggplot(mod$agedbase, aes(x = Bin, y = Obs))+geom_line()+geom_line(aes(y = Exp), color = 'red')+facet_wrap(~Yr)
+  age_survey.tmp <- matrix(-1,length(mod$agebins), tEnd)
+  
+  syears <- unique(survey.ss$Yr)
+  sflag <- rep(-1, tEnd)
+  ss.survey <- rep(0, tEnd)
+  
+  for(i in 1:tEnd){
+
+    if(survey.ss$Yr == 1)
+    age_survey.tmp[,i] <- age_survey_ss$obs[age_survey_ss$year == years[i]]
+    
+  }
+  #ggplot(mod$agedbase, aes(x = Bin, y = Obs))+geom_line()+geom_line(aes(y = Exp), color = 'red')+facet_wrap(~Yr)
+  
+  
+  
   # Calculate the bias adjustment 
   b <- matrix(NA, tEnd)
   Yr <- 1946:2017
@@ -157,7 +167,7 @@ load_data_ss <- function(mod){
                   wage_mid = t(wage_mid),
                   #  Input parameters
                   Msel = msel,
-                  Matsel= mat$mat,
+                  Matsel= mat,
                   nage = nage,
                   age = age,
                   year_sel = length(1991:years[length(years)]), # Years to model time varying sel
