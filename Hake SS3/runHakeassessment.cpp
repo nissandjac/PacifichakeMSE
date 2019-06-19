@@ -3,14 +3,14 @@
 #include <iostream>
 
 
-// template <class Type> // Add a cumsum function
-// vector<Type> cumsum(vector<Type> x) {
-//   int n = x.size();
-//   vector<Type> ans(n);
-//   ans[0] = x[0];
-//   for (int i = 1; i < n; i++) ans[i] = x[i] + x[i-1];
-//   return ans;
-// }
+template <class Type>
+vector<Type> cumsum(vector<Type> x) {
+  int n = x.size();
+  vector<Type> ans(n);
+  ans[0] = x[0];
+  for (int i = 1; i < n; i++) ans[i] = x[i] + ans[i-1];
+  return ans;
+}
 
 
 template<class Type>
@@ -133,7 +133,7 @@ for(int j=0;j<nage;j++){ // Fix the survey selectivity
 }
 // Fishing mortality
 vector<Type> catchselec(nage);
-Type pmax_catch = sum(psel_fish);
+Type pmax_catch = max(cumsum(psel_fish));
 Type ptmp_catch = 0;
 //
 for(int time=0;time<tEnd;time++){ // Start time loop
@@ -230,6 +230,7 @@ vector<Type>Catchsave(tEnd);
 // // vector<Type>test(3);
 // // test = cumsum(test);
 // REPORT(test)
+//array<Type> PSEL_save(5,)
 
 for(int time=0;time<(tEnd);time++){ // Start time loop
 
@@ -240,7 +241,8 @@ for(int time=0;time<(tEnd);time++){ // Start time loop
            for(int i=0;i<psel_fish.size();i++){
            psel_fish(i) = psel_fish_zero(i)+PSEL(i,time-selYear+1)*sigma_psel;
            }
-           pmax_catch = sum(psel_fish);
+
+           pmax_catch = max(cumsum((psel_fish)));
            pmax_catch_save(time) = pmax_catch;
 
            for(int j=0;j<(nage);j++){ // Fix the Catch selectivity
@@ -482,6 +484,8 @@ REPORT(selectivity_save)
 REPORT(surveyselc)
 REPORT(N_beg)
 REPORT(N_mid)
+REPORT(pmax_catch_save)
+REPORT(sigma_psel)
 
   return ans;
 }

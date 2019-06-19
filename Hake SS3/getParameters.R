@@ -9,8 +9,8 @@ getParameters <- function(trueparms = TRUE){
     PSEL <- as.matrix(read.csv('data/p_MLE.csv'))
     F0 <- assessment$F0
     
-    assessment <- read.csv('data/asssessment_MLE.csv')
-    assessment <- assessment[assessment$year > 1965 &assessment$year < 2018 ,]
+    # assessment <- read.csv('data/asssessment_MLE.csv')
+    # assessment <- assessment[assessment$year > 1965 &assessment$year < 2018 ,]
     
     parms <- list( # Just start all the simluations with the same initial conditions 
       logRinit = 14.5614,

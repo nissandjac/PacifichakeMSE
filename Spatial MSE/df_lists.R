@@ -5,6 +5,15 @@ yr <- 1966:(2017+simyears-1)
 nruns <- length(ls.save)
 nfailed <- rep(1, nruns)
 
+if(all(is.na(ls.save[[1]]))){
+  ls.save[[-1]]
+}
+
+if(all(is.na(ls.save[[1]]))){
+  ls.save[[-1]]
+}
+
+
 for(i in 1:nruns){
   if(length(ls.save[[i]]) > 1){
     

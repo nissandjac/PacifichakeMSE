@@ -1,6 +1,5 @@
 ###### Run the HAKE MSE ####### 
-run_multiple_MSEs <- function(simyears = NULL,seeds = 12345,
-                              moveparms = NA, TAC = 1, df = NA){
+run_multiple_MSEs <- function(simyears = NULL,seeds = 12345, TAC = 1, df = NA){
 require(ggplot2)
   
 if(is.null(simyears)){

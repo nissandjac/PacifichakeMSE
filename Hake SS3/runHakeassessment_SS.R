@@ -1,10 +1,12 @@
 # Run the hake assessment 
 source('load_files.R')
 library(r4ss)
+library(dplyr)
+library(reshape2)
 # Read the assessment data 
 mod <- SS_output(paste(getwd(),'/data/SS32018/', sep =''), printstats=FALSE, verbose = FALSE)
 
-df <- load_data()
+df <- load_data_ss(mod, years = 1966:2018)
 df$smul <- 1
 years <- df$years
 

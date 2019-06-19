@@ -1,50 +1,39 @@
 ## Load the hake data
 # year and age input 
-load_data <- function(mod){
+load_data <- function(){
 
 
-years <- 1966:2018 # Manuually change the years
+years <- 1966:2017 # Manuually change the years
 tEnd <- length(years)
-age <- 0:mod$accuage
+age <- 0:20
 
 # F0 <- assessment$F0
 # F0 <- mod$derived_quants$Value[grep('F_1966',mod$derived_quants$Label):grep('F_2017',mod$derived_quants$Label)]
-F0 <- mod$catch$F[mod$catch$Yr >1965 & mod$catch$Yr <(max(years)+1)]
+#F <- mod$catch$F[mod$catch$Yr >1965 & mod$catch$Yr <(max(years)+1)]
 
 nage <- length(age)
 msel <- rep(1,nage)
 # Maturity
-mat <- as.numeric(mod$ageselex[mod$ageselex$Factor == 'Fecund' & mod$ageselex$Yr == 1963,paste(age)])
+#mat <- as.numeric(mod$ageselex[mod$ageselex$Factor == 'Fecund' & mod$ageselex$Yr == 1963,paste(age)])3
+mat <- read.csv('data/maturity.csv')
+mat <- mat$mat
 # weight at age 
-wage_ss <- mod$wtatage
+#wage_ss <- mod$wtatage
 wage <- read.csv('data/waa.csv')
 wage_unfished <- read.csv('data/unfished_waa.csv')
 
-
-wage_ssb <- wage_ss[wage_ss$Fleet == -2,paste(age)]
 # Make the weight at ages the same length as the time series 
-# wage_ssb = rbind(matrix(rep(as.numeric(wage_unfished[2:(nage+1)]),each = 9), nrow = 9),
-#                         as.matrix(wage[wage$fleet == 0,3:(nage+2)]))
-# 
-# plot(years[1:(length(years)-1)],rowMeans(wage_ssb), type = 'l')
-# lines(years,rowMeans(wage_ssb_ss), col = 'green')
+wage_ssb = rbind(matrix(rep(as.numeric(wage_unfished[2:(nage+1)]),each = 9), nrow = 9),
+                        as.matrix(wage[wage$fleet == 0,3:(nage+2)]))
 
-# wage_catch = rbind(matrix(rep(as.numeric(wage_unfished[2:(nage+1)]),each = 9), nrow = 9),
-#                    as.matrix(wage[wage$fleet == 1,3:(nage+2)]))
-# plot(years[1:(length(years)-1)],rowMeans(wage_catch), type = 'l')
+wage_survey = rbind(matrix(rep(as.numeric(wage_unfished[2:(nage+1)]),each = 9), nrow = 9),
+                    as.matrix(wage[wage$fleet == 2,3:(nage+2)]))
 
-wage_catch <- wage_ss[wage_ss$Fleet == 1 & wage_ss$Yr > (years[1]-1) & wage_ss$Yr < years[tEnd]+1, paste(age)]
-
-#lines(years,rowMeans(wage_catch), col = 'green')
-
-
-wage_survey <- wage_ss[wage_ss$Fleet == 2 & wage_ss$Yr > (years[1]-1) & wage_ss$Yr < years[tEnd]+1, paste(age)]
-# lines(years,rowMeans(wage_survey), col = 'green')
+wage_catch = rbind(matrix(rep(as.numeric(wage_unfished[2:(nage+1)]),each = 9), nrow = 9),
+                   as.matrix(wage[wage$fleet == 1,3:(nage+2)]))
 
 wage_mid = rbind(matrix(rep(as.numeric(wage_unfished[2:(nage+1)]),each = 9), nrow = 9),
-                 as.matrix(wage[wage$fleet == -1,3:(nage+2)]))
-# names(wage)[3:23] <- 0:20
-# wage <- melt(wage, id = c("year", "fleet"), value.name = 'growth', variable.name = 'age')
+                as.matrix(wage[wage$fleet == -1,3:(nage+2)]))
 
 # Catch
 # catch <- read.csv('hake_totcatch.csv')
@@ -167,7 +156,7 @@ df <-list(      #### Parameters #####
                 wage_mid = t(wage_mid),
                 #  Input parameters
                 Msel = msel,
-                Matsel= mat$mat,
+                Matsel= mat,
                 nage = nage,
                 age = age,
                 year_sel = length(1991:years[length(years)]), # Years to model time varying sel
@@ -196,14 +185,14 @@ df <-list(      #### Parameters #####
                 # variance parameters
                 logSDcatch = log(0.01),
                 logSDR = log(1.4), # Fixed in stock assessment ,
-                F0 = F0,
+               # F0 = F0,
                 #logphi_survey = log(0.91),
                 sigma_psel = 1.4,
                 smul = 1,
                 logh = log(0.8),
                 years = years,
                 logphi_catch = log(0.8276), # log(0.8276)
-                logphi_survey = log(11.33),
+                logphi_survey = log(10),
                 Bprior= tau*mu,
                 Aprior = tau*(1-mu),
                 b = b[Yr >= years[1]]#,

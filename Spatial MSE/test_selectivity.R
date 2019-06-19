@@ -21,14 +21,11 @@ time <- 1
 yrinit <- df$nyear
 
 parms <- getParameters_mod(TRUE,mod = mod, df= df)
-
-simyears <- 30# Project 30 years into the future (2048 that year)
-moveparms <- NA
-seed <- 123
-
 parms.true <- getParameters_OM(TRUE, df)
+sim.data <- run.agebased.true.catch(df)
 ##  Create a data frame to send to runHakeassessment 
 df.new <- create_TMB_data(sim.data, df)
+df.new$lort <- c(1,2,3)
 
 obj <-MakeADFun(df.new,parms.true,DLL="runHakeassessment", silent = FALSE) # Run the assessment 
 #obj2 <-MakeADFun(df2,parms,DLL="runHakeassessment", silent = TRUE) # Run the assessment 
@@ -36,7 +33,7 @@ obj <-MakeADFun(df.new,parms.true,DLL="runHakeassessment", silent = FALSE) # Run
 repsold <- obj$report()
 
 # Compare selectivity estimations
-selyear <- 2004
+selyear <- 2010
 
 # OM selectivity calc 
 source('getSelec.R')
@@ -53,6 +50,6 @@ Fsel <- getSelec(df$age,pseltmp, df$Smin,df$Smax)
 plot(df$age,repsold$selectivity_save[,which(df$years == selyear)], 
      ylim = c(0,max(repsold$selectivity_save[,which(df$years == selyear)])))
 idx <- which(mod$ageselex$Yr == selyear & mod$ageselex$Factor == 'Asel')
-lines(df$age,as.numeric(mod$ageselex[idx,8:28]), col = 'red')
+lines(df$age,as.numeric(mod$ageselex[idx,8:28]), col = 'red', type ='o')
 lines(df$age, Fsel, col = 'green')
 

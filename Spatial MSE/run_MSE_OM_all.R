@@ -8,36 +8,18 @@ dyn.load(dynlib("runHakeassessment"))
 
 seedz <- 12345
 set.seed(seedz)
-# Run the simulation model
-source('run_agebased_model_true_Catch.R')
-
-
-####  Plotting and uncertainty calculation functions #### 
-source('ylimits.R')
-source('plotUncertainty.R')
-source('getUncertainty.R')
-source('plotValues.R')
-source('run_multiple_MSEs.R')
-source('getSelec.R') # Calculate hake selectivity
+source('load_files.R')
+source('load_files_OM.R')
 source('run_multiple_OMs.R')
-source('load_data_seasons.R') # Loads data for Operating model
-source('create_TMB_data.R') # Compiles operating model data to tmb data
+# 
+# assessment <- read.csv('asssessment_MLE.csv')
+# assessment <- assessment[assessment$year > 1965 &assessment$year < 2018 ,]
 
-source('getRefpoint.R') # Calculate refrence points 
-source('Check_Identifiable_vs2.R') # see if hessian is positive definite 
+#parms.true <- getParameters(TRUE)
+#Catch.obs <- read.csv('hake_totcatch.csv')
 
-source('getParameters.R')
-source('calcSSB0.R')
+df <- load_data_seasons(nseason = 4, nspace = 2) # Prepare data for operating model
 
-assessment <- read.csv('asssessment_MLE.csv')
-assessment <- assessment[assessment$year > 1965 &assessment$year < 2018 ,]
-
-parms.true <- getParameters(TRUE)
-Catch.obs <- read.csv('hake_totcatch.csv')
-
-df <- load_data_seasons(move = TRUE, nseason = 4, nspace = 2)
-
-df$Catch <- Catch.obs$Fishery
 time <- 1
 yrinit <- df$nyear
 nruns <- 100
@@ -55,33 +37,35 @@ sim.data <- run.agebased.true.catch(df)
 simdata0 <- sim.data # The other one is gonna get overwritten. 
 
 ## Load the catch data 
-load('MSErun_move_JMC.Rdata')
+load('results/MSErun_move_JMC.Rdata')
 ls.JMC <- ls.save 
-load('MSErun_move_JTC.Rdata')
+load('results/MSErun_move_JTC.Rdata')
 ls.JTC <- ls.save
-load('MSErun_move_realized.Rdata')
+load('results/MSErun_move_realized.Rdata')
 ls.Realized <- ls.save
-load('MSErun_move_realized_move1.Rdata')
+load('results/MSErun_move_realized_move1.Rdata')
 ls.move1 <- ls.save
-load('MSErun_move_realized_move2.Rdata')
+load('results/MSErun_move_realized_move2.Rdata')
 ls.move2 <- ls.save
-load('MSErun_move_realized_move3.Rdata')
-ls.move3 <- ls.save
+# load('MSErun_move_realized_move3.Rdata')
+# ls.move3 <- ls.save
 
 # ### Loop MSE's with different errors in future survey and recruitment
 
 #######################################
-# ls.JTC.s <- list()
-# 
-# for (i in 1:nruns){
-#   if(is.null(ls.JTC[[i]])){
-#     ls.JTC.s[[i]] <- NULL
-#   }else{
-#   tmp <- run_multiple_OMs(simyears = 30, seeds[i],moveparms = NA, Catchin = ls.JTC[[i]]$Catch[(df$nyear+1):(length(year.future)-1)])
-#   ls.JTC.s[[i]] <- tmp
-#   }
-# }
-# save(ls.JTC.s,file = 'JTC_OM.RData')
+ls.JTC.s <- list()
+
+for (i in 1:nruns){
+  if(all(is.na(ls.JTC[[i]]))){
+    ls.JTC.s[[i]] <- NULL
+  }else{
+  tmp <- run_multiple_OMs(simyears = 30, 
+                          seed = seeds[i],moveparms = c(0.5,5), 
+                          Catchin = ls.JTC[[i]]$Catch[(df$nyear+1):(length(year.future)-1)])
+  ls.JTC.s[[i]] <- tmp
+  }
+}
+save(ls.JTC.s,file = 'JTC_OM.RData')
 # 
 # ls.JMC.s <- list()
 # for (i in 1:nruns){

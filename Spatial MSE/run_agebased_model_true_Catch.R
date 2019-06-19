@@ -166,13 +166,13 @@ run.agebased.true.catch <- function(df, seeds = 100){
       # }
   }
   
-  Fnseason <- c(0.0,0.3,0.50,0.2) # Must add to one
+  Fnseason <- c(0.0,0.4,0.50,0.1) # Must add to one
   Fspace <- c(0.24,0.76) # Contribution of Total catch (add to one)    #Z <- (Fyear+Myear)
   pope.mul <- nseason/1*0.5
   pope.mul <- 0.50
   
   
-  for (yr in 1:(nyear)){ # Loop over years add one year for initial distribution
+  for (yr in 1:nyear){ # Loop over years add one year for initial distribution
     
     #if(year[yr] < year[df$selYear] | year[yr] > 2017){
    # }else{
