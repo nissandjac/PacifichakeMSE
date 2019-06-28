@@ -5,6 +5,9 @@ Check_Identifiable_vs2 = function( obj ){
   List[["Hess"]] = optimHess( par=ParHat, fn=obj$fn, gr=obj$gr )
   
   # Check eigendecomposition
+  if(is.nan(max(List[['Hess']]))){
+    print('model not converging')
+  }else{
   List[["Eigen"]] = eigen( List[["Hess"]] )
   List[["WhichBad"]] = which(List[["Eigen"]]$values < sqrt(.Machine$double.eps) )
   
@@ -28,4 +31,5 @@ Check_Identifiable_vs2 = function( obj ){
   
   # Return
   return( invisible(List) )
+  }
 }
