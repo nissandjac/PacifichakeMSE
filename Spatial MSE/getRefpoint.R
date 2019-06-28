@@ -1,5 +1,5 @@
 getRefpoint <- function(par.fixed, df, SSBy, Fin =NA, Nend,
-                        TAC = 1){
+                        TAC = 1, Vreal = NA){
 
 R0 <- as.numeric(exp(par.fixed)['logRinit'])
 Mest <- as.numeric(exp(par.fixed)['logMinit'])
@@ -113,7 +113,7 @@ Fx <- 1-exp(-Fnew) # Convert to harvest rate
 #Fx <- 0.18
 
 if((SSBy/SSB_0) < 0.1){
-  Cnew <- 1 # add a very low catch (fix later)
+  Cnew <- 0.05*Vreal # add a very low catch (fix later)
 }
 
 if((SSBy/SSB_0) > 0.4){

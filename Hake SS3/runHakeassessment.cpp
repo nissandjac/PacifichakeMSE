@@ -206,6 +206,7 @@ N_mid.setZero();
 // }
 // // Run the model over time
 array<Type> SSB(tEnd);
+array<Type>SSB_real(tEnd); // Actual SSB weight (not maature)
 array<Type>Surveyobs(tEnd); // Survey observed Surveyobs
 array<Type>Surveyobs_tot(tEnd); // Total Surveyobs over age 2
 array<Type>age_survey_est(age_maxage,tEnd);
@@ -237,7 +238,7 @@ for(int time=0;time<(tEnd);time++){ // Start time loop
     Type Ntot_survey = 0;
     pmax_catch_save(time) = pmax_catch;
     // Take care of selectivity
-    if ((time >= (selYear-1)) & (years(time) < 2018)){
+    if ((time >= (selYear-1)) & (years(time) < 2019)){
            for(int i=0;i<psel_fish.size();i++){
            psel_fish(i) = psel_fish_zero(i)+PSEL(i,time-selYear+1)*sigma_psel;
            }
@@ -277,6 +278,7 @@ for(int time=0;time<(tEnd);time++){ // Start time loop
 
     for(int i=0;i<nage;i++){ // Loop over other ages
          SSB(time) += N_beg(i,time)*Matsel(i); // hat
+         SSB_real(time) += N_beg(i,time)*wage_ssb(i,time);
       }
 
     for(int i=0;i<(nage);i++){ // Loop over other ages
@@ -469,6 +471,7 @@ ADREPORT(age_survey)
 ADREPORT(age_survey_est)
 ADREPORT(ans_tot)
 ADREPORT(SSBzero)
+ADREPORT(SSB_real)
 
 REPORT(SSB)
 REPORT(Fyear)
@@ -480,12 +483,14 @@ REPORT(Zsave)
 REPORT(age_survey_est)
 REPORT(age_catch_est)
 REPORT(CatchN)
+REPORT(CatchNAge)
 REPORT(selectivity_save)
 REPORT(surveyselc)
 REPORT(N_beg)
 REPORT(N_mid)
 REPORT(pmax_catch_save)
-REPORT(sigma_psel)
+REPORT(SSB_real)
+REPORT(Surveyobs)
 
   return ans;
 }

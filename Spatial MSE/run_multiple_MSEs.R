@@ -49,6 +49,8 @@ model.save <- list()
 
 SSB.test.om <- list() # Test if SSB is the same in the OM
 start.time <- Sys.time()
+df0 <- df # For debugging
+mconverge <- rep(NA, simyears)
 
 for (time in 1:simyears){
   
@@ -83,8 +85,19 @@ for (time in 1:simyears){
       df$wage_mid <- df.new$wage_mid
       df$wage_ssb <- df.new$wage_ssb
       df$Catch <- c(df$Catch, Fnew[[1]])
-      df$b[length(df$b)] <- 0.0
-      df$b <- c(df$b,0.0)
+      
+      ## Add a survey if catches are 0 
+      if(df$Catch[time] == 0 & df$flag_survey[time] == -1){
+      print('Stock in peril! Conducting emergency survey')        
+      }
+      
+      df$flag_survey[df$Catch == 0] <- 1
+      df$ss_survey[df$Catch == 0] <- ceiling(mean(df$ss_survey[df$ss_survey > 0]))+200 # emergency survey adds more 200 age samples! 
+      df$survey_x[df$Catch == 0] <- 2
+      df$survey_err[df$Catch == 0] <- mean(df$survey_err[df$survey_err < 1])
+      
+      df$b[length(df$b)] <- max(df$b)
+      df$b <- c(df$b,max(df$b))
       Rdevs <- rnorm(n = 1,mean = 0, sd = exp(df$logSDR))
       #Rdevs <- rep(0, yr.future)
       df$parms$Rin <- c(df$parms$Rin,Rdevs)
@@ -140,10 +153,17 @@ for (time in 1:simyears){
       Rdev <- c(Rdev, 0)
     }
     
+    
+    if(df$Catch[df$nyear] == 0){
+      F0[length(F0)] <- 0
+    }
+    
     parms.new$F0 <- F0#rowSums(sim.data$Fsave, na.rm = TRUE)
+    parms.new$F0[df$Catch == 0] <- 0
+    
     parms.new$Rin <- Rdev#parms.new$Rin[1:(length(parms.new$Rin)-1)]
-                
-      
+    
+    
     
     obj <-MakeADFun(df.new,parms.new,DLL="runHakeassessment", silent = TRUE) # Run the assessment 
     
@@ -167,16 +187,36 @@ for (time in 1:simyears){
       lower[names(lower) == 'F0'] <- 1e-10
     }
     
+    
+    # if(df$Catch[df$nyear] == 0){
+    #   lower[names(lower) =='F0'][which(df$Catch ==0)] <- 0
+    #   upper[names(upper) =='F0'][which(df$Catch ==0)] <- 0
+    # }
+    # 
+    
     system.time(opt<-nlminb(obj$par,obj$fn,obj$gr,lower=lower,upper=upper,
                             control = list(iter.max = 1e6, 
                                            eval.max = 1e6))) # If error one of the random effects is unused
 
     
     if(opt$convergence != 0){
-      print(paste('year',df$years[length(df$years)], 'did not converge'))
-      stop('Model not converged')
-      #xx<- Check_Identifiable_vs2(obj)
+      print(paste('year',df$years[length(df$years)], 'has convergence issues, double checking parameters'))
       
+      xx<- Check_Identifiable_vs2(obj)
+      
+      if(xx[[1]] == 'model not converging'){
+        mconverge[time] <- 1
+        
+        if(sum(mconverge, na.rm = TRUE)>1){
+          print('Convergence is bad. Stopping simulation')
+          return(df.ret= NA)
+        }
+        
+      }else{
+        mconverge[time] <- 0
+      }
+    }else{
+      mconverge[time] <- 0
     }
   
   reps <- obj$report()
@@ -220,8 +260,13 @@ for (time in 1:simyears){
     
   }
  
+  
+  Vreal <- sum(sim.data$N.save.age[,df$nyear,,df$nseason]*
+                 matrix(rep(df$wage_catch[,df$nyear-1],df$nspace), ncol = df$nspace)*t(sim.data$Fsel[df$nyear,,]))
+  
   Nend <- N[,dim(N)[2]]
-  Fnew <- getRefpoint(opt$par, df,SSBy = SSB[length(SSB)], Fin=Fyear[length(Fyear)], Nend, TAC = TAC)
+  Fnew <- getRefpoint(opt$par, df,SSBy = SSB[length(SSB)], Fin=Fyear[length(Fyear)], Nend, TAC = TAC,
+                      Vreal)
   #Fnew <- 0.3
   print(paste('new quota = ',Fnew[[1]]))
   # Update the data data frame
@@ -283,7 +328,8 @@ df.ret <- list(Catch = sim.data$Catch,
                F0 = sim.data$Fsave,
                parms = parms.save,
                ams = ams,
-               amc = amc
+               amc = amc,
+               mconverge
                )
 
 return(df.ret)

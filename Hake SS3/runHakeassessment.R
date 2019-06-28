@@ -16,6 +16,7 @@ years <- df$years
 parms <- getParameters(TRUE)
 
 
+
 compile("runHakeassessment.cpp")
 dyn.load(dynlib("runHakeassessment"))
 obj <-MakeADFun(df,parms,DLL="runHakeassessment")#, )

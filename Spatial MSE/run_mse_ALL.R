@@ -36,10 +36,9 @@ ls.save <- list()
 ls.converge <- matrix(0, nruns)
 #
 for (i in 1:nruns){
-  tmp <- try(run_multiple_MSEs(simyears = 30,
-                           seed = seeds[i],
-                           moveparms = NA,
-                           TAC = 1, df = df))
+  tmp <- run_multiple_MSEs(simyears = 30,
+                           seeds = seeds[i],
+                           TAC = 1, df = df)
   #tmp <- run_multiple_MSEs(simyears = 30, seeds[i])
   print(i)
 
@@ -61,8 +60,8 @@ ls.save <- list()
 ls.converge <- matrix(0, nruns)
 #
 for (i in 1:nruns){
-  tmp <- try(run_multiple_MSEs(simyears = 30, seeds[i],moveparms = NA,
-                               TAC = 2, df =df),silent = FALSE)
+  tmp <- run_multiple_MSEs(simyears = 30, seeds[i],
+                               TAC = 2, df =df)
   #tmp <- run_multiple_MSEs(simyears = 30, seeds[i])
   print(i)
   if(is.list(tmp)){
