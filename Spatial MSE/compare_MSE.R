@@ -6,6 +6,7 @@ require(dplyr)
 require(scales)
 require(RColorBrewer)
 require(cowplot)
+library(gridExtra)
 source('load_files_OM.R')
 
 load('results/MSErun_move_JMC.Rdata')
@@ -17,7 +18,7 @@ ls.Realized <- ls.save
 #load('results/sim_data.Rdata')
 load('results/MSErun_move_realized_move1.Rdata')
 ls.move1 <- ls.save
-load('results/MSErun_move_realized_move2.Rdata')
+load('results/MSErun_move_realized_move3.Rdata')
 ls.move2 <- ls.save
 #load('results/MSErun_move_realized_move3.Rdata')
 ls.move3 <- ls.save
@@ -58,7 +59,7 @@ df.obj <- data.frame(rbind(obj.JMC[[2]],obj.JTC[[2]],obj.real[[2]],
 df.obj$HCR <- ordered(df.obj$HCR, levels = c("HCR", "JMC", "real",'move1','move2','move3'))
 df.obj$indicator <- paste(rep(c('A) ','B) ','C) ','D) ','E) ','F) ','G) ','H) '),6),df.obj$indicator)
 
-png('Figs/objective_bars.png', width = 16, height =18, res = 400, unit = 'cm')
+png('Figs/objective_bars_b0.png', width = 16, height =18, res = 400, unit = 'cm')
 ggplot(df.obj, aes(x = HCR,y = value))+geom_bar(stat = 'identity', aes(fill = HCR))+facet_wrap(~indicator, scales = 'free', ncol = 2)+
   scale_x_discrete(name = '')+  scale_y_continuous(name = '')+
   theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5), legend.position = 'none')
@@ -112,11 +113,11 @@ p2.2 <- ggplot(df.catch.2, aes(x = year, y = med*1e-6, color = run))+geom_line(s
 
 #  scale_fill_manual(values = alpha(cols, alpha = 0.2), name="fill")
 
-png('Figs/catch_MSE_1.png', width = 12, height =8, res = 400, unit = 'cm')
+png('Figs/catch_MSE_1_b0.png', width = 12, height =8, res = 400, unit = 'cm')
 
 p2.1
 dev.off()
-png('Figs/catch_MSE_2.png', width = 12, height =8, res = 400, unit = 'cm')
+png('Figs/catch_MSE_2_b0.png', width = 12, height =8, res = 400, unit = 'cm')
 
 p2.2
 dev.off()
@@ -136,7 +137,7 @@ p3.1 <- ggplot(df.ams.1[-rm.idx.1,], aes(x = year, y = med, color = run))+geom_l
   geom_line(aes(y = p5, color = run), linetype = 2)+geom_line(aes(y = p95, color = run), linetype = 2)
 
 #  scale_fill_manual(values = alpha(cols, alpha = 0.2), name="fill")
-png('Figs/age_s_move1.png', width = 12, height =8, res = 400, unit = 'cm')
+png('Figs/age_s_move1_b0.png', width = 12, height =8, res = 400, unit = 'cm')
 p3.1
 dev.off()
 
@@ -145,7 +146,7 @@ p3.2 <- ggplot(df.ams.2[-rm.idx.2,], aes(x = year, y = med, color = run))+geom_l
   scale_color_manual(values=cols)+scale_y_continuous(name = 'Average age in survey')+
   geom_line(aes(y = p5, color = run), linetype = 2)+geom_line(aes(y = p95, color = run), linetype = 2)
 #  scale_fill_manual(values = alpha(cols, alpha = 0.2), name="fill")
-png('Figs/age_s_move2.png', width = 12, height =8, res = 400, unit = 'cm')
+png('Figs/age_s_move2_b0.png', width = 12, height =8, res = 400, unit = 'cm')
 p3.2
 dev.off()
 
@@ -160,7 +161,7 @@ p4.1 <- ggplot(df.amc.1, aes(x = year, y = med, color = run))+geom_line(size = 2
   scale_color_manual(values=cols)+scale_y_continuous(name = 'Average age in catch')+
   geom_line(aes(y = p5, color = run), linetype = 2)+geom_line(aes(y = p95, color = run), linetype = 2)
 #  scale_fill_manual(values = alpha(cols, alpha = 0.2), name="fill")
-png('Figs/age_c_move1.png', width = 12, height =8, res = 400, unit = 'cm')
+png('Figs/age_c_move1_b0.png', width = 12, height =8, res = 400, unit = 'cm')
 p4.1
 dev.off()
 
@@ -169,7 +170,7 @@ p4.2 <- ggplot(df.amc.2, aes(x = year, y = med, color = run))+geom_line(size = 2
   scale_color_manual(values=cols)+scale_y_continuous(name = 'Average age in catch')+
   geom_line(aes(y = p5, color = run), linetype = 2)+geom_line(aes(y = p95, color = run), linetype = 2)
 #  scale_fill_manual(values = alpha(cols, alpha = 0.2), name="fill")
-png('Figs/age_c_move2.png', width = 12, height =8, res = 400, unit = 'cm')
+png('Figs/age_c_move2_b0.png', width = 12, height =8, res = 400, unit = 'cm')
 p4.2
 dev.off()
 
@@ -208,7 +209,7 @@ p6 <- ggplot(df.ams.space,aes(x = year, y = med.can))+geom_line(size = 2, color 
   theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
 
 #  scale_fill_manual(values = alpha(cols, alpha = 0.2), name="fill")
-png('Figs/age_s_space.png', width = 12, height =8, res = 400, unit = 'cm')
+png('Figs/age_s_space_b0.png', width = 12, height =8, res = 400, unit = 'cm')
 p6
 dev.off()
 
@@ -228,7 +229,7 @@ p7 <- ggplot(df.amc.space,aes(x = year, y = med.can))+geom_line(size = 2, color 
   theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
 
 #  scale_fill_manual(values = alpha(cols, alpha = 0.2), name="fill")
-png('Figs/age_c_space.png', width = 12, height =8, res = 400, unit = 'cm')
+png('Figs/age_c_space_b0.png', width = 12, height =8, res = 400, unit = 'cm')
 
 p7
 dev.off()

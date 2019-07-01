@@ -1,24 +1,12 @@
 ###### Run the HAKE MSE ####### 
-run_multiple_OMs <- function(simyears = 30,seed = 12345,moveparms = NA, Catchin){
+run_multiple_OMs <- function(simyears = 30,seed = 12345, df, Catchin){
   
   if(is.null(simyears)){
     print('Number of years to simulate not specified. Simulating 30 years into the future')
     simyears <- 30
   }
   
-  #   if(is.na(moveparms[1])){
-  # df <- load_data_seasons(move = FALSE,
-  #                         nseason = 1, nspace = 1)
-  #   }else{
-  #     if(length(moveparms) != 2){
-  #       stop('Wrong number of movement parameters')
-  #     }
-  # df <- load_data_seasons_move(move = TRUE,movemaxinit = moveparms[1], moveparms[2])
-  #   }
-  df <- load_data_seasons(nseason = 4, 
-                          nspace = 2, 
-                          movemaxinit = moveparms[1], 
-                          movefiftyinit = moveparms[2])
+  
   time <- 1
   yrinit <- df$nyear
   
@@ -49,6 +37,9 @@ run_multiple_OMs <- function(simyears = 30,seed = 12345,moveparms = NA, Catchin)
   model.save <- list()
   
   ## 
+  if(length(Catchin) == 1){
+    Catchin <- rep(Catchin, simyears-1)
+  }
   
   for (time in 1:(simyears-1)){
     year <- yrinit+(time-1)
@@ -81,8 +72,8 @@ run_multiple_OMs <- function(simyears = 30,seed = 12345,moveparms = NA, Catchin)
       df$wage_mid <- df.new$wage_mid
       df$wage_ssb <- df.new$wage_ssb
       df$Catch <- c(df$Catch, Catchin[time])
-      df$b[length(df$b)] <- 0.0
-      df$b <- c(df$b,0.0)
+      df$b[length(df$b)] <- 0.87
+      df$b <- c(df$b,0.87)
       Rdevs <- rnorm(n = 1,mean = 0, sd = exp(df$logSDR))
       #Rdevs <- rep(0, yr.future)
       df$parms$Rin <- c(df$parms$Rin,Rdevs)
