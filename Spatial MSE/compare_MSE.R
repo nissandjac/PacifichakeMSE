@@ -314,3 +314,39 @@ dev.off()
 #   geom_line(aes(y = p5.can), col = 'darkred', linetype = 2)+
 #   geom_line(aes(y = p95.us), col = 'blue4', linetype = 2)+  
 #   geom_line(aes(y = p5.us), col = 'blue4', linetype = 2)+
+
+
+# Plot the biomass from the unfished OM 
+library(scales)
+library(RColorBrewer)
+load('results/MSErun_move_nofishing_biasadj.Rdata')
+ls.bias <- ls.save
+
+load('results/MSErun_move_nofishing_nobiasadj.Rdata')
+ls.nobias <- ls.save
+load('results/MSErun_move_nofishing_biasadj_med.Rdata')
+ls.medbias <- ls.save
+
+simyears <- 50
+yr <- 1966:(2017+simyears-1)
+nruns <- 100
+
+df.bias <- df_lists_OM(ls.bias,'b = 0.87')
+df.nobias <- df_lists_OM(ls.nobias, 'b = 0.0')
+df.medbias <- df_lists_OM(ls.medbias,'b = 0.5')
+
+df.SSB.om <- rbind(df.bias[[3]][[4]],df.nobias[[3]][[4]],df.medbias[[3]][[4]])
+
+df.SSB.om$SSBrel <- df.SSB.om$med/sum(sim.data$SSB0)
+df.SSB.om$Rel95 <- df.SSB.om$p95/sum(sim.data$SSB0)
+df.SSB.om$Rel5 <- df.SSB.om$p5/sum(sim.data$SSB0)
+
+#cols <
+
+ggplot(df.SSB.om, aes( x = year, y = SSBrel, color = run))+geom_line(size = 1.2)+
+  geom_ribbon(aes(ymin = Rel5, ymax = Rel95, fill = run), alpha = 0.2, linetype = 0)+
+  scale_y_continuous(name = 'Relative spawning\n biomass')+geom_hline(aes(yintercept = 1), color = 'black', linetype =2)+
+  coord_cartesian(ylim = c(0,2.5))
+
+
+

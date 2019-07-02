@@ -173,6 +173,32 @@ save(ls.save,file = 'results/MSErun_move_realized_move3.Rdata')
 ls.save <- list()
 ls.converge <- matrix(0, nruns)
 df <- load_data_seasons(nseason = 4, nspace = 2) # Prepare data for operating model
+nruns <- 1000
+df$bfuture <- 0
+
+source('run_multiple_OMs.R')
+
+for (i in 1:nruns){
+  tmp <- run_multiple_OMs(simyears = 50, seeds[i], df =df, Catchin =0)
+  #tmp <- run_multiple_MSEs(simyears = 30, seeds[i])
+  print(i)
+  if(is.list(tmp)){
+    ls.save[[i]] <-tmp
+    ls.converge[i] <- 1
+  }else{
+    ls.save[[i]] <- NA
+    ls.converge[i] <- 0
+  }
+  
+}
+# # # # 
+save(ls.save,file = 'results/MSErun_move_nofishing_nobiasadj.Rdata')
+
+ls.save <- list()
+ls.converge <- matrix(0, nruns)
+df <- load_data_seasons(nseason = 4, nspace = 2) # Prepare data for operating model
+source('run_multiple_OMs.R')
+df$bfuture <- 0.87
 
 
 for (i in 1:nruns){
@@ -190,4 +216,26 @@ for (i in 1:nruns){
 }
 # # # # 
 save(ls.save,file = 'results/MSErun_move_nofishing_biasadj.Rdata')
+
+ls.save <- list()
+ls.converge <- matrix(0, nruns)
+df <- load_data_seasons(nseason = 4, nspace = 2) # Prepare data for operating model
+df$bfuture <- 0.5
+
+
+for (i in 1:nruns){
+  tmp <- run_multiple_OMs(simyears = 50, seeds[i], df =df, Catchin =0)
+  #tmp <- run_multiple_MSEs(simyears = 30, seeds[i])
+  print(i)
+  if(is.list(tmp)){
+    ls.save[[i]] <-tmp
+    ls.converge[i] <- 1
+  }else{
+    ls.save[[i]] <- NA
+    ls.converge[i] <- 0
+  }
+  
+}
+# # # # 
+save(ls.save,file = 'results/MSErun_move_nofishing_biasadj_med.Rdata')
 

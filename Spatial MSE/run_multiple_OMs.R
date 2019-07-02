@@ -72,8 +72,8 @@ run_multiple_OMs <- function(simyears = 30,seed = 12345, df, Catchin){
       df$wage_mid <- df.new$wage_mid
       df$wage_ssb <- df.new$wage_ssb
       df$Catch <- c(df$Catch, Catchin[time])
-      df$b[length(df$b)] <- 0.87
-      df$b <- c(df$b,0.87)
+      df$b[length(df$b)] <- df$bfuture
+      df$b <- c(df$b,df$bfuture)
       Rdevs <- rnorm(n = 1,mean = 0, sd = exp(df$logSDR))
       #Rdevs <- rep(0, yr.future)
       df$parms$Rin <- c(df$parms$Rin,Rdevs)
