@@ -249,6 +249,7 @@ load_data_seasons <- function(nseason = 4, nspace = 2,
                   logphi_survey = log(10),
                   years = years,
                   b = b[Yr >= years[1]],
+                  bfuture = 0,
                   #logh = log(0.8),
                   # Space parameters 
                   smul = 0.6, # Annual survey timing 

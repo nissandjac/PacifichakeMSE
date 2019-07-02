@@ -42,6 +42,14 @@ df_lists_OM <- function(ls.save, nms){
   SSB.plotquant$run <- nms
   
   
+  SSB.all <- ls.df[ls.df$year > 1965,] %>%
+    group_by(year) %>%
+    summarise(med = median(SSB.can+SSB.US), 
+              p95 = quantile(SSB.can+SSB.US, 0.95),
+              p5 = quantile(SSB.can+SSB.US,0.05))
+  SSB.all$run <- nms
+  
+  
   ams.plotquant <- ls.df[ls.df$year > 2010,] %>% 
     group_by(year) %>% 
     summarise(med.can = median(ams.can,na.rm = TRUE), 
@@ -70,7 +78,8 @@ df_lists_OM <- function(ls.save, nms){
               list(
                 SSB.plotquant, 
                 ams.plotquant,
-                amc.plotquant
+                amc.plotquant,
+                SSB.all
                ))
   )
 }
