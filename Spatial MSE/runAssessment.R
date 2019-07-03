@@ -5,7 +5,7 @@ runAssessment <- function(df.new){
   
   
   #U[2,] <- 0.01
-  parms <- getParameters(TRUE)
+  parms <- getParameters_old(TRUE)
   
   
   compile("runHakeassessment.cpp")

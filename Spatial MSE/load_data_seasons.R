@@ -2,7 +2,15 @@
 # year and age input 
 load_data_seasons <- function(nseason = 4, nspace = 2,
                               movemaxinit = 0.5, movefiftyinit = 5, 
-                              nsurvey = 2){
+                              nsurvey = 2, logSDR = 1.4, bfuture = 0.87,
+                              moveout = 0.8, movesouth = 0.05,
+                              moveinit = NA){
+  
+  if(is.na(moveinit)){
+    if(nspace == 2){
+    moveinit <-  c(0.3,0.7)
+    }
+  }
   
   
   years <- 1966:2017
@@ -46,9 +54,9 @@ load_data_seasons <- function(nseason = 4, nspace = 2,
     if(nseason == 4){ # For the standard model
     movemat[,1:2,,] <- 0 # Recruits and 1 year olds don't move
     
-    movemat[1,3:nage,2:3,] <- 0.05 # Don't move south during the year
-    movemat[1,3:nage,nseason,] <- 0.8
-    movemat[2,3:nage,nseason,] <- 0.05
+    movemat[1,3:nage,2:3,] <- movesouth # Don't move south during the year
+    movemat[1,3:nage,nseason,] <- moveout
+    movemat[2,3:nage,nseason,] <- movesouth
 }
     # movemat[1,11:nage,nseason] <- 0
     # movemat[2,11:nage,nseason] <- 0
@@ -59,7 +67,7 @@ load_data_seasons <- function(nseason = 4, nspace = 2,
     # 
     # move.init[1,] <- 0.3
     # move.init[2,] <- 0.7
-    move.init <- c(0.3,0.7)
+    move.init <- moveinit
     
     }else{
       move.init <- 1
@@ -245,11 +253,11 @@ load_data_seasons <- function(nseason = 4, nspace = 2,
                   age_catch = t(as.matrix(age_catch[,3:17])*0.01),
                   # variance parameters
                   logSDcatch = log(0.01),
-                  logSDR = log(1.4), # Fixed in stock assessment ,
+                  logSDR = log(logSDR), # Fixed in stock assessment ,
                   logphi_survey = log(10),
                   years = years,
                   b = b[Yr >= years[1]],
-                  bfuture = 0,
+                  bfuture = bfuture,
                   #logh = log(0.8),
                   # Space parameters 
                   smul = 0.6, # Annual survey timing 

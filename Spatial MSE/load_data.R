@@ -185,6 +185,7 @@ df <-list(      #### Parameters #####
                 #logphi_survey = log(0.91),
                 sigma_psel = 1.4,
                 logh = log(0.8),
+                smul = 0.5,
                 years = years,
                 logphi_catch = log(0.8276), # log(0.8276)
                 logphi_survey = log(11.33),

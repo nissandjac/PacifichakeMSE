@@ -88,16 +88,17 @@ for (time in 1:simyears){
       
       ## Add a survey if catches are 0 
       if(df$Catch[time] == 0 & df$flag_survey[time] == -1){
-      print('Stock in peril! Conducting emergency survey')        
+        print('Stock in peril! Conducting emergency survey')        
+        
+        
+        df$flag_survey[df$Catch == 0] <- 1
+        df$ss_survey[df$Catch == 0] <- ceiling(mean(df$ss_survey[df$ss_survey > 0]))+200 # emergency survey adds more 200 age samples! 
+        df$survey_x[df$Catch == 0] <- 2
+        df$survey_err[df$Catch == 0] <- mean(df$survey_err[df$survey_err < 1])
       }
       
-      df$flag_survey[df$Catch == 0] <- 1
-      df$ss_survey[df$Catch == 0] <- ceiling(mean(df$ss_survey[df$ss_survey > 0]))+200 # emergency survey adds more 200 age samples! 
-      df$survey_x[df$Catch == 0] <- 2
-      df$survey_err[df$Catch == 0] <- mean(df$survey_err[df$survey_err < 1])
-      
-      df$b[length(df$b)] <- max(df$b)
-      df$b <- c(df$b,max(df$b))
+      df$b[length(df$b)] <- df$bfuture
+      df$b <- c(df$b,df$bfuture)
       Rdevs <- rnorm(n = 1,mean = 0, sd = exp(df$logSDR))
       #Rdevs <- rep(0, yr.future)
       df$parms$Rin <- c(df$parms$Rin,Rdevs)
