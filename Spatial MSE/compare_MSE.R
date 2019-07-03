@@ -343,10 +343,12 @@ df.SSB.om$Rel5 <- df.SSB.om$p5/sum(sim.data$SSB0)
 
 #cols <
 
+png('Figs/biasadj_OM_nofishing.png', width = 16, height = 10, units = 'cm', res = 400)
+
 ggplot(df.SSB.om, aes( x = year, y = SSBrel, color = run))+geom_line(size = 1.2)+
   geom_ribbon(aes(ymin = Rel5, ymax = Rel95, fill = run), alpha = 0.2, linetype = 0)+
   scale_y_continuous(name = 'Relative spawning\n biomass')+geom_hline(aes(yintercept = 1), color = 'black', linetype =2)+
   coord_cartesian(ylim = c(0,2.5))
-
+dev.off()
 
 

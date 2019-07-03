@@ -1,5 +1,3 @@
-# direc <- "~/GitHub/PacifichakeMSE/Spatial MSE_vs3/Model condition/"
-# setwd(direc)
 ###### Initialize the operating model ###### 
 library(TMB)
 library(dplyr)
@@ -9,22 +7,10 @@ seedz <- 125
 set.seed(seedz)
 
 plot.figures = FALSE # Set true for printing to file 
-# Run the simulation model
-source('run_agebased_model_true_Catch.R')
-source('ylimits.R')
-source('plotUncertainty.R')
-source('getUncertainty.R')
-source('getSelec.R')
-source('load_data_seasons.R')
-source('create_TMB_data.R')
-source('getRefpoint_biomass.R')
-source('Check_Identifiable_vs2.R')
-source('getF.R')
-assessment <- read.csv('data/asssessment_MLE.csv')
-assessment <- assessment[assessment$year > 1965 &assessment$year < 2018 ,]
-Catch.obs <- read.csv('data/hake_totcatch.csv')
 
-df <- load_data_seasons(move = FALSE, nseason  = 1,nspace = 1)
+
+df <- load_data_seasons(nseason = 4, nspace = 2)
+
 df$Catch <- Catch.obs$Fishery
 time <- 1
 yrinit <- df$nyear
@@ -44,26 +30,23 @@ simdata0 <- sim.data # The other one is gonna get overwritten.
 # 
 plot(sim.data$Fsel[1,1,1:15], col = 'red', type ='l')
 lines(sim.data$Fsel[1,2,1:15], col = 'blue')
-#SSB0.ass <- 
-# Plot the biomass in ggplot 
-df.plot <- data.frame(years = rep(df$years,2), 
-                      SSB = c(rowSums(sim.data$SSB),assessment$SSB)*1e-6, 
-                      source = rep(c('OM','MLE assessment'), each = length(df$years)))
 
-p1 <- ggplot(data = df.plot, aes(x = years, y = SSB, color = source))+geom_line(size = 2)+theme_classic()+
-  theme(legend.title=element_blank(), legend.position = c(0.8,0.8))+scale_y_continuous('SSB (million tonnes)')
+# Plot the biomass in ggplot 
+df.plot <- data.frame(years = rep(df$years,2), SSB = c(rowSums(sim.data$SSB)*0.5,assessment$SSB), source = rep(c('SSB OM','SSB assessment'), each = length(df$years)))
+
+p1 <- ggplot(data = df.plot, aes(x = years, y = SSB, color = source))+geom_line(size = 2)+theme_classic()
 
 if(plot.figures == TRUE){
-  png('Spawningbiomass.png', width = 12, height = 8, res = 400,units = 'cm')
-
+  png('Spawningbiomass.png', width = 16, height = 12, res = 400,units = 'cm')
+  
 }
-  p1
- if(plot.figures == TRUE){  
-dev.off()
+p1
+if(plot.figures == TRUE){  
+  dev.off()
 }
 # Compare with all the data 
 par(mfrow = c(2,2), mar = c(4,4,1,1))
-plot(df$years,rowSums(sim.data$SSB), type = 'l', lwd = 2, xlab ='Year', ylab = 'Spawning biomass')
+plot(df$years,rowSums(sim.data$SSB)*0.5, type = 'l', lwd = 2, xlab ='Year', ylab = 'Spawning biomass')
 lines(assessment$year,assessment$SSB, lwd = 2, col = 'red')
 
 # How do we fit to the data 
@@ -78,7 +61,7 @@ df.plot <- data.frame(years = rep(df$years[df$survey > 1],2),
                       source = rep(c('Survey data','OM output'), each = length(df$years[df$survey > 1])),
                       survsd= c(df$survey_err[df$flag_survey ==1], rep(NA,length(df$years[df$survey > 1]))),
                       kriegsd = c(rep(exp(df$parms$logSDsurv),length(df$years[df$survey > 1])), rep(NA,length(df$years[df$survey > 1])))
-                      )
+)
 df.plot$survsd <- sqrt(df.plot$survey^2*exp(df.plot$survsd+df.plot$kriegsd-1))
 
 p2 <- ggplot(data = df.plot, aes(x = years, y = survey/1e6, color = source))+
@@ -87,19 +70,14 @@ p2 <- ggplot(data = df.plot, aes(x = years, y = survey/1e6, color = source))+
   theme_classic()+
   geom_errorbar(aes(ymin=(survey-survsd)/1e6, ymax=(survey+survsd)/1e6))+
   scale_y_continuous(limit = c(0,5), name = 'survey biomass (million t)')+
-  scale_x_continuous(name = 'year')+
-  theme(legend.position = c(0.15, 0.8), 
-        legend.background = element_rect(color = "black",fill = NA, size = 1, linetype = 0),
-        legend.title = element_blank())
-p2
+  scale_x_continuous(name = 'year')
+
 if(plot.figures == TRUE){
-png('Figures/survey.png', width = 12, height = 8, res = 400,units = 'cm')
-  }
+  png('survey.png', width = 16, height = 12, res = 400,units = 'cm')}
 p2
 
- if(plot.figures == TRUE){
-dev.off()
-   }
+if(plot.figures == TRUE){
+  dev.off()}
 ## Add the error bars 
 # arrows(df$years[df$survey > 1],df$survey[df$survey > 1]+exp(exp(df$parms$logSDsurv)+exp(df$survey_err[df$survey > 1])), 
 #        df$years[df$survey > 1], df$survey[df$survey > 1]-exp(exp(df$parms$logSDsurv)+exp(df$survey_err[df$survey > 1])), 
@@ -108,8 +86,6 @@ dev.off()
 
 # plot(df$years,df$Catch, type = 'l', lwd = 2, col = 'red')
 # # Plot the overall average age 
-plot(sim.data$age_catch[5,])
-lines(df$age_catch[5,])
 
 age.comps <- sim.data$age_comps_OM[,2:df$nyear,,3]
 age.comps <- apply(age.comps,c(1,2),sum)/2
@@ -184,8 +160,8 @@ for(i in 1:(df$nyear-1)){
 }
 
 df.am.catch <- data.frame(year = rep(df$years,3), 
-                    am = c(am.catch,am.catch.can,am.catch.US), 
-                    Country = rep(c('All','Can','US'), each = length(df$years)))
+                          am = c(am.catch,am.catch.can,am.catch.US), 
+                          Country = rep(c('All','Can','US'), each = length(df$years)))
 
 
 p3 <- ggplot(df.am.catch, aes(x = year, y = am, color = Country))+geom_line(size = 1)+
@@ -199,23 +175,9 @@ p3
 # dev.off()
 
 ## See thcoe catch per country
-c.country <- read.csv('catch_per_country.csv')
+c.country <- read.csv('data/catch_per_country.csv')
 
-# yl <- ylimits(c.country$Canperc,c.country$Total)
-# plot(c.country$year,c.country$Total, ylim = yl, type = 'l', lwd = 2)
-# lines(c.country$year,c.country$Can, col = 'red')
-# lines(c.country$year,c.country$US, col = 'blue')
-# 
-# # Save the Catch by country
-# Catch.sim <- apply(sim.data$Catch.save.age, MARGIN = c(2,3),FUN = sum)
-# lines(df$years,Catch.sim[,1], col = 'red', lty = 2)
-# lines(df$years,Catch.sim[,2], col = 'blue', lty = 2)
-# lines(df$years,sim.data$Catch, lwd = 2)
-# 
-
-# Age distribution in the catch
-
-cps <- read.csv('catch_per_sector.csv')
+cps <- read.csv('data/catch_per_sector.csv')
 
 ## Calculate 
 
@@ -224,7 +186,7 @@ cps.s <- melt(cps, id.vars = c('year','nfish','nhauls','Country','Catch'),
 
 cps.s <- cps.s %>% 
   group_by(year,Country, variable) %>% 
-  summarise(agecomp =weighted.mean(value,Catch), n = sum(nhauls))
+  summarise(agecomp =weighted.mean(value,Catch))
 
 # Make ages numbers rather than factors
 ages <- as.numeric(unlist(strsplit(as.character(cps.s$variable), split = "X")))
@@ -237,7 +199,7 @@ cps.am <- cps.s %>%
   summarise(am = sum((agecomp/100)*age))
 
 cps.am.all <- matrix(NA, df$nyear)
-  
+
 for(i in 1:df$nyear){
   cps.am.all[i] <- sum(df$age[2:16]*df$age_catch[,i])
 }
@@ -253,9 +215,6 @@ p1 <- ggplot(cps.am, aes(x= year, y= am, color = Country, group = Country))+geom
 #png('age_comps.png', width = 16, height = 12, res = 400,units = 'cm')
 p1
 #dev.off()
-
-plot(sim.data$age_catch[5,])
-lines(df$age_catch[5,])
 
 # Is my weighted calculation correct? 
 cps.all<- melt(cps, id.vars = c('year','nfish','nhauls','Country','Catch'),measure.vars = rep(paste('X',1:15, sep =''))) # Omit fleet from this df
@@ -275,8 +234,9 @@ cps.all.s <- cps.all %>%
 
 ## Load the single species model to check the age comp fits 
 source('load_data.R')
-source('getParameters.R')
+source('parameters_TRUE.R')
 source('runAssessment.R')
+source('getParameters_old.R')
 
 df.new <- load_data()
 # if(sum(parms$F0) == 0){
@@ -287,7 +247,7 @@ reps <- runAssessment(df.new)
 am.est <- reps$age_catch_est
 
 
-age.comps <- sim.data$age_catch
+age.comps <- sim.data$age_comps_catch
 
 
 # Calculate the average age in the catch 
@@ -307,12 +267,12 @@ df.plot <- rbind(df.am.all, data.frame(year = df.new$years, am = am.mean$am.sim,
 #   #geom_line(data = cps.all.s, col = 'red', size = 2)+
 #   geom_line(data = am.mean, aes(x = years), col = 'green', size = 1)+
 #   geom_line(data = am.mean,aes(x = years,y = am.sim), col = 'blue', size =1 )+theme_classic()
-#df.plot$Country <- mapvalues(df.plot$Country,from='All',to = 'Observed')
+df.plot$Country <- mapvalues(df.plot$Country,from='All',to = 'Observed')
 df.plot$am[df.plot$am<3] <- NA # Weird bug
 
 p2 <- ggplot(df.plot, aes(x = year, y= am, color = Country))+geom_line()+theme_classic()+scale_y_continuous(name = 'Average age in catch')
 
-p2
+
 ## Plot the average survey age comp 
 
 am.survey.sim <- sim.data$age_comps_surv
@@ -352,43 +312,21 @@ for(i in 1:4){
   df.movement[df.movement$season == i & df.movement$country == 'CAN',]$movement <- mm.tmp[1,]
 }
 p.movement <- list()
-# for(i in 1:4){
-#   p.movement[[i]] <- ggplot(df.movement[df.movement$season == i,], aes(x = age, y = movement, color = country))+
-#   geom_line()+theme_classic()+scale_y_continuous(name = '',limit = c(0,1.1))+geom_point()+
-#   theme(legend.position = 'n')+scale_x_continuous(name = '')
-#   
-#   if(i == 3){
-#   p.movement[[i]] <- p.movement[[i]]+theme(axis.title.x = element_text('age'))
-#   }
-# #if()
-# }
-# do.call("grid.arrange", c(p.movement, ncol=2))
-
-p.movement <- ggplot(df.movement, aes( x= age, y = movement, color = country))+theme_classic()+
-  scale_y_continuous('movement rate')+geom_line()+geom_point()+
-  scale_color_manual(values = c('darkred','blue4'))+
-  geom_hline(data = data.frame(season = 1, yint = 0.5), aes(yintercept = 0.5),
-             linetype = 2, color = 'black')+
-  geom_vline(data = data.frame(season = 1, xint = 5), aes(xintercept = 5),
-             linetype = 2, color = 'black')+
-  geom_text(data = data.frame(season = 1, yint = 0.6, xint = 5),
-            aes(x = xint,y = yint), label = expression('kappa'), color ='black', parse = TRUE)+
-  facet_wrap(~season)
-
-p.movement
-
-if(plot.figures == TRUE){
-  png('movement.png', width = 16, height = 10, res= 400, unit = 'cm')
+for(i in 1:4){
+  p.movement[[i]] <- ggplot(df.movement[df.movement$season == i,], aes(x = age, y = movement, color = country))+
+    geom_line()+theme_classic()+scale_y_continuous(limit = c(0,1.1))+geom_point()+ggtitle(paste('season',i))
 }
-p.movement
-if(plot.figures == TRUE){
-dev.off()
-}
+library(gridExtra)
+#png('survey_comps.png', width = 16, height = 10, res= 400, unit = 'cm')
+
+do.call("grid.arrange", c(p.movement, ncol=2))
+
+#dev.off()
+
 
 # Biomass distribution in the surveys 
 
-df.survey <- read.csv('survey_country_2.csv')
-df.survey$Bio <- df.survey$Bio*1e-3 # Harmonize units
+df.survey <- read.csv('data/survey_country_2.csv')
 
 p1 <- ggplot(df.survey, aes(x = year, y = Bio/1e6, color = Country))+geom_line()+geom_point()+theme_classic()
 p1
@@ -397,10 +335,14 @@ p1
 ## Total survey
 survey.tot <- df.survey %>% 
   group_by(year) %>% 
-  summarise(Biomass = sum(Bio),
+  summarise(Bio = sum(Bio),
             am = mean(am))
 
 # Something is wrong with the survey. Just use the fraction for now 
+
+survey.frac.us <- df.survey$Bio[df.survey$Country == 'USA']/survey.tot$Bio
+
+survey.frac.can <-   df.survey$Bio[df.survey$Country == 'CAN']/survey.tot$Bio
 
 idx <- which(df$flag_survey == 1)
 ny <- length(idx)
@@ -408,17 +350,17 @@ ny <- length(idx)
 sf.us <- rep(NA, df$nyear)
 sf.can <- rep(NA, df$nyear)
 
-sf.us[idx] <- df.survey$Bio[df.survey$Country == 'USA']
-sf.can[idx] <- df.survey$Bio[df.survey$Country == 'CAN']
+sf.us[idx] <- survey.frac.us
+sf.can[idx] <- survey.frac.can
 
 # Spread it out on the survey
 survey.plot <- data.frame(year = rep(df$years, 4), 
                           country = c(rep(c('USA','CAN'),  each = df$nyear),rep(c('USA','CAN'),  each = df$nyear)), 
-                          survey = c(sf.us,sf.can, sim.data$survey.true[2,],
+                          survey = c(df$survey*sf.us,df$survey*sf.can, sim.data$survey.true[2,],
                                      sim.data$survey.true[1,]),
                           source = c(rep('observation',df$nyear*2),rep('simulation', df$nyear*2))
-                          )
-                            
+)
+
 p.survey <- ggplot(data = survey.plot, aes(x = year, y = survey*1e-6, color = country))+
   geom_line(data = survey.plot[is.na(survey.plot$survey) == 0 & survey.plot$source == 'observation',])+
   geom_point(data = survey.plot[is.na(survey.plot$survey) == 0 & survey.plot$source == 'observation',])+
@@ -426,14 +368,10 @@ p.survey <- ggplot(data = survey.plot, aes(x = year, y = survey*1e-6, color = co
   theme_classic()+scale_y_continuous(name = 'survey biomass (millions tons)')+
   scale_x_continuous(limit = c(1994, 2018))
 
-if(plot.figures == TRUE){
-  png('survey_distribution.png', width = 16, height = 12, res = 400,units = 'cm')
-}
+#png('survey_distribution.png', width = 16, height = 12, res = 400,units = 'cm')
 p.survey                            
-if(plot.figures == TRUE){
-dev.off()                            
-}
-  
+#dev.off()                            
+
 
 # Calculate the am per country in the OM 
 am.can.survey <- sim.data$age_comps_country[,,1]
@@ -458,7 +396,7 @@ dist.survey <- ggplot(df.survey, aes(x= year, y = am, color = Country))+geom_lin
   scale_y_continuous(name = 'Average age in survey', limit = c(2,10))+
   geom_line(data = am.mean.surv, linetype = 2)
 
-#png('survey_comps.png', width = 12, height = 6, res = 400,units = 'cm')
+#png('survey_comps.png', width = 16, height = 12, res = 400,units = 'cm')
 dist.survey
 #dev.off()
 

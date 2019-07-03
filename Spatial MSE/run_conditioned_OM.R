@@ -1,5 +1,3 @@
-direc <- "~/GitHub/PacifichakeMSE/Spatial MSE_vs2/"
-setwd(direc)
 ###### Initialize the operating model ###### 
 library(TMB)
 library(dplyr)
@@ -18,9 +16,10 @@ source('getSelec.R')
 source('load_data_seasons.R')
 source('create_TMB_data.R')
 source('Check_Identifiable_vs2.R')
-assessment <- read.csv('asssessment_MLE.csv')
+source('getF.R')
+assessment <- read.csv('data/asssessment_MLE.csv')
 assessment <- assessment[assessment$year > 1965 &assessment$year < 2018 ,]
-Catch.obs <- read.csv('hake_totcatch.csv')
+Catch.obs <- read.csv('data/hake_totcatch.csv')
 
 df <- load_data_seasons()
 df$Catch <- Catch.obs$Fishery
@@ -44,7 +43,7 @@ plot(sim.data$Fsel[1,1,1:15], col = 'red', type ='l')
 lines(sim.data$Fsel[1,2,1:15], col = 'blue')
 
 # Plot the biomass in ggplot 
-df.plot <- data.frame(years = rep(df$years,2), SSB = c(rowSums(sim.data$SSB),assessment$SSB), source = rep(c('SSB OM','SSB assessment'), each = length(df$years)))
+df.plot <- data.frame(years = rep(df$years,2), SSB = c(rowSums(sim.data$SSB)*0.5,assessment$SSB), source = rep(c('SSB OM','SSB assessment'), each = length(df$years)))
 
 p1 <- ggplot(data = df.plot, aes(x = years, y = SSB, color = source))+geom_line(size = 2)+theme_classic()
 
@@ -53,12 +52,12 @@ if(plot.figures == TRUE){
 
 }
   p1
- if(plot.figures == TRUE){  
+  if(plot.figures == TRUE){  
 dev.off()
-}
+  }
 # Compare with all the data 
 par(mfrow = c(2,2), mar = c(4,4,1,1))
-plot(df$years,rowSums(sim.data$SSB), type = 'l', lwd = 2, xlab ='Year', ylab = 'Spawning biomass')
+plot(df$years,rowSums(sim.data$SSB)*0.5, type = 'l', lwd = 2, xlab ='Year', ylab = 'Spawning biomass')
 lines(assessment$year,assessment$SSB, lwd = 2, col = 'red')
 
 # How do we fit to the data 
@@ -187,23 +186,9 @@ p3
 # dev.off()
 
 ## See thcoe catch per country
-c.country <- read.csv('catch_per_country.csv')
+c.country <- read.csv('data/catch_per_country.csv')
 
-# yl <- ylimits(c.country$Canperc,c.country$Total)
-# plot(c.country$year,c.country$Total, ylim = yl, type = 'l', lwd = 2)
-# lines(c.country$year,c.country$Can, col = 'red')
-# lines(c.country$year,c.country$US, col = 'blue')
-# 
-# # Save the Catch by country
-# Catch.sim <- apply(sim.data$Catch.save.age, MARGIN = c(2,3),FUN = sum)
-# lines(df$years,Catch.sim[,1], col = 'red', lty = 2)
-# lines(df$years,Catch.sim[,2], col = 'blue', lty = 2)
-# lines(df$years,sim.data$Catch, lwd = 2)
-# 
-
-# Age distribution in the catch
-
-cps <- read.csv('catch_per_sector.csv')
+cps <- read.csv('data/catch_per_sector.csv')
 
 ## Calculate 
 
@@ -262,6 +247,7 @@ cps.all.s <- cps.all %>%
 source('load_data.R')
 source('parameters_TRUE.R')
 source('runAssessment.R')
+source('getParameters_old.R')
 
 df.new <- load_data()
 # if(sum(parms$F0) == 0){
@@ -351,23 +337,23 @@ do.call("grid.arrange", c(p.movement, ncol=2))
 
 # Biomass distribution in the surveys 
 
-df.survey <- read.csv('survey_country.csv')
+df.survey <- read.csv('data/survey_country_2.csv')
 
-p1 <- ggplot(df.survey, aes(x = year, y = SSB/1e6, color = Country))+geom_line()+geom_point()+theme_classic()
+p1 <- ggplot(df.survey, aes(x = year, y = Bio/1e6, color = Country))+geom_line()+geom_point()+theme_classic()
 p1
 
 
 ## Total survey
 survey.tot <- df.survey %>% 
   group_by(year) %>% 
-  summarise(Biomass = sum(Biomass),
+  summarise(Bio = sum(Bio),
             am = mean(am))
 
 # Something is wrong with the survey. Just use the fraction for now 
 
-survey.frac.us <- df.survey$Biomass[df.survey$Country == 'USA']/survey.tot$Biomass
+survey.frac.us <- df.survey$Bio[df.survey$Country == 'USA']/survey.tot$Bio
 
-survey.frac.can <-   df.survey$Biomass[df.survey$Country == 'CAN']/survey.tot$Biomass
+survey.frac.can <-   df.survey$Bio[df.survey$Country == 'CAN']/survey.tot$Bio
 
 idx <- which(df$flag_survey == 1)
 ny <- length(idx)

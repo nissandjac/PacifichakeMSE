@@ -35,22 +35,22 @@ simdata0 <- sim.data # The other one is gonna get overwritten.
 ls.save <- list()
 ls.converge <- matrix(0, nruns)
 #
-for (i in 26:nruns){
+for (i in 1:nruns){
   tmp <- run_multiple_MSEs(simyears = 30,
                            seeds = seeds[i],
                            TAC = 1, df = df)
   #tmp <- run_multiple_MSEs(simyears = 30, seeds[i])
   print(i)
-
+  
   if(is.list(tmp)){
-  ls.save[[i]] <-tmp
-  ls.converge[i] <- 1
+    ls.save[[i]] <-tmp
+    ls.converge[i] <- 1
   }else{
     ls.save[[i]] <- NA
     ls.converge[i] <- 0
   }
-
-
+  
+  
 }
 # # # #
 save(ls.save,file = 'results/b = 0.5/MSErun_move_JTC.Rdata')
@@ -61,7 +61,7 @@ ls.converge <- matrix(0, nruns)
 #
 for (i in 1:nruns){
   tmp <- run_multiple_MSEs(simyears = 30, seeds[i],
-                               TAC = 2, df =df)
+                           TAC = 2, df =df)
   #tmp <- run_multiple_MSEs(simyears = 30, seeds[i])
   print(i)
   if(is.list(tmp)){
