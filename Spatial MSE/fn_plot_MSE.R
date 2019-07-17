@@ -26,7 +26,7 @@ p1 <- ggplot(df.obj, aes(x = HCR,y = value))+geom_bar(stat = 'identity', aes(fil
   theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5), legend.position = 'none')
 
 if(plotexp == TRUE){
-png(paste(plotfolder,'objective_bars.png'), width = 16, height =18, res = 400, unit = 'cm')
+png(paste(plotfolder,'objective_bars.png'), width = 20, height =12, res = 400, unit = 'cm')
 print(p1)
 dev.off()
 }  
