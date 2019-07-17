@@ -228,8 +228,8 @@ for (time in 1:simyears){
   Catch <- reps$Catch
   R <- reps$R
   
-  plot(SSB)
-  lines(rowSums(sim.data$SSB))
+  # plot(SSB)
+  # lines(rowSums(sim.data$SSB))
 
   # # lines(rowSums(sim.data$SSB), col = 'red')
   # # #Uncertainty

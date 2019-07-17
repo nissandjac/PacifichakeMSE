@@ -243,6 +243,20 @@ run.agebased.true.catch <- function(df, seeds = 100){
         }else{
           pseltmp <- psel
         }
+        
+        
+        if(year[yr] >=2017){
+          
+          # if(space == 1){
+          # }else{
+          # pseltmp <- c(0.05,0,0,0,0)  
+          # }
+          #         
+          pseltmp <- psel+df$parms$PSEL[,ncol(df$parms$PSEL)]*df$sigma_psel
+
+          
+        }
+        
         p.save[yr] <- sum(pseltmp)
         # 
         Fsel <- getSelec(age,pseltmp,df$Smin,df$Smax) # Constant over space right now 
@@ -298,7 +312,8 @@ run.agebased.true.catch <- function(df, seeds = 100){
         }
         
         if(season <nseason){
-        N.save.age[,yr,space,season+1] <- N.save.age[,yr,space,season]*exp(-Z)-
+        
+          N.save.age[,yr,space,season+1] <- N.save.age[,yr,space,season]*exp(-Z)-
           N.save.age[, yr,space,season]*exp(-Z)*(movemat[space,,season,yr])+ # Remove the ones that leave
           N.save.age[, yr,spaceidx,season]*exp(-Z)*(movemat[spaceidx,,season,yr])# add the ones come to the surrounding areas
         

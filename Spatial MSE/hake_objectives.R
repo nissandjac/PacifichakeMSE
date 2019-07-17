@@ -99,8 +99,8 @@ hake_objectives <- function(ls.MSE, SSB0,simyears = NA, move = NA){
   
   
   #cairo_pdf(filename = 'MSE_run.pdf')
-  p.plot <- list(p1,p2,p3)
-  p.export <- plot_grid(plotlist = p.plot, ncol = 1, align ='v')
+  #p.plot <- list(p1,p2,p3)
+  #p.export <- plot_grid(plotlist = p.plot, ncol = 1, align ='v')
   #dev.off()
   ###  Plot the performance metrics from Kristins spreadsheet 
   
@@ -131,7 +131,7 @@ hake_objectives <- function(ls.MSE, SSB0,simyears = NA, move = NA){
   print(paste('median AAV = ',round(median(AAV.plotquant$med), digits = 2), sep = ''))
   
   ### 
-  p.export <- grid.arrange(p1,p2,p3)
+  #p.export <- grid.arrange(p1,p2,p3)
   rns <- unique(SSB.future$run)
   p.vals <- matrix(0, length(unique(SSB.future$run)))
   
@@ -188,7 +188,7 @@ hake_objectives <- function(ls.MSE, SSB0,simyears = NA, move = NA){
   )
   
   
-  
+  p.export = NA
   return(list(p.export,t.export))
   
 }

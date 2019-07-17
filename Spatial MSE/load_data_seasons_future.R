@@ -2,8 +2,15 @@
 # year and age input 
 load_data_seasons_future <- function(yr.future, nseason = 4, nspace = 2,
                                      movemaxinit = 0.5, movefiftyinit = 5, 
-                                     nsurvey = 2){
+                                     nsurvey = 2, logSDR = 1.4, bfuture = 0.5,
+                                     moveout = 0.8, movesouth = 0.05,
+                                     moveinit = NA, moveslope = 0.5){
   
+  if(is.na(moveinit)){
+    if(nspace == 2){
+      moveinit <-  c(0.3,0.7)
+    }
+  }
   
   years <- 1966:(2017+yr.future)
   
@@ -18,8 +25,6 @@ load_data_seasons_future <- function(yr.future, nseason = 4, nspace = 2,
   # Maturity
   mat <- read.csv('data/maturity.csv')
   # Spatial stuff
-  nspace <- 2 # number of grid cells 
-  
   
   recruitmat <- matrix(0, nspace) # 4 is seasonality 
   recruitmat[1] <- 1 # 10 percent change of spawning north
@@ -28,7 +33,16 @@ load_data_seasons_future <- function(yr.future, nseason = 4, nspace = 2,
   # Movement matrix 5
   
   movefifty <- movefiftyinit
-  moveslope <- 0.5
+  ## for later use
+  recruitmat <- matrix(0, nspace) # 4 is seasonality 
+  recruitmat[1] <- 1 # 10 percent change of spawning north
+  recruitmat[2] <- 1 # 90 percent of spawning south
+  
+  
+  # Maturity
+  
+  movefifty <- movefiftyinit
+  
   movemax <- rep(movemaxinit,nseason)
   
   movemat <- array(0, dim = c(nspace, nage, nseason, nyear)) # Chances of moving in to the other grid cell 
@@ -51,9 +65,9 @@ load_data_seasons_future <- function(yr.future, nseason = 4, nspace = 2,
     if(nseason == 4){ # For the standard model
       movemat[,1:2,,] <- 0 # Recruits and 1 year olds don't move
       
-      movemat[1,3:nage,2:3,] <- 0.05 # Don't move south during the year
-      movemat[1,3:nage,nseason,] <- 0.8
-      movemat[2,3:nage,nseason,] <- 0.05
+      movemat[1,3:nage,1:3,] <- movesouth # Don't move south during the year
+      movemat[1,3:nage,nseason,] <- moveout
+      movemat[2,3:nage,nseason,] <- movesouth
     }
     # movemat[1,11:nage,nseason] <- 0
     # movemat[2,11:nage,nseason] <- 0
@@ -64,11 +78,13 @@ load_data_seasons_future <- function(yr.future, nseason = 4, nspace = 2,
     # 
     # move.init[1,] <- 0.3
     # move.init[2,] <- 0.7
-    move.init <- c(0.3,0.7)
+    move.init <- moveinit
     
   }else{
     move.init <- 1
   }
+  
+  
   
   
   # weight at age # weight at age 
@@ -149,7 +165,6 @@ load_data_seasons_future <- function(yr.future, nseason = 4, nspace = 2,
   #Fin <- assessment$F0
   
   b <- matrix(NA, nyear)
-  Yr <- 1946:(2017+yr.future)
   # Parameters 
   yb_1 <- 1965 #_last_early_yr_nobias_adj_in_MPD
   yb_2 <- 1971 #_first_yr_fullbias_adj_in_MPD
@@ -158,6 +173,8 @@ load_data_seasons_future <- function(yr.future, nseason = 4, nspace = 2,
   b_max <- 0.87 #_max_bias_adj_in_MPD
   
   b[1] <- 0
+  Yr <- years
+  
   for(j in 2:length(Yr)){
     
     if (Yr[j] <= yb_1){
@@ -175,7 +192,7 @@ load_data_seasons_future <- function(yr.future, nseason = 4, nspace = 2,
     }
     
     if(Yr[j] >= yb_4){
-      b[j] = b_max
+      b[j] = bfuture
     }
     # if (b[j]<b[j-1]){
     #   stop('why')
@@ -189,6 +206,15 @@ load_data_seasons_future <- function(yr.future, nseason = 4, nspace = 2,
   for(i in 1:nspace){
     psel[i,] <- c(2.8476, 0.973,0.3861,0.1775,0.5048) # USA selectivity 
   }
+  psel[1,] <- c(1,1,1,1,1)
+  
+  # Fsel <- getSelec(df$age,psel[1,], df$Smin, df$Smax)
+  # plot(Fsel, col = 'red')
+  # Fsel <- getSelec(df$age,psel[2,], df$Smin, df$Smax)
+  # lines(Fsel)
+  # 
+  # 
+  
   
   parms <- list( # Just start all the simluations with the same initial conditions 
     logRinit = 14.5614,
@@ -208,7 +234,6 @@ load_data_seasons_future <- function(yr.future, nseason = 4, nspace = 2,
   )
   
   
-  
   df <-list(      #### Parameters #####
                   wage_ssb = t(wage_ssb),
                   wage_catch = t(wage_catch),
@@ -219,18 +244,19 @@ load_data_seasons_future <- function(yr.future, nseason = 4, nspace = 2,
                   Matsel= mat$mat,
                   nage = nage,
                   age = age,
-                  year_sel = length(1991:2010), # Years to model time varying sel
+                  year_sel = length(1991:2017), # Years to model time varying sel
                   selYear = 26,
                   nseason = nseason,
                   nyear = nyear,
                   tEnd = tEnd, # The extra year is to initialize 
                   logQ = log(1),   # Analytical solution
-                  surveyseason = 2,
                   # Selectivity 
                   Smin = 1,
                   Smin_survey = 2,
                   Smax = 6,
                   Smax_survey = 6,
+                  surveyseason = surveyseason,
+                  nsurvey = nsurvey, # Frequency of survey years (e.g., 2 is every second year)
                   # survey
                   survey = c(rep(1,df.survey$Year[1]-years[1]),df.survey$obs), # Make sure the survey has the same length as the catch time series
                   survey_x = c(rep(-2,df.survey$Year[1]-years[1]),df.survey$fleet), # Is there a survey in that year?
@@ -246,27 +272,33 @@ load_data_seasons_future <- function(yr.future, nseason = 4, nspace = 2,
                   age_catch = t(as.matrix(age_catch[,3:17])*0.01),
                   # variance parameters
                   logSDcatch = log(0.01),
-                  logSDR = log(1.4), # Fixed in stock assessment ,
-                  logphi_survey = log(0.91),
-                  move = move,
+                  logSDR = log(logSDR), # Fixed in stock assessment ,
+                  logphi_survey = log(10),
                   years = years,
-                  smul = 0.6,
                   b = b[Yr >= years[1]],
+                  bfuture = bfuture,
+                  #logh = log(0.8),
                   # Space parameters 
+                  smul = 0.6, # Annual survey timing 
+                  sigma_psel = 1.4,
                   nspace = nspace,
+                  #TAC = TAC,
                   movemat = movemat,
-                  move.init = move.init,
                   move = move,
+                  recruitmat = recruitmat,
+                  move.init = move.init,
+                  # F0 = Fin,
                   psel = psel,
                   parms = parms
                   # Parameters from the estimation model 
                   
   )
-  
-  
   Catch.obs <- read.csv('data/hake_totcatch.csv') # Total catch
   df$Catch <- Catch.obs$Fishery # Add the observed catch
   # Correct for future years 
+  if(nyear > length(df$Catch)){
+    df$Catch <- c(df$Catch,rep(mean(df$Catch), nyear-length(Catch.obs$Fishery)))
+  }
   
   if(max(years) > 2017){
     
@@ -280,6 +312,7 @@ load_data_seasons_future <- function(yr.future, nseason = 4, nspace = 2,
     
     df$ss_survey[idx.future] <- mean(df$ss_survey[df$ss_survey != -1])
     df$flag_survey[idx.future] <- 1
+    df$flag_catch[years > 2017] <- 1
     
     Rdevs <- rnorm(n = yr.future,mean = 0, sd = exp(df$logSDR))
     #Rdevs <- rep(0, yr.future)

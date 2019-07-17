@@ -3,58 +3,41 @@ library(TMB)
 library(dplyr)
 library(reshape2)
 library(ggplot2)
+library(r4ss)
+source('load_files_OM.R')
 seedz <- 125
 set.seed(seedz)
+assessment <- read.csv('data/asssessment_MLE.csv')
+assessment <- assessment[assessment$year > 1965,]
+# Get the stock assessment output from SS3 
+mod <- SS_output(paste(getwd(),'/data/', sep =''), printstats=FALSE, verbose = FALSE)
+
 
 plot.figures = FALSE # Set true for printing to file 
 
 
-df <- load_data_seasons(nseason = 4, nspace = 2)
-
-df$Catch <- Catch.obs$Fishery
-time <- 1
-yrinit <- df$nyear
-### Run the OM and the EM for x number of years in the MSE 
-### Set targets for harvesting etc 
-# df$parms$initN <- df$parms$initN*0
-# df$parms$Rin <- df$parms$Rin*0
-# df$F0 <- 0*df$F0
+df <- load_data_seasons(nseason = 4, nspace = 2, movemaxinit = 5, movefiftyinit = 5)
 
 simyears <- 25 # Project 30 years into the future (2048 that year)
 year.future <- c(df$years,(df$years[length(df$years)]+1):(df$years[length(df$years)]+simyears))
 N0 <- NA
 sim.data <- run.agebased.true.catch(df)
 
-simdata0 <- sim.data # The other one is gonna get overwritten. 
 
-# 
-plot(sim.data$Fsel[1,1,1:15], col = 'red', type ='l')
-lines(sim.data$Fsel[1,2,1:15], col = 'blue')
 
 # Plot the biomass in ggplot 
-df.plot <- data.frame(years = rep(df$years,2), SSB = c(rowSums(sim.data$SSB)*0.5,assessment$SSB), source = rep(c('SSB OM','SSB assessment'), each = length(df$years)))
+df.plot <- data.frame(years = c(df$years,assessment$year), 
+                      SSB = c(rowSums(sim.data$SSB)*0.5,assessment$SSB), source = c(rep('SSB OM', length(df$years)),
+                                                                                    rep('SSB assessment', length(assessment$year))))
 
 p1 <- ggplot(data = df.plot, aes(x = years, y = SSB, color = source))+geom_line(size = 2)+theme_classic()
-
-if(plot.figures == TRUE){
-  png('Spawningbiomass.png', width = 16, height = 12, res = 400,units = 'cm')
-  
-}
 p1
-if(plot.figures == TRUE){  
-  dev.off()
-}
-# Compare with all the data 
-par(mfrow = c(2,2), mar = c(4,4,1,1))
-plot(df$years,rowSums(sim.data$SSB)*0.5, type = 'l', lwd = 2, xlab ='Year', ylab = 'Spawning biomass')
-lines(assessment$year,assessment$SSB, lwd = 2, col = 'red')
 
-# How do we fit to the data 
-yl <- ylimits(df$survey[df$survey > 1],sim.data$survey[sim.data$survey > 1])
-
-plot(df$years[df$survey > 1],df$survey[df$survey > 1], lwd = 2, col = 'red', ylim = yl, ylab= 'survey')
-points(df$years[df$survey > 1],sim.data$survey[sim.data$survey > 1], col = 'black',lwd = 2)
-
+survey.ss <- data.frame(years = mod$cpue$Yr,
+                        survey =mod$cpue$Exp,
+                        source = 'SS',
+                        survsd = NA,
+                        kriegsd = NA)
 
 df.plot <- data.frame(years = rep(df$years[df$survey > 1],2),
                       survey = c(df$survey[df$survey > 1],sim.data$survey[sim.data$survey > 1]),
@@ -62,53 +45,36 @@ df.plot <- data.frame(years = rep(df$years[df$survey > 1],2),
                       survsd= c(df$survey_err[df$flag_survey ==1], rep(NA,length(df$years[df$survey > 1]))),
                       kriegsd = c(rep(exp(df$parms$logSDsurv),length(df$years[df$survey > 1])), rep(NA,length(df$years[df$survey > 1])))
 )
+
+df.plot <- rbind(df.plot,survey.ss)
+
 df.plot$survsd <- sqrt(df.plot$survey^2*exp(df.plot$survsd+df.plot$kriegsd-1))
 
 p2 <- ggplot(data = df.plot, aes(x = years, y = survey/1e6, color = source))+
   geom_point(data = df.plot[df.plot$source == 'Survey data',],size = 3)+
   geom_line(data = df.plot[df.plot$source == 'OM output',], size =2)+
+  geom_line(data = df.plot[df.plot$source == 'SS',], size = 2)+
   theme_classic()+
   geom_errorbar(aes(ymin=(survey-survsd)/1e6, ymax=(survey+survsd)/1e6))+
   scale_y_continuous(limit = c(0,5), name = 'survey biomass (million t)')+
   scale_x_continuous(name = 'year')
 
-if(plot.figures == TRUE){
-  png('survey.png', width = 16, height = 12, res = 400,units = 'cm')}
 p2
 
-if(plot.figures == TRUE){
-  dev.off()}
-## Add the error bars 
-# arrows(df$years[df$survey > 1],df$survey[df$survey > 1]+exp(exp(df$parms$logSDsurv)+exp(df$survey_err[df$survey > 1])), 
-#        df$years[df$survey > 1], df$survey[df$survey > 1]-exp(exp(df$parms$logSDsurv)+exp(df$survey_err[df$survey > 1])), 
-#        length=0.05, angle=90, code=3)
 
+source('calcMeanAge.R')
 
-# plot(df$years,df$Catch, type = 'l', lwd = 2, col = 'red')
-# # Plot the overall average age 
-
-age.comps <- sim.data$age_comps_OM[,2:df$nyear,,3]
+age.comps <- sim.data$age_comps_OM[,1:df$nyear,,3]
 age.comps <- apply(age.comps,c(1,2),sum)/2
 
-am <- matrix(NA, df$nyear)
-for(i in 1:(df$nyear-1)){
-  am[i] <- sum(df$age*age.comps[,i])
-  
-}
+am <- calcMeanAge(age.comps,df$nage)
 
-age.comps.can <- sim.data$age_comps_OM[,2:df$nyear,1,3]
-am.can <- matrix(NA, df$nyear)
-for(i in 1:(df$nyear-1)){
-  am.can[i] <- sum(df$age*age.comps.can[,i])
-  
-}
 
-age.comps.US <- sim.data$age_comps_OM[,2:df$nyear,2,3]
-am.US <- matrix(NA, df$nyear)
-for(i in 1:(df$nyear-1)){
-  am.US[i] <- sum(df$age*age.comps.US[,i])
+age.comps.can <- sim.data$age_comps_OM[,1:df$nyear,1,3]
+am.can <-calcMeanAge(age.comps.can, df$nage)
   
-}
+age.comps.US <- sim.data$age_comps_OM[,1:df$nyear,2,3]
+am.US <- calcMeanAge(age.comps.US, df$nage)
 
 
 plot(df$years,am, type ='l', lwd = 2, ylab = 'average age')
@@ -247,8 +213,8 @@ reps <- runAssessment(df.new)
 am.est <- reps$age_catch_est
 
 
-age.comps <- sim.data$age_comps_catch
-
+#age.comps <- rowSums(sim.data$age_comps_catch)
+age.comps <- apply(sim.data$age_comps_catch_space,c(1,2),sum)/2
 
 # Calculate the average age in the catch 
 am.mean <- data.frame(years = df.new$years, am = NA, am.sim = NA)
@@ -267,6 +233,7 @@ df.plot <- rbind(df.am.all, data.frame(year = df.new$years, am = am.mean$am.sim,
 #   #geom_line(data = cps.all.s, col = 'red', size = 2)+
 #   geom_line(data = am.mean, aes(x = years), col = 'green', size = 1)+
 #   geom_line(data = am.mean,aes(x = years,y = am.sim), col = 'blue', size =1 )+theme_classic()
+library(plyr)
 df.plot$Country <- mapvalues(df.plot$Country,from='All',to = 'Observed')
 df.plot$am[df.plot$am<3] <- NA # Weird bug
 
