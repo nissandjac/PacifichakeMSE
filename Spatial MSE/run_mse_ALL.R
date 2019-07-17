@@ -11,8 +11,9 @@ set.seed(seedz)
 
 source('load_files.R')
 source('load_files_OM.R')
+source('run_agebased_model_true_catch_move.R')
 
-df <- load_data_seasons(nseason = 4, nspace = 2, bfuture = 0.5) # Prepare data for operating model
+df <- load_data_seasons(nseason = 4, nspace = 2, bfuture = 0.5, movemaxinit = 0.5, movefiftyinit =8) # Prepare data for operating model
 
 parms.true <- getParameters_OM(TRUE,df) # Load parameters from assessment
 
@@ -35,7 +36,7 @@ simdata0 <- sim.data # The other one is gonna get overwritten.
 ls.save <- list()
 ls.converge <- matrix(0, nruns)
 #
-for (i in 26:nruns){
+for (i in 1:nruns){
   tmp <- run_multiple_MSEs(simyears = 30,
                            seeds = seeds[i],
                            TAC = 1, df = df)
@@ -53,7 +54,7 @@ for (i in 26:nruns){
 
 }
 # # # #
-save(ls.save,file = 'results/b = 0.5/MSErun_move_JTC.Rdata')
+save(ls.save,file = 'results/MSErun_move_JTC_sel.Rdata')
 
 # ### Loop MSE's with different errors in future survey and recruitment
 ls.save <- list()
@@ -75,14 +76,14 @@ for (i in 1:nruns){
   
 }
 # # # # 
-save(ls.save,file = 'results/MSErun_move_JMC.Rdata')
+save(ls.save,file = 'results/MSErun_move_JMC_sel.Rdata')
 
 ls.save <- list()
 ls.converge <- matrix(0, nruns)
 
 for (i in 1:nruns){
-  tmp <- try(run_multiple_MSEs(simyears = 30, seeds[i],
-                               TAC = 3, df =df),silent = FALSE)
+  tmp <- run_multiple_MSEs(simyears = 30, seeds[i],
+                               TAC = 3, df =df)
   #tmp <- run_multiple_MSEs(simyears = 30, seeds[i])
   print(i)
   #tmp <- run_multiple_MSEs(simyears = 30, seeds[i])
@@ -98,7 +99,7 @@ for (i in 1:nruns){
   
 }
 # # # # 
-save(ls.save,file = 'results/MSErun_move_realized.Rdata')
+save(ls.save,file = 'results/b = 0.5/MSErun_move_realized_sel.Rdata')
 
 ls.save <- list()
 ls.converge <- matrix(0, nruns)

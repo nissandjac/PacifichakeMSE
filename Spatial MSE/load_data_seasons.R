@@ -1,10 +1,10 @@
 ## Load the hake data
 # year and age input 
 load_data_seasons <- function(nseason = 4, nspace = 2,
-                              movemaxinit = 0.5, movefiftyinit = 5, 
-                              nsurvey = 2, logSDR = 1.4, bfuture = 0.87,
+                              movemaxinit = 0.5, movefiftyinit = 8, 
+                              nsurvey = 2, logSDR = 1.4, bfuture = 0.5,
                               moveout = 0.8, movesouth = 0.05,
-                              moveinit = NA){
+                              moveinit = NA, moveslope = 0.5){
   
   if(is.na(moveinit)){
     if(nspace == 2){
@@ -31,10 +31,11 @@ load_data_seasons <- function(nseason = 4, nspace = 2,
   # Maturity
   
   movefifty <- movefiftyinit
-  moveslope <- 0.5
+  
   movemax <- rep(movemaxinit,nseason)
   
   movemat <- array(0, dim = c(nspace, nage, nseason, nyear)) # Chances of moving in to the other grid cell 
+  
   
   if(nspace == 1){
     move = FALSE
@@ -52,12 +53,12 @@ load_data_seasons <- function(nseason = 4, nspace = 2,
     }
     
     if(nseason == 4){ # For the standard model
-    movemat[,1:2,,] <- 0 # Recruits and 1 year olds don't move
-    
-    movemat[1,3:nage,2:3,] <- movesouth # Don't move south during the year
-    movemat[1,3:nage,nseason,] <- moveout
-    movemat[2,3:nage,nseason,] <- movesouth
-}
+      movemat[,1:2,,] <- 0 # Recruits and 1 year olds don't move
+      
+      movemat[1,3:nage,1:3,] <- movesouth # Don't move south during the year
+      movemat[1,3:nage,nseason,] <- moveout
+      movemat[2,3:nage,nseason,] <- movesouth
+    }
     # movemat[1,11:nage,nseason] <- 0
     # movemat[2,11:nage,nseason] <- 0
     
@@ -69,10 +70,11 @@ load_data_seasons <- function(nseason = 4, nspace = 2,
     # move.init[2,] <- 0.7
     move.init <- moveinit
     
-    }else{
-      move.init <- 1
-    }
-
+  }else{
+    move.init <- 1
+  }
+  
+  
   
   # weight at age 
   wage <- read.csv('data/waa.csv')
@@ -207,13 +209,13 @@ load_data_seasons <- function(nseason = 4, nspace = 2,
        Rin = Rdev,
        PSEL = PSEL
      )
+     
      psel<- matrix(NA,nspace, 5) 
      
      for(i in 1:nspace){
-       psel[i,] <- parms$psel_fish # USA selectivity 
+       psel[i,] <- c(2.8476, 0.973,0.3861,0.1775,0.5048) # USA selectivity 
      }
-     #psel[1,] <- psel[2,]#c(1, 1, 1, 1,1)
-     
+     psel[1,] <- c(1,1,1,1,1)
      
   df <-list(      #### Parameters #####
                   wage_ssb = t(wage_ssb),
@@ -268,6 +270,11 @@ load_data_seasons <- function(nseason = 4, nspace = 2,
                   move = move,
                   recruitmat = recruitmat,
                   move.init = move.init,
+                  movefifty = movefifty,
+                  movemax = movemax,
+                  movesouth = movesouth,
+                  moveout = moveout,
+                  moveslope = moveslope,
                  # F0 = Fin,
                   psel = psel,
                   parms = parms

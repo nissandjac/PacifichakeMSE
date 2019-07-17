@@ -78,10 +78,10 @@ p1 <- ggplot(SSB, aes(x = year, y = p50))+
 
 p1
 
-R <- as.data.frame(t(apply(R.save,1,quantile, probs = c(0.5,0.95,0.75,0.25,0.05), names = F)))
+R <- as.data.frame(t(apply(R.save,1,quantile, probs = c(0.5,0.95,0.75,0.25,0.05), names = F, na.rm = T)))
 R <- R*1e-6
 names(R) <- c('p50','p95','p75','p25','p5')
-R$year <- df$years
+R$year <- c(df$years,df$years[df$nyear]+1)
 
 
 
