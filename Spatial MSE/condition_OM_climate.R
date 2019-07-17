@@ -1,7 +1,5 @@
 ##### Find the best movement rates for the conditioned om
 
-### Run the OM in X amount of years 
-
 ###### Initialize the operating model ###### 
 library(TMB)
 library(dplyr)
@@ -29,16 +27,27 @@ survey.obs <- read.csv('data/survey_country_2.csv')
 survey.obs <- read.csv('data/df_survey.csv')
 catch.ac.obs <- read.csv('data/age_in_catch_obs.csv')
 
+### Add movement dependent on temperature 
 
-nparms <- 5
-movemax.parms <- seq(0.1,0.70, length.out = nparms)
-movefifty.parms <- seq(5,7, length.out = nparms)
+temp <- read.csv('data/temp100_annual.csv')
 
-nruns <- nparms^2
+tempdf <- data.frame(year = 1966:2019, anomaly = NA)
+
+tempdf$anomaly[tempdf$year %in% temp$year] <- temp$temp100_anomaly
+tempdf$anomaly[tempdf$year %in% 1966:1994] <- 0
+
+for(i in 1:nrow(tempdf)){
+  if(is.na(tempdf$anomaly[i])){
+    tempdf$anomaly[i] <- tempdf$anomaly[i-1]
+  }
+}
+
+source('load_data_seasons_climate.R')
+
 
 yr.future <- 2
 
-df <- load_data_seasons_future(yr.future, movemaxinit = 0.5, movefiftyinit = 10)
+df <- load_data_seasons_climate(yr.future, movemaxinit = 0.5, movefiftyinit = 10, anomaly = tempdf$anomaly)
 
 sim.data <- run.agebased.true.catch(df, 123)
 sim.data.move <- run.agebased.true.catch.move(df, 123)
@@ -48,7 +57,7 @@ sim.data.move <- run.agebased.true.catch.move(df, 123)
 df.us <- data.frame(SSB = c(sim.data$SSB[,2],sim.data.move$SSB[,2]), move = rep(c(1,0), each = df$nyear), 
                     Country = "USA", year = rep(df$years,2)) 
 df.can <- data.frame(SSB = c(sim.data$SSB[,1],sim.data.move$SSB[,1]), move = rep(c(1,0), each = df$nyear), 
-                    Country = "CAN", year = rep(df$years,2)) 
+                     Country = "CAN", year = rep(df$years,2)) 
 df.plot <- rbind(df.us,df.can)
 
 ggplot(df.plot[df.plot$move ==1,], aes(x = year, y = SSB, color = Country))+geom_line()+theme_bw()+
@@ -65,15 +74,15 @@ ggplot(df.plot, aes(x = year, y = SSB, group = move))+geom_line()+theme_bw()+
 
 # Age in the catch 
 df.move <- data.frame(AC = c(calcMeanAge(sim.data$age_comps_catch_space[,,2], df$age_maxage),
-                           calcMeanAge(sim.data$age_comps_catch_space[,,1], df$age_maxage)),
-                    Country = rep(c('USA','CAN'), each = df$nyear),
-                    year = rep(df$years,2),
-                    move = 1)
-df.2 <- data.frame(AC = c(calcMeanAge(sim.data.move$age_comps_catch_space[,,2], df$age_maxage),
-                             calcMeanAge(sim.data.move$age_comps_catch_space[,,1], df$age_maxage)),
+                             calcMeanAge(sim.data$age_comps_catch_space[,,1], df$age_maxage)),
                       Country = rep(c('USA','CAN'), each = df$nyear),
                       year = rep(df$years,2),
-                      move = 0)
+                      move = 1)
+df.2 <- data.frame(AC = c(calcMeanAge(sim.data.move$age_comps_catch_space[,,2], df$age_maxage),
+                          calcMeanAge(sim.data.move$age_comps_catch_space[,,1], df$age_maxage)),
+                   Country = rep(c('USA','CAN'), each = df$nyear),
+                   year = rep(df$years,2),
+                   move = 0)
 
 df.plot <- rbind(df.move,df.2)
 ggplot(df.move, aes(x = year, y = AC, color = Country))+geom_line()+theme_bw()+
@@ -84,15 +93,15 @@ ggplot(df.move, aes(x = year, y = AC, color = Country))+geom_line()+theme_bw()+
 # Age in the survey 
 
 df.s1 <- data.frame(AC = c(calcMeanAge(sim.data$age_comps_country[,,2], df$age_maxage),
-                             calcMeanAge(sim.data$age_comps_country[,,1], df$age_maxage)),
-                      Country = rep(c('USA','CAN'), each = df$nyear),
-                      year = rep(df$years,2),
-                      move = 1)
+                           calcMeanAge(sim.data$age_comps_country[,,1], df$age_maxage)),
+                    Country = rep(c('USA','CAN'), each = df$nyear),
+                    year = rep(df$years,2),
+                    move = 1)
 df.s2 <- data.frame(AC = c(calcMeanAge(sim.data.move$age_comps_country[,,2], df$age_maxage),
-                          calcMeanAge(sim.data.move$age_comps_country[,,1], df$age_maxage)),
-                   Country = rep(c('USA','CAN'), each = df$nyear),
-                   year = rep(df$years,2),
-                   move = 0)
+                           calcMeanAge(sim.data.move$age_comps_country[,,1], df$age_maxage)),
+                    Country = rep(c('USA','CAN'), each = df$nyear),
+                    year = rep(df$years,2),
+                    move = 0)
 
 df.plot <- rbind(df.s1,df.s2)
 
@@ -140,27 +149,6 @@ ggplot(df.b1, aes(x = year, y = Bio, color = Country))+theme_bw()+geom_line()+
 #   
 # 
 # }
-
-### Add movement dependent on temperature 
-
-temp <- read.csv('data/temp100_annual.csv')
-
-climate_fn <- 0.1*temp$temp100_anomaly+0.2
-
-plot(temp$temp100_anomaly, climate_fn)
-
-tempdf <- data.frame(year = 1966:2018, anomaly = NA)
-
-tempdf$anomaly[tempdf$year %in% temp$year] <- temp$temp100_anomaly
-tempdf$anomaly[tempdf$year %in% 1966:1994] <- 0
-
-for(i in 1:nrow(tempdf)){
-  if(is.na(tempdf$anomaly[i])){
-    tempdf$anomaly[i] <- tempdf$anomaly[i-1]
-  }
-}
-
-source('load_data_seasons_climate.R')
 
 
 
