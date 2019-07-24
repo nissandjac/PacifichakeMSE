@@ -13,8 +13,8 @@ source('fn_plot_MSE.R')
 # Selectivity scenarios 
 load('results/Selectivity/MSErun_move_JMC_sel.Rdata')
 ls.JMC.sel <- ls.save 
-load('results/Selectivity/MSErun_move_JTC_sel.Rdata')
-ls.JTC.sel <- ls.save
+# load('results/Selectivity/MSErun_move_JTC_sel.Rdata')
+# ls.JTC.sel <- ls.save
 
 
 # Reference scenario 
@@ -33,7 +33,6 @@ df <- load_data_seasons(nseason = 4, nspace = 2) # Prepare data for operating mo
 sim.data <- run.agebased.true.catch(df)
 
 ls.plot <- list(JMC.sel = ls.JMC.sel, 
-                JTC.sel = ls.JTC.sel,
                 JMC = ls.JMC)
 
 fn_plot_MSE(ls.plot, sim.data,plotfolder = 'Figs/selectivity/',plotexp = TRUE)

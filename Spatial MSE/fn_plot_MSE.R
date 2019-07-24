@@ -1,16 +1,19 @@
 
-fn_plot_MSE <- function(ls, sim.data, simyears = 30, plotfolder = '/Figs/newplots/', plotexp = TRUE){
+fn_plot_MSE <- function(ls, sim.data, plotfolder = '/Figs/newplots/', plotexp = TRUE){
 
   
 nms <- names(ls)  
-  
 obj.plot <- list()
-  
+cols <- brewer.pal(6, 'Dark2')
+
 
 for(i in 1:length(nms)){
+  
 
-obj.plot[[i]] <- hake_objectives(ls[[i]],sim.data$SSB0, move = 1, simyears = simyears)
-obj.plot[[i]][[2]]$HCR <- nms[i]
+  obj.plot[[i]] <- hake_objectives(ls[[i]],sim.data$SSB0, move = 1)
+  obj.plot[[i]][[2]]$HCR <- nms[i]
+  
+  
 
 }
 
@@ -22,11 +25,11 @@ for(i in 2:length(nms)){
 }
 
 p1 <- ggplot(df.obj, aes(x = HCR,y = value))+geom_bar(stat = 'identity', aes(fill = HCR))+facet_wrap(~indicator, scales = 'free', ncol = 2)+
-  scale_x_discrete(name = '')+  scale_y_continuous(name = '')+
+  scale_x_discrete(name = '')+  scale_y_continuous(name = '')+scale_fill_manual(values = cols[1:length(unique(df.obj$HCR))])+
   theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5), legend.position = 'none')
 
 if(plotexp == TRUE){
-png(paste(plotfolder,'objective_bars.png'), width = 20, height =12, res = 400, unit = 'cm')
+png(paste(plotfolder,'objective_bars.png'), width = 20, height =20, res = 400, unit = 'cm')
 print(p1)
 dev.off()
 }  
@@ -36,7 +39,7 @@ ls.data <- list()
 
 
 for(i in 1:length(nms)){
- ls.data[[i]] <- df_lists(ls[[i]], nms[i], simyears) 
+ ls.data[[i]] <- df_lists(ls[[i]], nms[i]) 
 
  }
 
@@ -51,8 +54,8 @@ for(i in 2:length(nms)){
 
 df.all$run <- as.factor(df.all$run)
 
-p2 <- ggplot(df.all, aes(x = year, y = med.can*1e-6))+geom_line(color = 'red')+
-  geom_line(aes(y = med.US*1e-6), color = 'blue')+theme_classic()+scale_y_continuous(name ='SSB (million tonnes)')+facet_wrap(~run)+  
+p2 <- ggplot(df.all, aes(x = year, y = med.can*1e-6))+geom_line(color = 'darkred', size = 1.5)+
+  geom_line(aes(y = med.US*1e-6), color = 'darkblue', size = 1.5)+theme_classic()+scale_y_continuous(name ='SSB (million tonnes)')+facet_wrap(~run)+  
   theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))+
   geom_ribbon(aes(ymin = p5.can*1e-6, ymax = p95.can*1e-6), fill = alpha('red', alpha = 0.2), linetype = 0)+
   geom_ribbon(aes(ymin = p5.US*1e-6, ymax = p95.US*1e-6), fill = alpha('blue', alpha = 0.2), linetype = 0)
@@ -65,7 +68,6 @@ if(plotexp == TRUE){
   dev.off()
 }  
 
-cols <- brewer.pal(6, 'Dark2')
 
 
 
@@ -215,7 +217,7 @@ for(i in 1:length(nms)){
 }
 
 p9  <- ggplot(se.plot, aes(x = year, y = E5))+theme_classic()+
-  geom_line()+facet_wrap(~name)+geom_hline(yintercept = 0.0, linetype = 2)+
+  geom_line(size = 1.5)+facet_wrap(~name)+geom_hline(yintercept = 0.0, linetype = 2)+
   geom_ribbon(aes(ymin =E05, ymax = E95), fill = alpha('gray', alpha = 0.5))+
   scale_y_continuous(limit = c(-0.5,0.5), name = 'Standard error')
 
@@ -228,6 +230,52 @@ if(plotexp == TRUE){
 if(plotexp == FALSE){
   grid.arrange(p3,p6,p7,p9)
 }
+
+
+# Plot Fishing mortality 
+df.F0 <- data.frame(ls.data[[1]][[3]]$F0)
+
+
+for(i in 2:length(nms)){
+  df.F0 <- rbind(df.F0, ls.data[[i]][[3]]$F0)
+}
+
+
+### SSB in the middle of the year 
+
+p10 <- ggplot(df.F0, aes(x = year, y = med.can*1e-6))+geom_line(color = 'red')+
+  geom_line(aes(y = med.us*1e-6), color = 'blue')+
+  theme_classic()+scale_y_continuous(name ='Catch/')+facet_wrap(~run)+  
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))+
+  geom_ribbon(aes(ymin = p5.can*1e-6, ymax = p95.can*1e-6), fill = alpha('red', alpha = 0.2), linetype = 0)+
+  geom_ribbon(aes(ymin = p5.us*1e-6, ymax = p95.us*1e-6), fill = alpha('blue', alpha = 0.2), linetype = 0)
+
+p10
+
+if(plotexp == TRUE){
+  png(paste(plotfolder,'F0.png'), width = 16, height =18, res = 400, unit = 'cm')
+  print(p10)
+  dev.off()
+}  
+
+# Plot realized catch
+df.catchq<- data.frame(ls.data[[1]][[3]]$Catch.q)
+
+
+for(i in 2:length(nms)){
+  df.catchq <- rbind(df.catchq, ls.data[[i]][[3]]$Catch.q)
+}
+
+
+p11 <- ggplot(df.catchq, aes(x = year, y = med.can*1e-6))+geom_line(color = 'red')+
+  geom_line(aes(y = med.us*1e-6), color = 'blue')+
+  theme_classic()+scale_y_continuous(name ='Catch/')+facet_wrap(~run)+  
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))+
+  geom_ribbon(aes(ymin = p5.can*1e-6, ymax = p95.can*1e-6), fill = alpha('red', alpha = 0.2), linetype = 0)+
+  geom_ribbon(aes(ymin = p5.us*1e-6, ymax = p95.us*1e-6), fill = alpha('blue', alpha = 0.2), linetype = 0)
+
+p11
+
 
 
 }

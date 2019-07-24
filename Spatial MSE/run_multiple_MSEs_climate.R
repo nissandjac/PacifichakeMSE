@@ -1,6 +1,6 @@
 ###### Run the HAKE MSE ####### 
 run_multiple_MSEs_climate <- function(simyears = NULL,seeds = 12345, TAC = 1, df = NA,
-                                      cincrease = 0){
+                                      cincrease = 0, mincrease = 0){
   require(ggplot2)
   
   if(is.null(simyears)){
@@ -122,12 +122,21 @@ run_multiple_MSEs_climate <- function(simyears = NULL,seeds = 12345, TAC = 1, df
       
       if(time == 2){
         movemaxtmp <- (movemax[1]+cincrease)
+        df$moveout <- df$moveout-mincrease
       }else{
         movemaxtmp <- movemaxtmp+cincrease
+        df$moveout <- df$moveout-mincrease
+        
       }
       
       if(movemaxtmp >0.9){
         movemaxtmp <- 0.9 # Not moving more than 90% out 
+        
+       # (stop(paste(time,'at max movement')))
+      }
+      
+      if(df$moveout <= 0.5){
+        df$moveout <- 0.5
       }
       
       for(j in 1:nspace){
@@ -148,7 +157,7 @@ run_multiple_MSEs_climate <- function(simyears = NULL,seeds = 12345, TAC = 1, df
       df$movemat <- move.tmp
       #df$years <- c(df$years,df$years[length(df$years)]+1)
       
-      
+      #print(df$moveout)
       sim.data <- run.agebased.true.catch(df, seeds)
       
     }
@@ -306,7 +315,6 @@ run_multiple_MSEs_climate <- function(simyears = NULL,seeds = 12345, TAC = 1, df
     Fnew <- getRefpoint(opt$par, df,SSBy = SSB[length(SSB)], Fin=Fyear[length(Fyear)], Nend, TAC = TAC,
                         Vreal)
     #Fnew <- 0.3
-    print(paste('new quota = ',Fnew[[1]]))
     # Update the data data frame
     # if(Fnew[[1]] == 1){
     #   stop('fishery closed')
@@ -330,7 +338,7 @@ run_multiple_MSEs_climate <- function(simyears = NULL,seeds = 12345, TAC = 1, df
     ### Include the parameters needed to calculate SSB0 
     parms.save[time, ] <- exp(opt$par)[1:4]
     
-    
+   # year = df$years[time]
     
     
   }
@@ -343,9 +351,12 @@ run_multiple_MSEs_climate <- function(simyears = NULL,seeds = 12345, TAC = 1, df
   time.taken <- end.time - start.time
   print(time.taken)
   
+  #  Catch per country per year 
+  Catch.year <- apply(sim.data$Catch.save.age, FUN = sum, MARGIN = c(2,3))
   
   ## Calculate the average age 
   source('calcMeanAge.R')
+  
   #dev.off()
   amc <- data.frame(year = year.future[1:year], 
                     amc.can = calcMeanAge(sim.data$age_comps_catch_space[,,1], df$age_maxage),
@@ -357,7 +368,7 @@ run_multiple_MSEs_climate <- function(simyears = NULL,seeds = 12345, TAC = 1, df
                     ams.US  = calcMeanAge(sim.data$age_comps_country[,,2], df$age_maxage),
                     ams.tot = calcMeanAge(sim.data$age_comps_surv, df$age_maxage))
   
-  df.ret <- list(Catch = sim.data$Catch, 
+  df.ret <- list(Catch = Catch.year, 
                  Catch.quota = sim.data$Catch.quota,# All output is from the OM 
                  SSB = sim.data$SSB, 
                  SSB.mid = sim.data$SSB.all[,3,],
