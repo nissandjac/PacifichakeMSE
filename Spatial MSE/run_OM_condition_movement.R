@@ -16,6 +16,7 @@ source('load_files_OM.R')
 source('load_files.R')
 source('runfuture_OM.R')
 source('load_data_seasons_future.R')
+source('run_agebased_model_true_catch_move.R')
 assessment <- read.csv('data/asssessment_MLE.csv')
 
 assessment <- assessment[assessment$year > 1965 &assessment$year < 2018 ,]
@@ -24,13 +25,13 @@ survey.obs <- read.csv('data/survey_country_2.csv')
 
 nparms <- 5
 movemax.parms <- seq(0.1,0.70, length.out = nparms)
-movefifty.parms <- seq(5,8, length.out = nparms)
+movefifty.parms <- seq(5,10, length.out = nparms)
 
 nruns <- nparms^2
 
 yr.future <- 2
 
-df <- load_data_seasons_future(yr.future, movemaxinit = 0.7 , movefiftyinit = 8)
+df <- load_data_seasons_future(yr.future, movemaxinit = 0.5 , movefiftyinit = 8)
 df$surveyseason <- 3
 
 #df$parms$PSEL <- 0*df$parms$PSEL
@@ -53,11 +54,18 @@ lines(df$years,standard.move$survey.AC[,2], col = 'blue')
 lines(survey.obs$year[survey.obs$Country == 'USA'],survey.obs$am[survey.obs$Country == 'USA'], lty = 'longdash' , col = 'blue')
 lines(survey.obs$year[survey.obs$Country == 'CAN'],survey.obs$am[survey.obs$Country == 'CAN'], lty = 'longdash' , col = 'red')
 
+plot(df$years,standard.move$survey.space[1,], col = 'red', type = 'l', ylim = c(1e5, 5e6))
+lines(df$years,standard.move$survey.space[2,], col = 'blue')
+lines(survey.obs$year[survey.obs$Country == 'USA'], survey.obs$Biomass[survey.obs$Country == 'USA']*1e-3, type = 'o', col = 'blue')
 
+surv.tot <- survey.obs %>% 
+  group_by(year) %>% 
+  summarise(survey = sum(Biomass)*1e-2)
 
+# Is the country split correct? 
+ggplot(surv.tot, aes(x = year, y = survey))+geom_point()+geom_line(col = 'red')+
+  geom_line(data=data.frame(year = df$years[df$flag_survey ==1], survey = df$survey[df$flag_survey ==1]))
 
-plot(standard.move$survey.space[1,], col = 'red', type = 'l')
-lines(standard.move$survey.space[2,], col = 'blue')
 
 save.idx <- 1
 i <- 1

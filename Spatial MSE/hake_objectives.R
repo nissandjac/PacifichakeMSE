@@ -1,12 +1,18 @@
-hake_objectives <- function(ls.MSE, SSB0,simyears = NA, move = NA){
+hake_objectives <- function(ls.MSE, SSB0, move = NA){
   #'   
   #' @ls.mse # A list of individual MSE runs. Should contain Biomass, Catch, and df with parameters    
   # sim.data # Initial years of the operating model   
   nruns <- length(ls.MSE)
-  
-  if(is.na(simyears)){
-    stop('Provide the number of simulated years')
-  }
+
+  # Get the number of years run in that MSE 
+  if(all(is.na(ls.MSE[[1]]))){
+    simyears <- length(ls.MSE[[2]][2]$Catch)-(length(1966:2017))+1
+    
+    
+  }else{
+    simyears <- length(ls.MSE[[1]][1]$Catch)-(length(1966:2017))+1
+    }
+    
   yr <- 1966:(2017+simyears-1)
   
   idx <- 1
@@ -24,7 +30,11 @@ hake_objectives <- function(ls.MSE, SSB0,simyears = NA, move = NA){
     SSB.plot <- data.frame(SSB = rowSums(ls.MSE[[idx]]$SSB)/sum(sim.data$SSB_0), year = yr, run = paste('run',1, sep=''))
   }  
   
+  if(is.na(move)){
   Catch.plot <- data.frame(Catch = ls.MSE[[idx]]$Catch, year = yr, run = paste('run',1, sep=''))
+  }else{
+    Catch.plot <- data.frame(Catch = rowSums(ls.MSE[[idx]]$Catch), year = yr, run = paste('run',1, sep=''))
+  }  
   AAV.plot  <- data.frame(AAV = abs(ls.MSE[[idx]]$Catch[2:length(yr)]-ls.MSE[[idx]]$Catch[1:(length(yr)-1)])/ls.MSE[[idx]]$Catch[1:(length(yr)-1)], 
                           year = yr[2:length(yr)], run = paste('run',1, sep=''))
   
@@ -34,14 +44,17 @@ hake_objectives <- function(ls.MSE, SSB0,simyears = NA, move = NA){
     if(is.list(ls.tmp)){
       if(is.na(move)){
         SSB.tmp <- data.frame(SSB = (ls.tmp$SSB)/(sim.data$SSB_0), year = yr, run =  paste('run',i, sep=''))
+        Catch.tmp <- data.frame(Catch = ls.tmp$Catch, year = yr, run =  paste('run',i, sep=''))
+        
       }else{
         SSB.tmp <- data.frame(SSB = rowSums(ls.tmp$SSB)/sum(sim.data$SSB_0), year = yr, run =  paste('run',i, sep=''))
+        Catch.tmp <- data.frame(Catch = rowSums(ls.tmp$Catch), year = yr, run =  paste('run',i, sep=''))
       }
       
       
       SSB.plot <- rbind(SSB.plot,SSB.tmp)
       
-      Catch.tmp <- data.frame(Catch = ls.tmp$Catch, year = yr, run =  paste('run',i, sep=''))
+      
       Catch.plot <- rbind(Catch.plot,Catch.tmp)
       
       AAV.tmp <- data.frame(AAV  = abs(ls.tmp$Catch[2:length(yr)]-ls.tmp$Catch[1:(length(yr)-1)])/ls.tmp$Catch[1:(length(yr)-1)], 

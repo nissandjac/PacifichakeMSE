@@ -46,7 +46,7 @@ runfuture_OM <- function(df,nruns = 100){
   for(i in 1:nruns){
     set.seed(seedz[i])
     
-    sim.data <- run.agebased.true.catch.move(df,seed =  seedz[i])
+    sim.data <- run.agebased.true.catch(df,seed =  seedz[i])
     
     if(is.list(sim.data)){
       SSB.save[i,,] <- sim.data$SSB.all[,df$surveyseason,]

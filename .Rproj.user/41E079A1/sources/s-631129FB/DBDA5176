@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1563485809946.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "DBDA5176",
+    "lastKnownWriteTime" : 1563352777,
+    "last_content_update" : 1563352777,
+    "path" : "~/GitHub/PacifichakeMSE/Spatial MSE/run_MSE_climate.R",
+    "project_path" : "Spatial MSE/run_MSE_climate.R",
+    "properties" : {
+        "cursorPosition" : "107,0",
+        "scrollLine" : "0"
+    },
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

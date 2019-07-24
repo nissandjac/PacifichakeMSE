@@ -15,6 +15,8 @@ load('results/Climate/MSErun_move_JMC_climate_0.Rdata')
 ls.0 <- ls.save 
 load('results/Climate/MSErun_move_JMC_climate_0_02.Rdata')
 ls.002 <- ls.save
+load('results/Climate/MSErun_move_JMC_climate_0_04.Rdata')
+ls.004 <- ls.save
 
 
 simyears <- 50
@@ -23,11 +25,17 @@ nruns <- 100
 source('hake_objectives.R')
 
 
+
+
 df <- load_data_seasons(nseason = 4, nspace = 2) # Prepare data for operating model
 sim.data <- run.agebased.true.catch(df)
 
-ls.plot <- list(no_M = ls.0,
-                l_M = ls.002)
+ls.plot <- list(move_0 = ls.0,
+                move_002 = ls.002,
+                move_004 = ls.004)
 
-fn_plot_MSE(ls.plot, sim.data,plotfolder = 'Figs/Climate/',plotexp = TRUE,simyears = 50)
-dev.off()
+fn_plot_MSE(ls.plot, sim.data,plotfolder = 'Figs/Climate/',plotexp = TRUE)
+
+
+# Plot the realized catch vs the quota 
+
