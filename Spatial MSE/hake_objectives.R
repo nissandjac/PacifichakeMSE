@@ -24,6 +24,7 @@ hake_objectives <- function(ls.MSE, SSB0, move = NA){
     idx <- 3
   }
   
+  
   if(is.na(move)){
     SSB.plot <- data.frame(SSB = (ls.MSE[[idx]]$SSB)/(sim.data$SSB_0), year = yr, run = paste('run',1, sep=''))
   }else{
@@ -34,6 +35,9 @@ hake_objectives <- function(ls.MSE, SSB0, move = NA){
   Catch.plot <- data.frame(Catch = ls.MSE[[idx]]$Catch, year = yr, run = paste('run',1, sep=''))
   }else{
     Catch.plot <- data.frame(Catch = rowSums(ls.MSE[[idx]]$Catch), year = yr, run = paste('run',1, sep=''))
+    
+    quota.tot <- apply(ls.MSE[[idx]]$Catch.quota, MARGIN = 1, FUN = sum)
+    quota.plot <- data.frame(Quota_frac = quota.tot/rowSums(ls.MSE[[idx]]$Catch), year = yr, run = paste('run',1, sep =''))
   }  
   AAV.plot  <- data.frame(AAV = abs(ls.MSE[[idx]]$Catch[2:length(yr)]-ls.MSE[[idx]]$Catch[1:(length(yr)-1)])/ls.MSE[[idx]]$Catch[1:(length(yr)-1)], 
                           year = yr[2:length(yr)], run = paste('run',1, sep=''))
@@ -120,28 +124,29 @@ hake_objectives <- function(ls.MSE, SSB0, move = NA){
   ## Probability of S < S10
   SSB.future <- SSB.plot[SSB.plot$year > 2017,]
   
-  print(paste('percentage of years where SSB < 0.1SSB0= ',
-              round(length(which(SSB.future$SSB<0.1))/length(SSB.future$SSB)*100, digits = 2),'%', sep = ''))
-  print(paste('percentage of years where SSB > 0.1SSB0 & SSB < 0.4SSB0 = ',
-              round(length(which(SSB.future$SSB>0.1 & SSB.future$SSB<0.4))/length(SSB.future$SSB)*100, digits = 2),'%', sep = ''))
-  print(paste('percentage of years where SSB > 0.4SSB0 = ',
-              round(length(which(SSB.future$SSB>0.4))/length(SSB.future$SSB)*100, digits = 2),'%', sep = ''))
-  
-  
-  Catch.future <- Catch.plot[Catch.plot$year > 2018,]
-  
-  print(paste('percentage of Catch  < 180000= ',
-              round(length(which(Catch.future$Catch < 180000))/length(Catch.future$Catch)*100, digits = 2),'%', sep = ''))
-  
-  print(paste('percentage of Catch  > 180k and < 350k= ',
-              round(length(which(Catch.future$Catch > 180000 & Catch.future$Catch < 350000))/length(Catch.future$Catch)*100, digits = 2),'%', sep = ''))
-  
-  print(paste('percentage of Catch > 350k= ',
-              round(length(which(Catch.future$Catch > 350000))/length(Catch.future$Catch)*100, digits = 2),'%', sep = ''))
-  
-  # Catch variability 
-  
-  print(paste('median AAV = ',round(median(AAV.plotquant$med), digits = 2), sep = ''))
+  # print(paste('percentage of years where SSB < 0.1SSB0= ',
+  #             round(length(which(SSB.future$SSB<0.1))/length(SSB.future$SSB)*100, digits = 2),'%', sep = ''))
+  # 
+  # print(paste('percentage of years where SSB > 0.1SSB0 & SSB < 0.4SSB0 = ',
+  #             round(length(which(SSB.future$SSB>0.1 & SSB.future$SSB<0.4))/length(SSB.future$SSB)*100, digits = 2),'%', sep = ''))
+  # print(paste('percentage of years where SSB > 0.4SSB0 = ',
+  #             round(length(which(SSB.future$SSB>0.4))/length(SSB.future$SSB)*100, digits = 2),'%', sep = ''))
+  # 
+  # 
+  # Catch.future <- Catch.plot[Catch.plot$year > 2018,]
+  # 
+  # print(paste('percentage of Catch  < 180000= ',
+  #             round(length(which(Catch.future$Catch < 180000))/length(Catch.future$Catch)*100, digits = 2),'%', sep = ''))
+  # 
+  # print(paste('percentage of Catch  > 180k and < 350k= ',
+  #             round(length(which(Catch.future$Catch > 180000 & Catch.future$Catch < 350000))/length(Catch.future$Catch)*100, digits = 2),'%', sep = ''))
+  # 
+  # print(paste('percentage of Catch > 350k= ',
+  #             round(length(which(Catch.future$Catch > 350000))/length(Catch.future$Catch)*100, digits = 2),'%', sep = ''))
+  # 
+  # # Catch variability 
+  # 
+  # print(paste('median AAV = ',round(median(AAV.plotquant$med), digits = 2), sep = ''))
   
   ### 
   #p.export <- grid.arrange(p1,p2,p3)
@@ -170,36 +175,49 @@ hake_objectives <- function(ls.MSE, SSB0, move = NA){
     nclosed[i] <- length(which(tmp$SSB < 0.1))
   }
   # Create a table with all the objective data 
+  indicator =
+    c('S<0.10S0',
+      'S>0.10<0.4S0',
+      'S>0.4S0',
+      '3 consec yrs S<S40',
+      'years closed fishery',
+      'AAV',
+      'Mean SSB/SSB0','
+      median catch',
+      'short term catch',
+      'long term ')
+  
+  # Calculate the number of years the quota was met 
+
+  
   
   t.export <- data.frame(indicator =
-                           c('S<0.10S0',
-                             'S>0.10<0.4S0',
-                             'S>0.4S0',
-                             '3 consec yrs S<S40',
-                             'years closed fishery',
-                             'AAV',
-                             'Mean SSB/SSB0','
-                              median Catch'), 
+                           as.factor(indicator), 
                          value = c(
-                           round(length(which(SSB.future$SSB<0.1))/length(SSB.future$SSB)*100, digits = 2),
-                           round(length(which(SSB.future$SSB>0.1 & SSB.future$SSB<0.4))/length(SSB.future$SSB)*100, digits = 2),
-                           round(length(which(SSB.future$SSB>0.4))/length(SSB.future$SSB)*100, digits = 2),
+                           round(length(which(SSB.future$SSB<0.1))/length(SSB.future$SSB), digits = 2),
+                           round(length(which(SSB.future$SSB>0.1 & SSB.future$SSB<0.4))/length(SSB.future$SSB), digits = 2),
+                           round(length(which(SSB.future$SSB>0.4))/length(SSB.future$SSB), digits = 2),
                            round(mean(p.vals), digits = 2), 
                            mean(nclosed),
                            round(median(AAV.plotquant$med), digits = 2),
                            median(SSB.plotquant$med[SSB.plotquant$year > 2017]),
-                           median(1e6*Catch.plotquant$med[Catch.plotquant$year >2017])*1e-6),
-                         uncertainty = c(
-                           round(length(which(SSB.future$SSB<0.1))/length(SSB.future$SSB)*100, digits = 2),
-                           round(length(which(SSB.future$SSB>0.1 & SSB.future$SSB<0.4))/length(SSB.future$SSB)*100, digits = 2),
-                           round(length(which(SSB.future$SSB>0.4))/length(SSB.future$SSB)*100, digits = 2),
-                           round(mean(p.vals), digits = 2), 
-                           round(length(which(SSB.future$SSB<0.1))/length(SSB.future$SSB)*100, digits = 0),
-                           round(median(AAV.plotquant$med), digits = 2),
-                           median(SSB.plotquant$med[SSB.plotquant$year > 2017]),
-                           median(1e6*Catch.plotquant$med[Catch.plotquant$year >2017])*1e-6)
+                           median(1e6*Catch.plotquant$med[Catch.plotquant$year >2017])*1e-6,
+                           median(1e6*Catch.plotquant$med[Catch.plotquant$year > 2018 & Catch.plotquant$year <2030])*1e-6,
+                           median(1e6*Catch.plotquant$med[Catch.plotquant$year > 2025])*1e-6)#,
+   
+                         # uncertainty = c(
+                         #   round(length(which(SSB.future$SSB<0.1))/length(SSB.future$SSB)*100, digits = 2),
+                         #   round(length(which(SSB.future$SSB>0.1 & SSB.future$SSB<0.4))/length(SSB.future$SSB)*100, digits = 2),
+                         #   round(length(which(SSB.future$SSB>0.4))/length(SSB.future$SSB)*100, digits = 2),
+                         #   round(mean(p.vals), digits = 2), 
+                         #   round(length(which(SSB.future$SSB<0.1))/length(SSB.future$SSB)*100, digits = 0),
+                         #   round(median(AAV.plotquant$med), digits = 2),
+                         #   median(SSB.plotquant$med[SSB.plotquant$year > 2017]),
+                         #   median(1e6*Catch.plotquant$med[Catch.plotquant$year >2017])*1e-6,
+                         #   median(1e6*Catch.plotquant$med[Catch.plotquant$year > 2018 & Catch.plotquant$year <2030])*1e-6
+                         #   )
   )
-  
+  print(t.export)
   
   p.export = NA
   return(list(p.export,t.export))

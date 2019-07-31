@@ -34,7 +34,7 @@ ls.plot <- list(move_0 = ls.0,
                 move_002 = ls.002,
                 move_004 = ls.004)
 
-fn_plot_MSE(ls.plot, sim.data,plotfolder = 'Figs/Climate/',plotexp = TRUE)
+fn_plot_MSE(ls.plot, sim.data,plotfolder = 'Figs/Climate/',plotexp = FALSE)
 
 
 # Plot the realized catch vs the quota 
