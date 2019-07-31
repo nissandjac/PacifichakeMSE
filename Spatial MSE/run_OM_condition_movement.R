@@ -144,9 +144,10 @@ df.F <- data.frame(year = rep(df$years,2),
 
 p2 <- ggplot(df.F)+geom_col(aes(x = year, y = F0, fill = Country), position = position_dodge(width = 0.9))+
   scale_fill_manual(values = c('darkred','blue4'))+
-  geom_line(data = data.frame(year = df$years, F0 = F0.assessment), aes(x = year, y= F0))
+  geom_line(data = data.frame(year = 1966:2018, F0 = F0.assessment$x), aes(x = year, y= F0), size = 1.5, color = 'black')
   
 p2
+
 
 if(plot.figures == TRUE){
   png(filename = 'Figs/F_country.png', width = 16, height = 12, res = 400, units = 'cm')

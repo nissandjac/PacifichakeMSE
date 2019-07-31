@@ -284,6 +284,10 @@ load_data_seasons <- function(nseason = 4, nspace = 2,
   Catch.obs <- read.csv('data/hake_totcatch.csv') # Total catch
   df$Catch <- Catch.obs$Fishery # Add the observed catch
   
+  Catch.country <- read.csv('data/catch_per_country.csv')
+  df$Catch.country <- as.matrix(Catch.country[,2:3])[,c(2,1)]
+  
+  
   return(df)
   
 }

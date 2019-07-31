@@ -18,7 +18,7 @@ source('run_multiple_OMs.R')
 #parms.true <- getParameters(TRUE)
 #Catch.obs <- read.csv('hake_totcatch.csv')
 
-df <- load_data_seasons(nseason = 4, nspace = 2) # Prepare data for operating model
+df <- load_data_seasons(nseason = 4, nspace = 2, bfuture = 0.5, movemaxinit = 0.5, movefiftyinit =8) # Prepare data for operating model
 
 time <- 1
 yrinit <- df$nyear
@@ -37,9 +37,9 @@ sim.data <- run.agebased.true.catch(df)
 simdata0 <- sim.data # The other one is gonna get overwritten. 
 
 ## Load the catch data 
-load('results/MSErun_move_JMC.Rdata')
+load('results/b = 0.5/MSErun_move_JMC.Rdata')
 ls.JMC <- ls.save 
-load('results/MSErun_move_JTC.Rdata')
+load('results/b = 0.5/MSErun_move_JTC.Rdata')
 ls.JTC <- ls.save
 load('results/MSErun_move_realized.Rdata')
 ls.Realized <- ls.save
@@ -60,45 +60,47 @@ for (i in 1:nruns){
     ls.JTC.s[[i]] <- NULL
   }else{
   tmp <- run_multiple_OMs(simyears = 30, 
-                          seed = seeds[i],moveparms = c(0.5,5), 
+                          seed = seeds[i],
+                          df, 
                           Catchin = ls.JTC[[i]]$Catch[(df$nyear+1):(length(year.future)-1)])
   ls.JTC.s[[i]] <- tmp
   }
 }
-save(ls.JTC.s,file = 'JTC_OM.RData')
+
+save(ls.JTC.s,file = 'results/Operating models/JTC_OM.RData')
 # 
-# ls.JMC.s <- list()
-# for (i in 1:nruns){
-#   if(is.null(ls.JMC[[i]])){
-#     ls.JMC.s[[i]] <- NULL
-#   }else{
-#   tmp <- run_multiple_OMs(simyears = 30, seeds[i],moveparms = NA, Catchin = ls.JMC[[i]]$Catch[(df$nyear+1):(length(year.future)-1)])
-#   ls.JMC.s[[i]] <- tmp
-#   }
-# }
-# save(ls.JMC.s,file = 'JMC_OM.RData')
-# 
-# ls.real.s <- list()
-# for (i in 1:nruns){
-#   if(is.null(ls.Realized[[i]])){
-#     ls.real.s[[i]] <- NULL
-#   }else{
-#   tmp <- run_multiple_OMs(simyears = 30, seeds[i],moveparms = NA, Catchin = ls.Realized[[i]]$Catch[(df$nyear+1):(length(year.future)-1)])
-#   ls.real.s[[i]] <- tmp
-#   }
-# }
-# save(ls.real.s,file = 'realized_OM.RData')
-# 
-# ls.move1.s <- list()
-# for (i in 1:length(ls.move1)){
-#   if(is.null(ls.move1[[i]])){
-#     ls.move1.s[[i]] <- NULL}
-#   else{
-#   tmp <- run_multiple_OMs(simyears = 30, seeds[i],moveparms = c(0.1,5), Catchin = ls.move1[[i]]$Catch[(df$nyear+1):(length(year.future)-1)])
-#   ls.move1.s[[i]] <- tmp
-#   }
-# }
-# save(ls.move1.s,file = 'move1_OM.RData')
+ls.JMC.s <- list()
+for (i in 1:nruns){
+  if(is.null(ls.JMC[[i]])){
+    ls.JMC.s[[i]] <- NULL
+  }else{
+  tmp <- run_multiple_OMs(simyears = 30, seeds[i],df, Catchin = ls.JMC[[i]]$Catch[(df$nyear+1):(length(year.future)-1)])
+  ls.JMC.s[[i]] <- tmp
+  }
+}
+save(ls.JMC.s,file = 'results/Operating models/JMC_OM.RData')
+
+ls.real.s <- list()
+for (i in 1:nruns){
+  if(is.na(ls.Realized[[i]])){
+    ls.real.s[[i]] <- NULL
+  }else{
+  tmp <- run_multiple_OMs(simyears = 30, seeds[i],df, Catchin = ls.Realized[[i]]$Catch[(df$nyear+1):(length(year.future)-1)])
+  ls.real.s[[i]] <- tmp
+  }
+}
+save(ls.real.s,file = 'results/Operating models/realized_OM.RData')
+
+ls.move1.s <- list()
+for (i in 1:length(ls.move1)){
+  if(is.null(ls.move1[[i]])){
+    ls.move1.s[[i]] <- NULL}
+  else{
+  tmp <- run_multiple_OMs(simyears = 30, seeds[i],moveparms = c(0.1,5), Catchin = ls.move1[[i]]$Catch[(df$nyear+1):(length(year.future)-1)])
+  ls.move1.s[[i]] <- tmp
+  }
+}
+save(ls.move1.s,file = 'results/Operating models/move1_OM.RData')
 # 
 ls.move2.s <- list()
 for (i in 1:length(ls.move2)){
@@ -111,7 +113,7 @@ for (i in 1:length(ls.move2)){
     ls.move2.s[[i]] <- tmp
   }
 }
-save(ls.move2.s,file = 'move2_OM.RData')
+save(ls.move2.s,file = 'results/Operating models/move2_OM.RData')
 # 
 # ls.move3.s <- list()
 # for (i in 1:length(ls.move3)){
