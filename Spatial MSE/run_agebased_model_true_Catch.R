@@ -238,14 +238,14 @@ run.agebased.true.catch <- function(df, seeds = 100){
         psel <- df$psel[space,] 
         
 
-        if(year[yr] > year[df$selYear-1] & year[yr]<2018){
+        if(year[yr] > year[df$selYear-1] & year[yr]<2019){
           pseltmp <- psel+df$parms$PSEL[,yr-df$selYear+1]*df$sigma_psel
         }else{
           pseltmp <- psel
         }
         
         
-        if(year[yr] >=2017){
+        if(year[yr] >=2018){
           
           # if(space == 1){
           # }else{
@@ -264,7 +264,7 @@ run.agebased.true.catch <- function(df, seeds = 100){
         
         Fsel.save[yr,space,] <- Fsel
         
-        E.temp <- df$Catch[yr]*Fnseason[season]*Fspace[space] # Catch distribution in the year
+        E.temp <- df$Catch.country[yr,space]*Fnseason[season]#*Fspace[space] # Catch distribution in the year
         
         
         B.tmp <-  sum(N.save.age[,yr,space,season]*exp(-Mseason*pope.mul)*w_catch*Fsel) # Get biomass from previous year

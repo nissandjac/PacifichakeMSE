@@ -1,5 +1,7 @@
 # Run the hake assessment 
 source('load_files.R')
+source('getParameters_ss.R')
+source('load_data_ss.R')
 library(r4ss)
 library(dplyr)
 library(reshape2)
@@ -12,7 +14,7 @@ df$smul <- 0.5
 years <- df$years
 
 #U[2,] <- 0.01
-parms <- getParameters_ss(TRUE, mod)
+parms.ss <- getParameters_ss(TRUE, mod)
 
 
 compile("runHakeassessment.cpp")
