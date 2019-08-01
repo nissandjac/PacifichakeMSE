@@ -71,11 +71,11 @@ if(plotexp == TRUE){
 }  
 
 
-
+#yl <- 
 
 
 p3 <- ggplot(df.catch, aes(x = year, y = med*1e-6, color = run))+geom_line(size = 2)+
-  #geom_ribbon(aes(ymin = p5*1e-6, ymax = p95*1e-6), linetype = 2, fill = alpha(alpha =0.2, colour = cols))+
+#  geom_ribbon(aes(ymin = p5*1e-6, ymax = p95*1e-6), linetype = 2, fill = alpha(alpha =0.2, colour = cols))+
   scale_color_manual(values=cols[1:3])+scale_y_continuous(name = 'Catch (million tonnes)')+
   geom_line(aes(y = p5*1e-6, color = run), linetype = 2)+geom_line(aes(y = p95*1e-6, color = run), linetype = 2)
 
@@ -245,12 +245,12 @@ for(i in 2:length(nms)){
 
 ### SSB in the middle of the year 
 
-p10 <- ggplot(df.F0, aes(x = year, y = med.can*1e-6))+geom_line(color = 'red')+
-  geom_line(aes(y = med.us*1e-6), color = 'blue')+
-  theme_classic()+scale_y_continuous(name ='Catch/')+facet_wrap(~run)+  
+p10 <- ggplot(df.F0, aes(x = year, y = med.can))+geom_line(color = 'red')+
+  geom_line(aes(y = med.us), color = 'blue')+coord_cartesian(ylim = c(0,1))+
+  theme_classic()+scale_y_continuous(name ='Exploitation rate')+facet_wrap(~run)+  
   theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))+
-  geom_ribbon(aes(ymin = p5.can*1e-6, ymax = p95.can*1e-6), fill = alpha('red', alpha = 0.2), linetype = 0)+
-  geom_ribbon(aes(ymin = p5.us*1e-6, ymax = p95.us*1e-6), fill = alpha('blue', alpha = 0.2), linetype = 0)
+  geom_ribbon(aes(ymin = p5.can, ymax = p95.can), fill = alpha('red', alpha = 0.2), linetype = 0)+
+  geom_ribbon(aes(ymin = p5.us, ymax = p95.us), fill = alpha('blue', alpha = 0.2), linetype = 0)
 
 p10
 
@@ -269,12 +269,12 @@ for(i in 2:length(nms)){
 }
 
 
-p11 <- ggplot(df.catchq, aes(x = year, y = med.can*1e-6))+geom_line(color = 'red')+
-  geom_line(aes(y = med.us*1e-6), color = 'blue')+
+p11 <- ggplot(df.catchq, aes(x = year, y = med.can))+geom_line(color = 'red')+
+  geom_line(aes(y = med.us), color = 'blue')+
   theme_classic()+scale_y_continuous(name ='Catch/')+facet_wrap(~run)+  
   theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))+
-  geom_ribbon(aes(ymin = p5.can*1e-6, ymax = p95.can*1e-6), fill = alpha('red', alpha = 0.2), linetype = 0)+
-  geom_ribbon(aes(ymin = p5.us*1e-6, ymax = p95.us*1e-6), fill = alpha('blue', alpha = 0.2), linetype = 0)
+  geom_ribbon(aes(ymin = p5.can, ymax = p95.can), fill = alpha('red', alpha = 0.2), linetype = 0)+
+  geom_ribbon(aes(ymin = p5.us, ymax = p95.us), fill = alpha('blue', alpha = 0.2), linetype = 0)
 
 p11
 

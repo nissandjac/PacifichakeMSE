@@ -1,7 +1,7 @@
 ## Load the hake data
 # year and age input 
 load_data_seasons <- function(nseason = 4, nspace = 2,
-                              movemaxinit = 0.5, movefiftyinit = 8, 
+                              movemaxinit = 0.35, movefiftyinit = 6, 
                               nsurvey = 2, logSDR = 1.4, bfuture = 0.5,
                               moveout = 0.8, movesouth = 0.05,
                               moveinit = NA, moveslope = 0.5){
@@ -54,7 +54,9 @@ load_data_seasons <- function(nseason = 4, nspace = 2,
     if(nseason == 4){ # For the standard model
       movemat[,1:2,,] <- 0 # Recruits and 1 year olds don't move
       
-      movemat[1,3:nage,1:3,] <- movesouth # Don't move south during the year
+      movemat[1,3:nage,2:3,] <- movesouth # Don't move south during the year
+      movemat[1,3:nage,1,] <- moveout*0.5 # continuing south movement at spawning time
+      
       movemat[1,3:nage,nseason,] <- moveout
       movemat[2,3:nage,nseason,] <- movesouth
     }

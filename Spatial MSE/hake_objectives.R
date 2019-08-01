@@ -49,17 +49,19 @@ hake_objectives <- function(ls.MSE, SSB0, move = NA){
       if(is.na(move)){
         SSB.tmp <- data.frame(SSB = (ls.tmp$SSB)/(sim.data$SSB_0), year = yr, run =  paste('run',i, sep=''))
         Catch.tmp <- data.frame(Catch = ls.tmp$Catch, year = yr, run =  paste('run',i, sep=''))
+        quota.tmp <- data.frame(Catch = ls.tmp$Catch/apply(ls.tmp$Catch.quota, MARGIN = 1, FUN = sum), year = yr, run =  paste('run',i, sep=''))
         
       }else{
         SSB.tmp <- data.frame(SSB = rowSums(ls.tmp$SSB)/sum(sim.data$SSB_0), year = yr, run =  paste('run',i, sep=''))
         Catch.tmp <- data.frame(Catch = rowSums(ls.tmp$Catch), year = yr, run =  paste('run',i, sep=''))
+        quota.tmp <- data.frame(Quota_frac = rowSums(ls.tmp$Catch)/apply(ls.tmp$Catch.quota, MARGIN = 1, FUN = sum), year = yr, run =  paste('run',i, sep=''))
+        
       }
       
       
       SSB.plot <- rbind(SSB.plot,SSB.tmp)
-      
-      
       Catch.plot <- rbind(Catch.plot,Catch.tmp)
+      quota.plot <- rbind(quota.plot, quota.tmp)
       
       AAV.tmp <- data.frame(AAV  = abs(ls.tmp$Catch[2:length(yr)]-ls.tmp$Catch[1:(length(yr)-1)])/ls.tmp$Catch[1:(length(yr)-1)], 
                             year = yr[2:length(yr)], run =  paste('run',i, sep=''))
@@ -114,7 +116,20 @@ hake_objectives <- function(ls.MSE, SSB0, move = NA){
     theme_classic()+scale_y_continuous(name = 'Catch\nvariability')+
     geom_line(color="black", size = 1.5)#+geom_line(data = Catch.plot, aes(y = Catch,group = run), color = alpha('black', alpha = 0.2))
   
+  quota.plotquant <- quota.plot[quota.plot$year>2018,] %>% 
+    group_by(year) %>% 
+    summarise(med = median(Quota_frac), 
+              p95 = quantile(Quota_frac, 0.95),
+              p25 = quantile(Quota_frac, 0.25),
+              p75 = quantile(Quota_frac, 0.75), 
+              p5 = quantile(Quota_frac,0.05)) 
   
+  p4 <- ggplot(data=quota.plotquant, aes(x= year,y = med)) +
+    geom_ribbon(aes(ymin = p5, ymax = p95), fill = alpha('gray', alpha =0.5))+
+    geom_ribbon(aes(ymin = p25, ymax = p75), fill = alpha('gray', alpha =0.8))+
+    theme_classic()+scale_y_continuous(name = 'SSB')+
+    geom_line(color="black", size = 1.5)#+geom_line(data = SSB.plot, aes(y = SSB,group = run), color = alpha('black', alpha = 0.2))
+  p4
   #cairo_pdf(filename = 'MSE_run.pdf')
   #p.plot <- list(p1,p2,p3)
   #p.export <- plot_grid(plotlist = p.plot, ncol = 1, align ='v')
@@ -182,10 +197,12 @@ hake_objectives <- function(ls.MSE, SSB0, move = NA){
       '3 consec yrs S<S40',
       'years closed fishery',
       'AAV',
-      'Mean SSB/SSB0','
-      median catch',
-      'short term catch',
-      'long term ')
+      'Mean SSB/SSB0',
+      'median catch'#,
+   #   'short term catch',
+     # 'long term ',
+   #   'yrs bio unavailable'
+   )
   
   # Calculate the number of years the quota was met 
 
@@ -201,9 +218,11 @@ hake_objectives <- function(ls.MSE, SSB0, move = NA){
                            mean(nclosed),
                            round(median(AAV.plotquant$med), digits = 2),
                            median(SSB.plotquant$med[SSB.plotquant$year > 2017]),
-                           median(1e6*Catch.plotquant$med[Catch.plotquant$year >2017])*1e-6,
-                           median(1e6*Catch.plotquant$med[Catch.plotquant$year > 2018 & Catch.plotquant$year <2030])*1e-6,
-                           median(1e6*Catch.plotquant$med[Catch.plotquant$year > 2025])*1e-6)#,
+                           median(1e6*Catch.plotquant$med[Catch.plotquant$year >2017])*1e-6#,
+                          # median(1e6*Catch.plotquant$med[Catch.plotquant$year > 2018 & Catch.plotquant$year <2030])*1e-6,
+                         #  median(1e6*Catch.plotquant$med[Catch.plotquant$year > 2025])*1e-6,
+                          # median(quota.plot[quota.plot$year > 2018,]$Quota_frac < 0.95)
+                           )
    
                          # uncertainty = c(
                          #   round(length(which(SSB.future$SSB<0.1))/length(SSB.future$SSB)*100, digits = 2),

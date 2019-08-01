@@ -36,5 +36,5 @@ ls.plot <- list(JMC.sel = ls.JMC.sel,
                 JTC.sel = ls.JTC.sel,
                 JMC = ls.JMC)
 
-fn_plot_MSE(ls.plot, sim.data,plotfolder = 'Figs/selectivity/',plotexp = FALSE)
+fn_plot_MSE(ls.plot, sim.data,plotfolder = 'Figs/selectivity/',plotexp = TRUE)
 dev.off()

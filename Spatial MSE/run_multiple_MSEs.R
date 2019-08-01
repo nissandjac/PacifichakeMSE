@@ -147,7 +147,7 @@ for (time in 1:simyears){
     parms.new <- parms
     
     if(time == 1){
-      F0 <- rowSums(sim.data$Fout)
+      F0 <- rowSums(sim.data$Fout)/2
       Rdev <- parms$Rin
     }else{
       F0 <- c(F0,0.2)
@@ -160,7 +160,8 @@ for (time in 1:simyears){
     }
     
     parms.new$F0 <- F0#rowSums(sim.data$Fsave, na.rm = TRUE)
-    parms.new$F0[df$Catch == 0] <- 0
+    
+    #parms.new$F0[df$Catch == 0] <- 0
     
     parms.new$Rin <- Rdev#parms.new$Rin[1:(length(parms.new$Rin)-1)]
     
@@ -322,6 +323,8 @@ ams <- data.frame(year = year.future[1:year],
 
 df.ret <- list(Catch = sim.data$Catch, 
                Catch.quota = sim.data$Catch.quota,# All output is from the OM 
+               Catch.save.age = sim.data$Catch.save.age,
+               Catch.quota.N = sim.data$Catch.quota.N,
                SSB = sim.data$SSB, 
                SSB.mid = sim.data$SSB.all[,3,],
                SSB.hes = SSB.hes,
