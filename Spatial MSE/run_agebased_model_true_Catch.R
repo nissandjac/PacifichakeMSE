@@ -103,6 +103,7 @@ run.agebased.true.catch <- function(df, seeds = 100){
   Catch.age <- matrix(NA,nage,nyear)
   CatchN <- matrix(NA,nyear)
   CatchN.age <- matrix(NA,nage,nyear)
+
   
   R.save <- matrix(NA,nyear, nspace)
   Fsel.save <- array(NA,dim = c(nyear,nspace, nage))
@@ -111,11 +112,13 @@ run.agebased.true.catch <- function(df, seeds = 100){
   
   N.save.age <- array(NA,dim = c(nage,nyear+1, nspace, nseason))
   N.save.age.mid <- array(NA,dim = c(nage,nyear+1, nspace, nseason))
+  V.save <- array(NA,dim = c(nyear, nspace, nseason))
   
   Catch.save.age <- array(NA,dim = c(nage,nyear, nspace, nseason))
   CatchN.save.age <- array(NA,dim = c(nage,nyear, nspace, nseason))
   Catch.quota <- array(NA, dim = c(nyear, nspace, nseason))
-  
+  Catch.quota.N <- array(0, dim = c(nyear, nspace, nseason))
+    
   survey <- array(NA,dim = c(nyear))
   survey.true <- array(NA, dim = c(nspace, nyear))
   surv.tot <- matrix(NA, nyear,nspace)
@@ -252,7 +255,7 @@ run.agebased.true.catch <- function(df, seeds = 100){
           # pseltmp <- c(0.05,0,0,0,0)  
           # }
           #         
-          pseltmp <- psel+df$parms$PSEL[,ncol(df$parms$PSEL)]*df$sigma_psel
+          pseltmp <- psel#+df$parms$PSEL[,ncol(df$parms$PSEL)]*df$sigma_psel
 
           
         }
@@ -272,15 +275,27 @@ run.agebased.true.catch <- function(df, seeds = 100){
         
         
         E.temp <- Catch_space*Fnseason[season]#*Fspace[space] # Catch distribution in the year
-        
-        
         B.tmp <-  sum(N.save.age[,yr,space,season]*exp(-Mseason*pope.mul)*w_catch*Fsel) # Get biomass from previous year
         N.tmp <- N.save.age[,yr,space,season]#
-        
-        Fout <- getF(E.temp,B.tmp,year = df$years[yr], season, space)
-        
+        V.save[yr,space,season] <- B.tmp
         Catch.quota[yr,space,season] <- E.temp
-        Fout <- Fout[1]
+        
+        if(E.temp/B.tmp >= .9){
+          if(df$years[yr] < 2018){
+            stop(paste('Catch exceeds available biomass in year:',year,' and season', season, 'area', space)) # Stop if in the past 
+          }
+          #print(paste('Catch exceeds available biomass in year:',year,' and season', season, 'area', space))
+          E.temp <- 0.75*B.tmp
+          Catch.quota.N[yr,space,season] <- 1
+          #if(df$years[yr] > 2026){
+          #stop('danger')
+          #  }
+          
+        }
+        
+        Fout <- getF(E.temp,B.tmp, season, space)
+        
+        Fout <- Fout
         #Fout <- df$parms$F0[yr]
         
         if(E.temp>0){
@@ -494,12 +509,14 @@ run.agebased.true.catch <- function(df, seeds = 100){
     
     df.out   <- list(N.save = Nsave, SSB = SSB, 
                      N.save.age = N.save.age,
+                     V.save = V.save,
                      SSB.all = SSB.all,
                      Catch.save.age = Catch.save.age,
                      CatchN.save.age = CatchN.save.age,
                      Catch = Catch, 
                      Catch.age = Catch.age, 
                      Catch.quota = Catch.quota,
+                     Catch.quota.N = Catch.quota.N,
                      Fout = Fout.save,
                      Nout = N.save.age, 
                      age_comps_OM = age_comps_OM,

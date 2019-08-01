@@ -47,8 +47,8 @@ load('results/MSErun_move_realized_move1.Rdata')
 ls.move1 <- ls.save
 load('results/MSErun_move_realized_move2.Rdata')
 ls.move2 <- ls.save
-# load('MSErun_move_realized_move3.Rdata')
-# ls.move3 <- ls.save
+load('results/MSErun_move_realized_move3.Rdata')
+ls.move3 <- ls.save
 
 # ### Loop MSE's with different errors in future survey and recruitment
 
@@ -92,36 +92,44 @@ for (i in 1:nruns){
 save(ls.real.s,file = 'results/Operating models/realized_OM.RData')
 
 ls.move1.s <- list()
+df <- load_data_seasons(nseason = 4, nspace = 2,movemaxinit = 0.15, movefiftyinit = 5) # Prepare data for operating model
+
 for (i in 1:length(ls.move1)){
-  if(is.null(ls.move1[[i]])){
+  if(is.na(ls.move1[[i]])){
     ls.move1.s[[i]] <- NULL}
   else{
-  tmp <- run_multiple_OMs(simyears = 30, seeds[i],moveparms = c(0.1,5), Catchin = ls.move1[[i]]$Catch[(df$nyear+1):(length(year.future)-1)])
+  tmp <- run_multiple_OMs(simyears = 30, seeds[i],df, Catchin = ls.move1[[i]]$Catch[(df$nyear+1):(length(year.future)-1)])
   ls.move1.s[[i]] <- tmp
   }
 }
 save(ls.move1.s,file = 'results/Operating models/move1_OM.RData')
 # 
 ls.move2.s <- list()
+df <- load_data_seasons(nseason = 4, nspace = 2,movemaxinit = 0.3, movefiftyinit = 5) # Prepare data for operating model
+
 for (i in 1:length(ls.move2)){
-  if(is.null(ls.move2[[i]])){
+  if(is.na(ls.move2[[i]])){
     ls.move2.s[[i]] <- NULL}
   else{
     tmp <- run_multiple_OMs(simyears = 30,
-                            seed = seeds[i],moveparms = c(0.75,5),
+                            seed = seeds[i],df,
                             Catchin = ls.move2[[i]]$Catch[(df$nyear+1):(length(year.future)-1)])
     ls.move2.s[[i]] <- tmp
   }
 }
 save(ls.move2.s,file = 'results/Operating models/move2_OM.RData')
 # 
-# ls.move3.s <- list()
-# for (i in 1:length(ls.move3)){
-#   if(is.null(ls.move3[[i]])){
-#     ls.move3.s[[i]] <- NULL}
-#   else{
-#     tmp <- run_multiple_OMs(simyears = 30, seeds[i],moveparms = c(0.5,2), Catchin = ls.move3[[i]]$Catch[(df$nyear+1):(length(year.future)-1)])
-#     ls.move3.s[[i]] <- tmp
-#   }
-# }
-# save(ls.move3.s,file = 'move3_OM.RData')
+
+ls.move3.s <- list()
+df <- load_data_seasons(nseason = 4, nspace = 2,movemaxinit = 0.05, movefiftyinit = 2) # Prepare data for operating model
+
+for (i in 1:length(ls.move3)){
+  if(is.na(ls.move3[[i]])){
+    ls.move3.s[[i]] <- NULL}
+  else{
+    tmp <- run_multiple_OMs(simyears = 30, seeds[i],df, Catchin = ls.move3[[i]]$Catch[(df$nyear+1):(length(year.future)-1)])
+    ls.move3.s[[i]] <- tmp
+  }
+}
+
+save(ls.move3.s,file = 'results/Operating models/move3_OM.RData')

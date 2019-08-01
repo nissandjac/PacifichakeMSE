@@ -29,7 +29,6 @@ ls.converge <- matrix(0, nruns)
 for (i in 1:nruns){
   tmp <- try(run_multiple_MSEs(simyears = simyears,
                                seed = seeds[i],
-                               moveparms = NA,
                                TAC = TAC,
                                df))
   #tmp <- run_multiple_MSEs(simyears = 30, seeds[i])
