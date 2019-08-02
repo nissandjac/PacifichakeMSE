@@ -83,7 +83,7 @@ for (i in 1:nruns){
   
 }
 # # # # 
-save(ls.save,file = 'results/MSErun_move_realized_move2.Rdata')
+save(ls.save,file = 'results/Move/MSErun_move_realized_move2.Rdata')
 
 ls.save <- list()
 ls.converge <- matrix(0, nruns)
@@ -104,4 +104,4 @@ for (i in 1:nruns){
   
 }
 # # # # 
-save(ls.save,file = 'results/MSErun_move_realized_move3.Rdata')
+save(ls.save,file = 'results/Move/MSErun_move_realized_move3.Rdata')

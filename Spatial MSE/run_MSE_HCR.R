@@ -100,3 +100,29 @@ for (i in 1:nruns){
 }
 # # # # 
 save(ls.save,file = 'results/HCR/MSE_realized.Rdata')
+
+
+ls.save <- list()
+ls.converge <- matrix(0, nruns)
+
+for (i in 1:nruns){
+  tmp <- run_multiple_MSEs(simyears = simyears, seeds[i],
+                           TAC = 4, df =df)
+  #tmp <- run_multiple_MSEs(simyears = 30, seeds[i])
+  print(i)
+  #tmp <- run_multiple_MSEs(simyears = 30, seeds[i])
+  if(is.list(tmp)){
+    ls.save[[i]] <-tmp
+    ls.converge[i] <- 1
+  }else{
+    ls.save[[i]] <- NA
+    ls.converge[i] <- 0
+  }
+  
+  
+  
+}
+# # # # 
+save(ls.save,file = 'results/HCR/MSE_realized.Rdata')
+
+
