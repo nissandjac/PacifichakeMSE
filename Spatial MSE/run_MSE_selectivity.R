@@ -26,7 +26,7 @@ seeds <- floor(runif(n = nruns, min = 1, max = 1e6))
 ### Set targets for harvesting etc 
 #
 
-simyears <- 50 # Project 30 years into the future (2048 that year)
+simyears <- 30 # Project 30 years into the future (2048 that year)
 year.future <- c(df$years,(df$years[length(df$years)]+1):(df$years[length(df$years)]+simyears))
 N0 <- NA
 df_future <- load_data_seasons_future(2, movemaxinit = 0.35, movefiftyinit = 6)
@@ -54,10 +54,12 @@ ggplot(data = df.plot, aes(x = age, y = selectivity, color = country))+theme_cla
 ls.save <- list()
 ls.converge <- matrix(0, nruns)
 #
+df <- load_data_seasons(nseason = 4, nspace = 2, bfuture = 0.5, selectivity_change = 0) # Prepare data for operating model
+
 for (i in 1:nruns){
   tmp <- run_multiple_MSEs(simyears = 30,
                            seeds = seeds[i],
-                           TAC = 1, df = df)
+                           TAC = 2, df = df)
   #tmp <- run_multiple_MSEs(simyears = 30, seeds[i])
   print(i)
   
@@ -72,14 +74,16 @@ for (i in 1:nruns){
   
 }
 # # # #
-save(ls.save,file = 'results/HCR/MSE_HCR.Rdata')
+save(ls.save,file = 'results/Selectivity/MSE_sel1.Rdata')
 
 # ### Loop MSE's with different errors in future survey and recruitment
 ls.save <- list()
 ls.converge <- matrix(0, nruns)
 #
+df <- load_data_seasons(nseason = 4, nspace = 2, bfuture = 0.5, selectivity_change = 1) # Prepare data for operating model
+
 for (i in 1:nruns){
-  tmp <- run_multiple_MSEs(simyears = 30, seeds[i],
+  tmp <- run_multiple_MSEs(simyears = simyears, seeds[i],
                            TAC = 2, df =df)
   #tmp <- run_multiple_MSEs(simyears = 30, seeds[i])
   print(i)
@@ -94,14 +98,15 @@ for (i in 1:nruns){
   
 }
 # # # # 
-save(ls.save,file = 'results/MSE_JMC.Rdata')
+save(ls.save,file = 'results/Selectivity/MSE_sel2.Rdata')
 
 ls.save <- list()
 ls.converge <- matrix(0, nruns)
+df <- load_data_seasons(nseason = 4, nspace = 2, bfuture = 0.5, selectivity_change = 2) # Prepare data for operating model
 
 for (i in 1:nruns){
-  tmp <- run_multiple_MSEs(simyears = 30, seeds[i],
-                           TAC = 3, df =df)
+  tmp <- run_multiple_MSEs(simyears = simyears, seeds[i],
+                           TAC = 2, df =df)
   #tmp <- run_multiple_MSEs(simyears = 30, seeds[i])
   print(i)
   #tmp <- run_multiple_MSEs(simyears = 30, seeds[i])
@@ -117,4 +122,4 @@ for (i in 1:nruns){
   
 }
 # # # # 
-save(ls.save,file = 'results/HCR/MSE_realized.Rdata')
+save(ls.save,file = 'results/Selectivity/MSE_sel3.Rdata')

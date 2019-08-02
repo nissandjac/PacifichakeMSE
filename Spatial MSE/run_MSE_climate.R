@@ -33,12 +33,17 @@ simdata0 <- sim.data # The other one is gonna get overwritten.
 # ### Loop MSE's with different errors in future survey and recruitment
 ls.save <- list()
 ls.converge <- matrix(0, nruns)
+TAC <- 2
+cincrease <- 0
+mincrease <- 0
+
+
 
 
 for (i in 1:nruns){
   tmp <- run_multiple_MSEs_climate(simyears = simyears,
                            seeds = seeds[i],
-                           TAC = 2, df = df, cincrease = 0.0)
+                           TAC = 2, df = df, cincrease = cincrease, mincrease = mincrease)
   print(i)
 
   if(is.list(tmp)){

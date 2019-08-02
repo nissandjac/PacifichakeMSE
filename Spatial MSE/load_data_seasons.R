@@ -4,7 +4,8 @@ load_data_seasons <- function(nseason = 4, nspace = 2,
                               movemaxinit = 0.35, movefiftyinit = 6, 
                               nsurvey = 2, logSDR = 1.4, bfuture = 0.5,
                               moveout = 0.8, movesouth = 0.05,
-                              moveinit = NA, moveslope = 0.5){
+                              moveinit = NA, moveslope = 0.5,
+                              selectivity_change = 0){
   
   if(is.na(moveinit)){
     if(nspace == 2){
@@ -280,7 +281,7 @@ load_data_seasons <- function(nseason = 4, nspace = 2,
                  # F0 = Fin,
                   psel = psel,
                   parms = parms,
-                  selectivity_change = 0
+                  selectivity_change = selectivity_change
                 
                   # Parameters from the estimation model 
               
