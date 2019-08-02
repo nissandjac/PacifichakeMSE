@@ -19,7 +19,7 @@ source('load_files_OM.R')
 source('load_files.R')
 source('runfuture_OM.R')
 source('load_data_seasons_future.R')
-source('run_agebased_model_true_catch_move.R')
+source('run_agebased_model_true_catch.R')
 assessment <- read.csv('data/assessment_MLE.csv')
 
 #assessment <- assessment[assessment$year > 1965 &assessment$year < 2018 ,]
@@ -37,9 +37,10 @@ yr.future <- 2
 df <- load_data_seasons_future(yr.future, movemaxinit = 0.35, movefiftyinit = 6)
 sim.data <- run.agebased.true.catch(df, 123)
 
-plot(df$movemat[2,,2,55])
+plot(sim.data$Fsel[55,1,], type = 'l', col = 'red')
+lines(sim.data$Fsel[55,2,], type = 'l', col = 'blue')
 
-df$surveyseason <- 2
+df$surveyseason <- 3
 
 #df$parms$PSEL <- 0*df$parms$PSEL
 
@@ -129,7 +130,7 @@ surv.tot <- survey.obs %>%
   group_by(year) %>%   
   summarise(survey = sum(survey))
 
-surv.model <- data.frame(year = df$years, )
+#surv.model <- data.frame(year = df$years, )
 
 
 

@@ -66,6 +66,8 @@ load_data_seasons_future <- function(yr.future, nseason = 4, nspace = 2,
     if(nseason == 4){ # For the standard model
       movemat[,1:2,,] <- 0 # Recruits and 1 year olds don't move
       movemat[1,3:nage,1:3,] <- movesouth # Don't move south during the year
+      movemat[1,3:nage,1,] <- moveout*0.5 # continuing south movement at spawning time
+      
       movemat[1,3:nage,nseason,] <- moveout
       movemat[2,3:nage,nseason,] <- movesouth
     }
@@ -292,7 +294,9 @@ load_data_seasons_future <- function(yr.future, nseason = 4, nspace = 2,
                   move.init = move.init,
                   # F0 = Fin,
                   psel = psel,
-                  parms = parms
+                  parms = parms,
+                  selectivity_change = 0
+                  
                   # Parameters from the estimation model 
                   
   )

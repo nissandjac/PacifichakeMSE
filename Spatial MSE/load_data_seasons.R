@@ -279,7 +279,9 @@ load_data_seasons <- function(nseason = 4, nspace = 2,
                   moveslope = moveslope,
                  # F0 = Fin,
                   psel = psel,
-                  parms = parms
+                  parms = parms,
+                  selectivity_change = 0
+                
                   # Parameters from the estimation model 
               
   )
