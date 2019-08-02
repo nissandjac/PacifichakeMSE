@@ -142,6 +142,12 @@ if(TAC == 1){
   Cexp <- TAC.obs$incpt[1]+TAC.obs$slp[1]*Cnew
 }else if(TAC == 3){
   Cexp <- TAC.obs$incpt[2]+TAC.obs$slp[2]*Cnew
+}else if(TAC == 4){ # Half the treaty specified and with a lower floor
+  Cexp <- Cnew*0.5
+  
+  if(Cexp < 180000){
+    Cexp <- 180000 
+  }
 }
 
 # Do a test run 
