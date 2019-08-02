@@ -1,3 +1,4 @@
+###### Initialize the operating model ###### 
 library(TMB)
 compile("runHakeassessment.cpp")
 dyn.load(dynlib("runHakeassessment"))
@@ -11,6 +12,7 @@ set.seed(seedz)
 source('load_files.R')
 source('load_files_OM.R')
 source('run_agebased_model_true_catch_move.R')
+source('load_data_seasons_future.R')
 
 df <- load_data_seasons(nseason = 4, nspace = 2, bfuture = 0.5) # Prepare data for operating model
 
@@ -27,25 +29,58 @@ seeds <- floor(runif(n = nruns, min = 1, max = 1e6))
 simyears <- 50 # Project 30 years into the future (2048 that year)
 year.future <- c(df$years,(df$years[length(df$years)]+1):(df$years[length(df$years)]+simyears))
 N0 <- NA
-sim.data <- run.agebased.true.catch(df) # Run the operating model until 2018
+df_future <- load_data_seasons_future(2, movemaxinit = 0.35, movefiftyinit = 6)
 
-simdata0 <- sim.data # The other one is gonna get overwritten. 
+df_future$selectivity_change <- 0
+sim.data_1 <- run.agebased.true.catch(df_future) # Run the operating model until 2018
+df_future$selectivity_change <- 1
+sim.data_2 <- run.agebased.true.catch(df_future) # Run the operating model until 2018
+df_future$selectivity_change <- 2
+sim.data_3 <- run.agebased.true.catch(df_future) # Run the operating model until 2018
+
+# Plot the scenarios 
+df.plot <- data.frame(selectivity = c(sim.data_1$Fsel[55,1,],sim.data_2$Fsel[55,1,],sim.data_3$Fsel[55,1,],
+                                      sim.data_1$Fsel[55,2,],sim.data_2$Fsel[55,2,],sim.data_3$Fsel[55,2,]),
+                      country = rep(c('CAN','USA'), each = 3*df$nage),
+                      age = rep(df$age, 6),
+                      run = rep(rep(c('sel1','sel2','sel3'),each =df$nage),2)
+                      )
+
+ggplot(data = df.plot, aes(x = age, y = selectivity, color = country))+theme_classic()+geom_line()+
+  facet_wrap(~run)+scale_x_continuous(limit = c(0,df$age_maxage))
+
 
 # ### Loop MSE's with different errors in future survey and recruitment
 ls.save <- list()
 ls.converge <- matrix(0, nruns)
-
-
-ls.save <- list()
-ls.converge <- matrix(0, nruns)
-df <- load_data_seasons(nseason = 4, nspace = 2,movemaxinit = 0.15, movefiftyinit = 5) # Prepare data for operating model
-
+#
 for (i in 1:nruns){
-  tmp <- try(run_multiple_MSEs(simyears = 30, seeds[i],
-                               TAC = 2, df =df),silent = FALSE)
+  tmp <- run_multiple_MSEs(simyears = 30,
+                           seeds = seeds[i],
+                           TAC = 1, df = df)
   #tmp <- run_multiple_MSEs(simyears = 30, seeds[i])
   print(i)
   
+  if(is.list(tmp)){
+    ls.save[[i]] <-tmp
+    ls.converge[i] <- 1
+  }else{
+    ls.save[[i]] <- NA
+    ls.converge[i] <- 0
+  }
+  
+  
+}
+# # # #
+save(ls.save,file = 'results/HCR/MSE_HCR.Rdata')
+
+# ### Loop MSE's with different errors in future survey and recruitment
+ls.save <- list()
+ls.converge <- matrix(0, nruns)
+#
+for (i in 1:nruns){
+  tmp <- run_multiple_MSEs(simyears = 30, seeds[i],
+                           TAC = 2, df =df)
   #tmp <- run_multiple_MSEs(simyears = 30, seeds[i])
   print(i)
   if(is.list(tmp)){
@@ -59,20 +94,17 @@ for (i in 1:nruns){
   
 }
 # # # # 
-save(ls.save,file = 'results/Move/MSErun_move_realized_move1.Rdata')
+save(ls.save,file = 'results/MSE_JMC.Rdata')
 
 ls.save <- list()
 ls.converge <- matrix(0, nruns)
 
-df <- load_data_seasons(nseason = 4, nspace = 2,movemaxinit = 0.4, movefiftyinit = 8) # Prepare data for operating model
-test <- run.agebased.true.catch(df)
-
-
 for (i in 1:nruns){
-  tmp <- try(run_multiple_MSEs(simyears = 30, seeds[i],
-                               TAC = 2, df =df),silent = FALSE)
+  tmp <- run_multiple_MSEs(simyears = 30, seeds[i],
+                           TAC = 3, df =df)
   #tmp <- run_multiple_MSEs(simyears = 30, seeds[i])
   print(i)
+  #tmp <- run_multiple_MSEs(simyears = 30, seeds[i])
   if(is.list(tmp)){
     ls.save[[i]] <-tmp
     ls.converge[i] <- 1
@@ -81,27 +113,8 @@ for (i in 1:nruns){
     ls.converge[i] <- 0
   }
   
-}
-# # # # 
-save(ls.save,file = 'results/MSErun_move_realized_move2.Rdata')
-
-ls.save <- list()
-ls.converge <- matrix(0, nruns)
-df <- load_data_seasons(nseason = 4, nspace = 2,movemaxinit = 0.7, movefiftyinit = 2) # Prepare data for operating model
-test <- run.agebased.true.catch(df)
-
-for (i in 1:nruns){
-  tmp <- try(run_multiple_MSEs(simyears = 30, seeds[i], TAC = 2, df =df),silent = FALSE)
-  #tmp <- run_multiple_MSEs(simyears = 30, seeds[i])
-  print(i)
-  if(is.list(tmp)){
-    ls.save[[i]] <-tmp
-    ls.converge[i] <- 1
-  }else{
-    ls.save[[i]] <- NA
-    ls.converge[i] <- 0
-  }
+  
   
 }
 # # # # 
-save(ls.save,file = 'results/MSErun_move_realized_move3.Rdata')
+save(ls.save,file = 'results/HCR/MSE_realized.Rdata')
