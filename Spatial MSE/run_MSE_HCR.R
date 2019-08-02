@@ -19,13 +19,13 @@ parms.true <- getParameters_OM(TRUE,df) # Load parameters from assessment
 
 time <- 1
 yrinit <- df$nyear
-nruns <- 1
+nruns <- 100
 seeds <- floor(runif(n = nruns, min = 1, max = 1e6))
 ### Run the OM and the EM for x number of years in the MSE 
 ### Set targets for harvesting etc 
 #
 
-simyears <- 50 # Project 30 years into the future (2048 that year)
+simyears <- 30 # Project 30 years into the future (2048 that year)
 year.future <- c(df$years,(df$years[length(df$years)]+1):(df$years[length(df$years)]+simyears))
 N0 <- NA
 sim.data <- run.agebased.true.catch(df) # Run the operating model until 2018
@@ -37,7 +37,7 @@ ls.save <- list()
 ls.converge <- matrix(0, nruns)
 #
 for (i in 1:nruns){
-  tmp <- run_multiple_MSEs(simyears = 30,
+  tmp <- run_multiple_MSEs(simyears = simyears,
                            seeds = seeds[i],
                            TAC = 1, df = df)
   #tmp <- run_multiple_MSEs(simyears = 30, seeds[i])
@@ -61,7 +61,7 @@ ls.save <- list()
 ls.converge <- matrix(0, nruns)
 #
 for (i in 1:nruns){
-  tmp <- run_multiple_MSEs(simyears = 30, seeds[i],
+  tmp <- run_multiple_MSEs(simyears = simyears, seeds[i],
                            TAC = 2, df =df)
   #tmp <- run_multiple_MSEs(simyears = 30, seeds[i])
   print(i)
@@ -76,13 +76,13 @@ for (i in 1:nruns){
   
 }
 # # # # 
-save(ls.save,file = 'results/MSE_JMC.Rdata')
+save(ls.save,file = 'results/HCR/MSE_JMC.Rdata')
 
 ls.save <- list()
 ls.converge <- matrix(0, nruns)
 
 for (i in 1:nruns){
-  tmp <- run_multiple_MSEs(simyears = 30, seeds[i],
+  tmp <- run_multiple_MSEs(simyears = simyears, seeds[i],
                            TAC = 3, df =df)
   #tmp <- run_multiple_MSEs(simyears = 30, seeds[i])
   print(i)

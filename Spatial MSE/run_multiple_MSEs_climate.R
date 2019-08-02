@@ -52,6 +52,7 @@ run_multiple_MSEs_climate <- function(simyears = NULL,seeds = 12345, TAC = 1, df
   start.time <- Sys.time()
   df0 <- df # For debugging
   mconverge <- rep(NA, simyears)
+  df0 <- df
   
   for (time in 1:simyears){
     
@@ -206,7 +207,7 @@ run_multiple_MSEs_climate <- function(simyears = NULL,seeds = 12345, TAC = 1, df
     }
     
     parms.new$F0 <- F0#rowSums(sim.data$Fsave, na.rm = TRUE)
-    parms.new$F0[df$Catch == 0] <- 0
+    #parms.new$F0[df$Catch == 0] <- 0
     
     parms.new$Rin <- Rdev#parms.new$Rin[1:(length(parms.new$Rin)-1)]
     
