@@ -1,4 +1,5 @@
 df_lists <- function(ls.save, nms){
+
 source('calcMeanAge.R')
   
 if(dim(ls.save[[1]]$Catch)[2] == 1){
@@ -42,9 +43,9 @@ for(i in 1:nruns){
       Catch.us = ls.save[[i]]$Catch[,2]
       Catch.can = ls.save[[i]]$Catch[,1]
       
-      Catch.q = rowSums(ls.save[[i]]$Catch)
-      Catch.q.us = ls.save[[i]]$Catch[,2]
-      Catch.q.can = ls.save[[i]]$Catch[,1]
+      Catch.q = rowSums(ls.save[[i]]$Catch.quota)
+      Catch.q.us = rowSums(ls.save[[i]]$Catch.quota[,2,])
+      Catch.q.can = rowSums(ls.save[[i]]$Catch.quota[,1,])
       
     }
     
@@ -77,13 +78,16 @@ for(i in 1:nruns){
     if(dim(ls.save[[i]]$Catch)[2] == 1){
       Catch.q.us <- ls.save[[i]]$Catch*0.76
       Catch.q.can <- ls.save[[i]]$Catch*0.24
-      Catch.q = ls.save[[i]]$Catch
+      Catch = ls.save[[i]]$Catch
       
     }else{
-      Catch.q = rowSums(ls.save[[i]]$Catch)
+      Catch = rowSums(ls.save[[i]]$Catch)
+      Catch.us = ls.save[[i]]$Catch[,2]
+      Catch.can = ls.save[[i]]$Catch[,1]
       
-      Catch.q.us = ls.save[[i]]$Catch[,2]
-      Catch.q.can = ls.save[[i]]$Catch[,1]
+      Catch.q = rowSums(ls.save[[i]]$Catch.quota)
+      Catch.q.us = rowSums(ls.save[[i]]$Catch.quota[,2,])
+      Catch.q.can = rowSums(ls.save[[i]]$Catch.quota[,1,])
       
     }
     
@@ -116,6 +120,8 @@ for(i in 1:nruns){
     nfailed[i] <- 0
   }
 }
+
+ggplot(ls.df, aes(x = year, y = Catch))+geom_line()
 
 SSB.plotquant <- ls.df[ls.df$year > 2010,] %>% 
   group_by(year) %>% 
