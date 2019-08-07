@@ -26,9 +26,9 @@ hake_objectives <- function(ls.MSE, SSB0, move = NA){
   
   
   if(is.na(move)){
-    SSB.plot <- data.frame(SSB = (ls.MSE[[idx]]$SSB)/(sim.data$SSB_0), year = yr, run = paste('run',1, sep=''))
+    SSB.plot <- data.frame(SSB = (ls.MSE[[idx]]$SSB)/(SSB0), year = yr, run = paste('run',1, sep=''))
   }else{
-    SSB.plot <- data.frame(SSB = rowSums(ls.MSE[[idx]]$SSB)/sum(sim.data$SSB_0), year = yr, run = paste('run',1, sep=''))
+    SSB.plot <- data.frame(SSB = rowSums(ls.MSE[[idx]]$SSB)/sum(SSB0), year = yr, run = paste('run',1, sep=''))
   }  
   
   if(is.na(move)){
@@ -47,12 +47,12 @@ hake_objectives <- function(ls.MSE, SSB0, move = NA){
     
     if(is.list(ls.tmp)){
       if(is.na(move)){
-        SSB.tmp <- data.frame(SSB = (ls.tmp$SSB)/(sim.data$SSB_0), year = yr, run =  paste('run',i, sep=''))
+        SSB.tmp <- data.frame(SSB = (ls.tmp$SSB)/(SSB0), year = yr, run =  paste('run',i, sep=''))
         Catch.tmp <- data.frame(Catch = ls.tmp$Catch, year = yr, run =  paste('run',i, sep=''))
         quota.tmp <- data.frame(Catch = ls.tmp$Catch/apply(ls.tmp$Catch.quota, MARGIN = 1, FUN = sum), year = yr, run =  paste('run',i, sep=''))
         
       }else{
-        SSB.tmp <- data.frame(SSB = rowSums(ls.tmp$SSB)/sum(sim.data$SSB_0), year = yr, run =  paste('run',i, sep=''))
+        SSB.tmp <- data.frame(SSB = rowSums(ls.tmp$SSB)/sum(SSB0), year = yr, run =  paste('run',i, sep=''))
         Catch.tmp <- data.frame(Catch = rowSums(ls.tmp$Catch), year = yr, run =  paste('run',i, sep=''))
         quota.tmp <- data.frame(Quota_frac = rowSums(ls.tmp$Catch)/apply(ls.tmp$Catch.quota, MARGIN = 1, FUN = sum), year = yr, run =  paste('run',i, sep=''))
         

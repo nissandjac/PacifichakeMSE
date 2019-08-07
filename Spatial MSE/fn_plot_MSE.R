@@ -36,7 +36,6 @@ print(p1)
 dev.off()
 }  
 
-
 ls.data <- list()
 
 
@@ -76,7 +75,7 @@ if(plotexp == TRUE){
 
 p3 <- ggplot(df.catch, aes(x = year, y = med*1e-6, color = run))+geom_line(size = 2)+
 #  geom_ribbon(aes(ymin = p5*1e-6, ymax = p95*1e-6), linetype = 2, fill = alpha(alpha =0.2, colour = cols))+
-  scale_color_manual(values=cols[1:3])+scale_y_continuous(name = 'Catch (million tonnes)')+
+  scale_color_manual(values=cols[1:length(unique(df.catch$run))])+scale_y_continuous(name = 'Catch (million tonnes)')+
   geom_line(aes(y = p5*1e-6, color = run), linetype = 2)+geom_line(aes(y = p95*1e-6, color = run), linetype = 2)
 
 p3
@@ -276,7 +275,7 @@ p11 <- ggplot(df.catchq, aes(x = year, y = med.can))+geom_line(color = 'red')+
   geom_ribbon(aes(ymin = p5.can, ymax = p95.can), fill = alpha('red', alpha = 0.2), linetype = 0)+
   geom_ribbon(aes(ymin = p5.us, ymax = p95.us), fill = alpha('blue', alpha = 0.2), linetype = 0)
 
-p11
+# p11
 
 
 

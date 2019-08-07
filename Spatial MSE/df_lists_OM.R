@@ -3,7 +3,19 @@ df_lists_OM <- function(ls.save, nms){
   
   nruns <- length(ls.save)
   nfailed <- rep(1, nruns)
-  year <- yr[1:(length(yr)-1)]
+
+  
+  source('calcMeanAge.R')
+  
+  if(dim(ls.save[[1]]$SSB)[2] == 1){
+    
+    simyears <- length(ls.save[[1]][1]$SSB)-(length(1966:2017))+1
+  }else{
+    simyears <- length(rowSums(ls.save[[1]][1]$SSB))-(length(1966:2017))+1
+    
+  }
+  
+  year <- 1966:(2017+simyears-1)
   
   for(i in 1:nruns){
     
@@ -76,10 +88,10 @@ df_lists_OM <- function(ls.save, nms){
   
   return(list(ls.df, nfailed, 
               list(
-                SSB.plotquant, 
-                ams.plotquant,
-                amc.plotquant,
-                SSB.all
+                SSB = SSB.plotquant, 
+                ams = ams.plotquant,
+                amc = amc.plotquant,
+                SSB.all = SSB.all
                ))
   )
 }
