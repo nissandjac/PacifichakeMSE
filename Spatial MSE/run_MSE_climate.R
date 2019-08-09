@@ -34,10 +34,6 @@ simdata0 <- sim.data # The other one is gonna get overwritten.
 ls.save <- list()
 ls.converge <- matrix(0, nruns)
 TAC <- 2
-cincrease <- 0
-mincrease <- 0
-
-
 
 
 for (i in 1:nruns){

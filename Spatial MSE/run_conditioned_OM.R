@@ -17,7 +17,7 @@ source('load_data_seasons.R')
 source('create_TMB_data.R')
 source('Check_Identifiable_vs2.R')
 source('getF.R')
-assessment <- read.csv('data/asssessment_MLE.csv')
+assessment <- read.csv('data/assessment_MLE.csv')
 assessment <- assessment[assessment$year > 1965 &assessment$year < 2018 ,]
 Catch.obs <- read.csv('data/hake_totcatch.csv')
 
@@ -317,7 +317,7 @@ df.movement <- data.frame(age = rep(df$age, 8), movement = NA, country = rep(c('
                           season = rep(1:4, each = df$nage*2))
 df.movement$age[df.movement$country == 'CAN'] <-  df.movement$age[df.movement$country == 'CAN']+0.3 # For plotting
 for(i in 1:4){
-  mm.tmp <- df$movemat[,,i]
+  mm.tmp <- df$movemat[,,i,1]
   
   df.movement[df.movement$season == i & df.movement$country == 'USA',]$movement <- mm.tmp[2,] 
   df.movement[df.movement$season == i & df.movement$country == 'CAN',]$movement <- mm.tmp[1,]

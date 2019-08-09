@@ -43,12 +43,20 @@ df.plot <- data.frame(selectivity = c(sim.data_1$Fsel[55,1,],sim.data_2$Fsel[55,
                                       sim.data_1$Fsel[55,2,],sim.data_2$Fsel[55,2,],sim.data_3$Fsel[55,2,]),
                       country = rep(c('CAN','USA'), each = 3*df$nage),
                       age = rep(df$age, 6),
-                      run = rep(rep(c('sel1','sel2','sel3'),each =df$nage),2)
+                      run = rep(rep(c('Conditioned OM','Low US selectivity','2018 selectivity'),each =df$nage),2)
                       )
 
-ggplot(data = df.plot, aes(x = age, y = selectivity, color = country))+theme_classic()+geom_line()+
-  facet_wrap(~run)+scale_x_continuous(limit = c(0,df$age_maxage))
+df.plot$run <- factor(df.plot$run, levels = c('Conditioned OM','Low US selectivity','2018 selectivity'))
 
+
+p1 <- ggplot(data = df.plot, aes(x = age, y = selectivity, color = country))+theme_classic()+geom_line(size = 1.2)+
+  facet_wrap(~run)+scale_x_continuous(limit = c(0,df$age_maxage))+
+  scale_color_manual(values = c('darkred','blue4'))
+
+
+png('results/Selectivity/Selectivity_difference.png',width = 16, height =8, res = 400, unit = 'cm')
+p1
+dev.off()
 
 # ### Loop MSE's with different errors in future survey and recruitment
 ls.save <- list()
