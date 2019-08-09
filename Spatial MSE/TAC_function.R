@@ -3,14 +3,15 @@ library(ggplot2)
 library(scales)
 source('load_data_seasons.R')
 source('getSelec.R')
+source('load_files.R')
+source('load_files_OM.R')
 
-df.tac <- read.csv('TAC.csv')
+df.tac <- read.csv('data/TAC.csv')
 
-SSB_0 <- 2177473
-
-
+df <- load_data_seasons()
+sim.data <- run.agebased.true.catch(df)
 ## Calculate the theoretical TAC 
-SSB <- seq(0, SSB_0*2, length.out = dim(df.tac)[1])
+SSB <- seq(0, sum(sim.data$SSB0), length.out = dim(df.tac)[1])
 TAC <- matrix(NA, dim(df.tac)[1])
 
 TAC[(SSB/SSB_0)< 0.1]<- 0 # add a very low catch (fix later)
@@ -50,26 +51,53 @@ df.plot <- data.frame(TAC = TAC,
 df.plot$TAC.JMC[df.plot$TAC.JMC > df.plot$TAC] <-df.plot$TAC[df.plot$TAC.JMC >TAC] 
 df.plot$TAC.realized[df.plot$TAC.realized > df.plot$TAC] <-df.plot$TAC[df.plot$TAC.realized >TAC] 
 
+# Flor data 
+df.plot$Floor <- df.plot$TAC*0.5
+df.plot$Floor[df.plot$Floor<= 180000] <- 180000
+df.plot$TAC.HCR <- df.plot$TAC
 
-p1 <- ggplot(df.tac, aes( x= theotac*1e-3, y= theotac*1e-3))+geom_line(size = 1, linetype = 2)+
-  scale_y_continuous('Catch (thousand tonnes)')+
+df.plot.w <- melt(df.plot[,-4], id.vars = 'TAC', value.name = 'Quota', variable.name = 'HCR')
+nhcr <- unique(df.plot.w$HCR)
+
+p1 <- ggplot(df.plot.w, aes(x= TAC*1e-3, y = Quota*1e-3, color = HCR))+geom_line(linetype = 2, size = 0.8)+
+  scale_y_continuous('Catch \n(thousand tonnes)')+scale_color_manual(values = c(cols[1:3],'black'),
+                                                                     labels = c('JMC','Realized','Floor','HCR'))+
   scale_x_continuous('Harvest control rule')+ coord_cartesian(ylim=c(0, 800), xlim = c(0,1000))+
-  geom_point(aes(x=AssessTac*1e-3, y = Realized*1e-3), color = alpha('blue',0.5))+
-  geom_point(aes(x=AssessTac*1e-3,y = TAC*1e-3), color = alpha('red',0.5))+
-  geom_line(data = df.plot, aes(x = TAC*1e-3, y = TAC.JMC*1e-3), color = alpha('red',0.5), linetype = 2, size = 0.8)+
-  geom_line(data = df.plot, aes(x = TAC*1e-3, y = TAC.realized*1e-3), color = alpha('blue',0.5), linetype = 2, size =0.8)
+  geom_point(data = df.tac,aes(x=AssessTac*1e-3, y = Realized*1e-3), color = alpha(cols[2],0.5))+
+  geom_point(data = df.tac,aes(x=AssessTac*1e-3,y = TAC*1e-3), color = alpha(cols[1],0.5))+
+  theme(legend.title = element_blank(),
+        legend.key.size =  unit(.2, "cm"),
+        legend.text=element_text(size=7),
+        legend.position = c(0.1,0.8))
+p1
 
-p2 <- ggplot(df.plot, aes(x = SSB*1e-6, y = TAC*1e-6))+geom_line(size = 0.8)+
-  geom_line(aes(y = TAC.JMC*1e-6), color = alpha('red',0.5), linetype = 2, size = 0.8)+
-  geom_line(aes(y = TAC.realized*1e-6), color = alpha('blue',0.5), linetype = 2, size = 0.8)+
-  scale_y_continuous('TAC (million tonnes)')+
-  scale_x_continuous('SSB (million tonnes)')+theme_classic()
-png('SSB_tac.png', width = 16, height = 12, unit = 'cm', res =400)
-p2
-dev.off()
+# p1 <- ggplot(df.tac, aes( x= theotac*1e-3, y= theotac*1e-3))+geom_line(size = 1, linetype = 2)+
+#   geom_point(aes(x=AssessTac*1e-3, y = Realized*1e-3), color = alpha(cols[2],0.5))+
+#   geom_point(aes(x=AssessTac*1e-3,y = TAC*1e-3), color = alpha(cols[1],0.5))+
+#   geom_line(data = df.plot, aes(x = TAC*1e-3, y = TAC.JMC*1e-3), 
+#             color = alpha(cols[1],0.5), linetype = 2, size = 0.8)+
+#   geom_line(data = df.plot, aes(x = TAC*1e-3, y = TAC.realized*1e-3), 
+#             color = alpha(cols[2],0.5), linetype = 2, size =0.8)+
+#   geom_line(data = df.plot, aes(x = TAC*1e-3, y = Floor*1e-3), 
+#             color = alpha(cols[3],0.5), linetype = 2, size =0.8)+
+#   scale_y_continuous('Catch \n(thousand tonnes)')+
+#   scale_x_continuous('Harvest control rule')+ coord_cartesian(ylim=c(0, 800), xlim = c(0,1000))
+#   
+# 
+# p1
+
+# 
+# p2 <- ggplot(df.plot, aes(x = SSB*1e-6, y = TAC*1e-6))+geom_line(size = 0.8)+
+#   geom_line(aes(y = TAC.JMC*1e-6), color = alpha('red',0.5), linetype = 2, size = 0.8)+
+#   geom_line(aes(y = TAC.realized*1e-6), color = alpha('blue',0.5), linetype = 2, size = 0.8)+
+#   scale_y_continuous('TAC (million tonnes)')+
+#   scale_x_continuous('SSB (million tonnes)')+theme_classic()
+# png('SSB_tac.png', width = 16, height = 12, unit = 'cm', res =400)
+# p2
+# dev.off()
 
 
 
-png('tacplot.png', width = 12, height = 8, unit = 'cm', res =400)
+png('Figs/tacplot.png', width = 12, height = 8, unit = 'cm', res =400)
 p1
 dev.off()

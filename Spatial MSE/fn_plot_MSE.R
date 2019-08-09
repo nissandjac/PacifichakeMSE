@@ -73,15 +73,16 @@ if(plotexp == TRUE){
 #yl <- 
 
 
-p3 <- ggplot(df.catch, aes(x = year, y = med*1e-6, color = run))+geom_line(size = 2)+
+p3 <- ggplot(df.catch, aes(x = year, y = med*1e-6, color = run))+geom_line(size = 1.5)+
 #  geom_ribbon(aes(ymin = p5*1e-6, ymax = p95*1e-6), linetype = 2, fill = alpha(alpha =0.2, colour = cols))+
   scale_color_manual(values=cols[1:length(unique(df.catch$run))])+scale_y_continuous(name = 'Catch (million tonnes)')+
-  geom_line(aes(y = p5*1e-6, color = run), linetype = 2)+geom_line(aes(y = p95*1e-6, color = run), linetype = 2)
+  geom_line(aes(y = p5*1e-6, color = run), linetype = 2)+geom_line(aes(y = p95*1e-6, color = run), linetype = 2)+
+  coord_cartesian(ylim = c(0,1.5))
 
 p3
 
 if(plotexp == TRUE){
-  png(paste(plotfolder,'total_catch.png'), width = 16, height =18, res = 400, unit = 'cm')
+  png(paste(plotfolder,'total_catch.png'), width = 16, height =12, res = 400, unit = 'cm')
   print(p3)
   dev.off()
 }  
@@ -104,7 +105,7 @@ p4 <- ggplot(df.ams[-rm.idx,], aes(x = year, y = med, color = run))+geom_line(si
   geom_line(aes(y = p5, color = run), linetype = 2)+geom_line(aes(y = p95, color = run), linetype = 2)
 
 if(plotexp == TRUE){
-  png(paste(plotfolder,'total_average_age_surv.png'), width = 16, height =18, res = 400, unit = 'cm')
+  png(paste(plotfolder,'total_average_age_surv.png'), width = 12, height =16, res = 400, unit = 'cm')
   print(p4)
   dev.off()
 }  
@@ -117,7 +118,7 @@ p5 <- ggplot(df.amc, aes(x = year, y = med, color = run))+geom_line(size = 2)+
   geom_line(aes(y = p5, color = run), linetype = 2)+geom_line(aes(y = p95, color = run), linetype = 2)
 #  scale_fill_manual(values = alpha(cols, alpha = 0.2), name="fill")
 if(plotexp == TRUE){
-  png(paste(plotfolder,'total_average_age_catch.png'), width = 16, height =18, res = 400, unit = 'cm')
+  png(paste(plotfolder,'total_average_age_catch.png'), width = 12, height =16, res = 400, unit = 'cm')
   print(p5)
   dev.off()
 }  
@@ -134,8 +135,8 @@ for(i in 2:length(nms)){
 
 ### SSB in the middle of the year 
 
-p6 <- ggplot(df.SSB, aes(x = year, y = med.can*1e-6))+geom_line(color = 'red')+
-  geom_line(aes(y = med.US*1e-6), color = 'blue')+
+p6 <- ggplot(df.SSB, aes(x = year, y = med.can*1e-6))+geom_line(color = 'red', size = 1.2)+
+  geom_line(aes(y = med.US*1e-6), color = 'blue', size = 1.2)+
   theme_classic()+scale_y_continuous(name ='SSB (m tonnes)\nmidyear')+facet_wrap(~run, scale = 'free')+  
   theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))+
   geom_ribbon(aes(ymin = p5.can*1e-6, ymax = p95.can*1e-6), fill = alpha('red', alpha = 0.2), linetype = 0)+
@@ -145,7 +146,7 @@ p6
 
 
 if(plotexp == TRUE){
-  png(paste(plotfolder,'SSB_mid_year.png'), width = 16, height =18, res = 400, unit = 'cm')
+  png(paste(plotfolder,'SSB_mid_year.png'), width = 16, height =16, res = 400, unit = 'cm')
   print(p6)
   dev.off()
 }  
@@ -168,7 +169,7 @@ p7 <- ggplot(df.ams.space,aes(x = year, y = med.can))+geom_line(size = 2, color 
 
 #  scale_fill_manual(values = alpha(cols, alpha = 0.2), name="fill")
 if(plotexp == TRUE){
-  png(paste(plotfolder,'average_age_survey_country.png'), width = 16, height =18, res = 400, unit = 'cm')
+  png(paste(plotfolder,'average_age_survey_country.png'), width = 12, height =16, res = 400, unit = 'cm')
   print(p7)
   dev.off()
 }  
@@ -190,7 +191,7 @@ p8 <- ggplot(df.amc.space,aes(x = year, y = med.can))+geom_line(size = 2, color 
 p8
 
 if(plotexp == TRUE){
-  png(paste(plotfolder,'average_age_catch_country.png'), width = 16, height =18, res = 400, unit = 'cm')
+  png(paste(plotfolder,'average_age_catch_country.png'), width = 12, height =16, res = 400, unit = 'cm')
   print(p8)
   dev.off()
 }  
@@ -223,7 +224,7 @@ p9  <- ggplot(se.plot, aes(x = year, y = E5))+theme_classic()+
   scale_y_continuous(limit = c(-0.5,0.5), name = 'Standard error')
 
 if(plotexp == TRUE){
-  png(paste(plotfolder,'SE_SSB.png'), width = 16, height =18, res = 400, unit = 'cm')
+  png(paste(plotfolder,'SE_SSB.png'), width = 12, height =16, res = 400, unit = 'cm')
   print(p9)
   dev.off()
 }  
@@ -254,7 +255,7 @@ p10 <- ggplot(df.F0, aes(x = year, y = med.can))+geom_line(color = 'red')+
 p10
 
 if(plotexp == TRUE){
-  png(paste(plotfolder,'F0.png'), width = 16, height =18, res = 400, unit = 'cm')
+  png(paste(plotfolder,'F0.png'), width = 12, height =16, res = 400, unit = 'cm')
   print(p10)
   dev.off()
 }  
@@ -277,6 +278,40 @@ p11 <- ggplot(df.catchq, aes(x = year, y = med.can))+geom_line(color = 'red')+
 
 # p11
 
+df.SSB <- data.frame(ls.data[[1]][[3]]$SSBtot)
 
+
+for(i in 2:length(nms)){
+  df.SSB <- rbind(df.SSB, ls.data[[i]][[3]]$SSBtot)
+}
+
+cols <- brewer.pal(6, 'Dark2')
+
+### SSB in the middle of the year 
+df.SSB$med <- df.SSB$med/sum(sim.data$SSB0)
+df.SSB$p5 <- df.SSB$p5/sum(sim.data$SSB0)
+df.SSB$p95 <- df.SSB$p95/sum(sim.data$SSB0)
+
+
+p12<- ggplot(df.SSB, aes(x = year, y = med, color = run, fill = run))+
+  geom_line(size = 1.5)+
+  geom_line(aes(y = p95), linetype =2, size = 1.2)+
+  geom_line(aes(y = p5), linetype =2, size = 1.2)+
+  scale_color_manual(values= cols[1:length(nms)])+
+  theme_classic()+scale_y_continuous(name ='Total SSB/SSB0')+
+  coord_cartesian(ylim  = c(0,2.5))+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))+
+  #geom_ribbon(aes(ymin = p5, ymax = p95), linetype = 0)+
+  scale_fill_manual(values= alpha(cols[1:length(nms)], alpha = 0.2))+
+  geom_hline(aes(yintercept = 1), color = 'black', linetype = 2)
+
+p12
+
+
+if(plotexp == TRUE){
+  png(paste(plotfolder,'SSB_total.png'), width = 16, height =12, res = 400, unit = 'cm')
+  print(p12)
+  dev.off()
+}  
 
 }
