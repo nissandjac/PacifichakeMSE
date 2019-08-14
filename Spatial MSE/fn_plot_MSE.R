@@ -271,12 +271,21 @@ for(i in 2:length(nms)){
 
 p11 <- ggplot(df.catchq, aes(x = year, y = med.can))+geom_line(color = 'red')+
   geom_line(aes(y = med.us), color = 'blue')+
-  theme_classic()+scale_y_continuous(name ='Catch/')+facet_wrap(~run)+  
+  theme_classic()+scale_y_continuous(name ='Catch/quota')+facet_wrap(~run)+  
   theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))+
   geom_ribbon(aes(ymin = p5.can, ymax = p95.can), fill = alpha('red', alpha = 0.2), linetype = 0)+
-  geom_ribbon(aes(ymin = p5.us, ymax = p95.us), fill = alpha('blue', alpha = 0.2), linetype = 0)
+  geom_ribbon(aes(ymin = p5.us, ymax = p95.us), fill = alpha('blue', alpha = 0.2), linetype = 0)+
+  geom_hline(aes(yintercept = 1), color = 'black', linetype = 2)
 
-# p11
+p11
+
+if(plotexp == TRUE){
+  png(paste(plotfolder,'Realized_catch.png'), width = 12, height =16, res = 400, unit = 'cm')
+  print(p11)
+  dev.off()
+}  
+
+
 
 df.SSB <- data.frame(ls.data[[1]][[3]]$SSBtot)
 
@@ -313,5 +322,24 @@ if(plotexp == TRUE){
   print(p12)
   dev.off()
 }  
+
+
+p13 <- ggplot(df.catchq, aes(x = year, y = med.tot, color = run))+geom_line(size = 1.4)+
+  scale_color_manual(values = cols[1:length(nms)])+
+  geom_line(aes(y = p5.tot), linetype =2,size = 1.4)+geom_line(aes(y = p95.tot), linetype =2,size = 1.4)+
+  theme_classic()+scale_y_continuous(name ='Catch/quota')+
+  geom_hline(aes(yintercept = 1), color = 'black', linetype = 2)+coord_cartesian(ylim = c(0.4,1.05))+
+  theme(legend.position = c(0.2,0.4),
+        legend.title = element_blank())
+
+p13
+
+if(plotexp == TRUE){
+  png(paste(plotfolder,'Catch_quota_tot.png'), width = 16, height =12, res = 400, unit = 'cm')
+  print(p13)
+  dev.off()
+}  
+
+
 
 }
