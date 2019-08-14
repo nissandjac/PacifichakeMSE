@@ -38,6 +38,9 @@ hake_objectives <- function(ls.MSE, SSB0, move = NA){
     
     quota.tot <- apply(ls.MSE[[idx]]$Catch.quota, MARGIN = 1, FUN = sum)
     quota.plot <- data.frame(Quota_frac = quota.tot/rowSums(ls.MSE[[idx]]$Catch), year = yr, run = paste('run',1, sep =''))
+    
+    quota.us <- rowSums(ls.MSE[[idx]]$Catch.quota[,2,])
+    quota.can <- rowSums(ls.MSE[[idx]]$Catch.quota[,1,])
   }  
   AAV.plot  <- data.frame(AAV = abs(ls.MSE[[idx]]$Catch[2:length(yr)]-ls.MSE[[idx]]$Catch[1:(length(yr)-1)])/ls.MSE[[idx]]$Catch[1:(length(yr)-1)], 
                           year = yr[2:length(yr)], run = paste('run',1, sep=''))
@@ -49,13 +52,28 @@ hake_objectives <- function(ls.MSE, SSB0, move = NA){
       if(is.na(move)){
         SSB.tmp <- data.frame(SSB = (ls.tmp$SSB)/(SSB0), year = yr, run =  paste('run',i, sep=''))
         Catch.tmp <- data.frame(Catch = ls.tmp$Catch, year = yr, run =  paste('run',i, sep=''))
-        quota.tmp <- data.frame(Catch = ls.tmp$Catch/apply(ls.tmp$Catch.quota, MARGIN = 1, FUN = sum), year = yr, run =  paste('run',i, sep=''))
+        quota.tmp <- data.frame(Catch = ls.tmp$Catch/apply(ls.tmp$Catch.quota, MARGIN = 1, FUN = sum), 
+                                year = yr, run =  paste('run',i, sep=''))
+      
+        
         
       }else{
         SSB.tmp <- data.frame(SSB = rowSums(ls.tmp$SSB)/sum(SSB0), year = yr, run =  paste('run',i, sep=''))
         Catch.tmp <- data.frame(Catch = rowSums(ls.tmp$Catch), year = yr, run =  paste('run',i, sep=''))
         quota.tmp <- data.frame(Quota_frac = rowSums(ls.tmp$Catch)/apply(ls.tmp$Catch.quota, MARGIN = 1, FUN = sum), year = yr, run =  paste('run',i, sep=''))
         
+        if(ncol(ls.tmp$Catch) == 1){
+          Catch.can <- ls.tmp$Catch*0.26
+          Catch.us <- ls.tmp$Catch*0.74
+        }else{
+          Catch.can <- ls.tmp$Catch[,1]
+          Catch.us <- ls.tmp$Catch[,2]
+        }
+        
+        quota.tmp.can <- data.frame(Catch = Catch.can/rowSums(ls.tmp$Catch.quota[,1,]),
+                                    year = yr, run =  paste('run',i, sep=''))
+        quota.tmp.us <- data.frame(Catch = Catch.us/rowSums(ls.tmp$Catch.quota[,2,]),
+                                   year = yr, run =  paste('run',i, sep=''))
       }
       
       
@@ -116,9 +134,9 @@ hake_objectives <- function(ls.MSE, SSB0, move = NA){
     theme_classic()+scale_y_continuous(name = 'Catch\nvariability')+
     geom_line(color="black", size = 1.5)#+geom_line(data = Catch.plot, aes(y = Catch,group = run), color = alpha('black', alpha = 0.2))
   
-  quota.plotquant <- quota.plot[quota.plot$year>2018,] %>% 
+  quota.plotquant <- quota.plot[quota.plot$year>2010,] %>% 
     group_by(year) %>% 
-    summarise(med = median(Quota_frac), 
+    summarise(med = mean(Quota_frac), 
               p95 = quantile(Quota_frac, 0.95),
               p25 = quantile(Quota_frac, 0.25),
               p75 = quantile(Quota_frac, 0.75), 
@@ -127,7 +145,7 @@ hake_objectives <- function(ls.MSE, SSB0, move = NA){
   p4 <- ggplot(data=quota.plotquant, aes(x= year,y = med)) +
     geom_ribbon(aes(ymin = p5, ymax = p95), fill = alpha('gray', alpha =0.5))+
     geom_ribbon(aes(ymin = p25, ymax = p75), fill = alpha('gray', alpha =0.8))+
-    theme_classic()+scale_y_continuous(name = 'SSB')+
+    theme_classic()+scale_y_continuous(name = 'SSB')+coord_cartesian(ylim = c(0.4,1.05))+
     geom_line(color="black", size = 1.5)#+geom_line(data = SSB.plot, aes(y = SSB,group = run), color = alpha('black', alpha = 0.2))
   p4
   #cairo_pdf(filename = 'MSE_run.pdf')
@@ -191,16 +209,16 @@ hake_objectives <- function(ls.MSE, SSB0, move = NA){
   }
   # Create a table with all the objective data 
   indicator =
-    c('S<0.10S0',
-      'S>0.10<0.4S0',
+    c('S>0.10S0',
+   #   'S>0.10<0.4S0',
       'S>0.4S0',
       '3 consec yrs S<S40',
-      'years closed fishery',
+   #   'years closed fishery',
       'AAV',
-      'Mean SSB/SSB0',
-      'median catch'#,
-   #   'short term catch',
-     # 'long term ',
+   #   'Mean SSB/SSB0',
+   #   'median catch',
+      'short term catch',
+      'long term catch'
    #   'yrs bio unavailable'
    )
   
@@ -211,16 +229,16 @@ hake_objectives <- function(ls.MSE, SSB0, move = NA){
   t.export <- data.frame(indicator =
                            as.factor(indicator), 
                          value = c(
-                           round(length(which(SSB.future$SSB<0.1))/length(SSB.future$SSB), digits = 2),
-                           round(length(which(SSB.future$SSB>0.1 & SSB.future$SSB<0.4))/length(SSB.future$SSB), digits = 2),
+                           round(length(which(SSB.future$SSB>0.1))/length(SSB.future$SSB), digits = 2),
+                        #   round(length(which(SSB.future$SSB>0.1 & SSB.future$SSB<0.4))/length(SSB.future$SSB), digits = 2),
                            round(length(which(SSB.future$SSB>0.4))/length(SSB.future$SSB), digits = 2),
                            round(mean(p.vals), digits = 2), 
-                           mean(nclosed),
+                        #   mean(nclosed),
                            round(median(AAV.plotquant$med), digits = 2),
-                           median(SSB.plotquant$med[SSB.plotquant$year > 2017]),
-                           median(1e6*Catch.plotquant$med[Catch.plotquant$year >2017])*1e-6#,
-                          # median(1e6*Catch.plotquant$med[Catch.plotquant$year > 2018 & Catch.plotquant$year <2030])*1e-6,
-                         #  median(1e6*Catch.plotquant$med[Catch.plotquant$year > 2025])*1e-6,
+               #            median(SSB.plotquant$med[SSB.plotquant$year > 2017]),
+                        #   median(1e6*Catch.plotquant$med[Catch.plotquant$year >2017])*1e-6,
+                           median(1e6*Catch.plotquant$med[Catch.plotquant$year > 2018 & Catch.plotquant$year <2030])*1e-6,
+                           median(1e6*Catch.plotquant$med[Catch.plotquant$year > 2025])*1e-6
                           # median(quota.plot[quota.plot$year > 2018,]$Quota_frac < 0.95)
                            )
    

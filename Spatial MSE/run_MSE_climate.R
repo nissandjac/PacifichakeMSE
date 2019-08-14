@@ -39,7 +39,7 @@ TAC <- 2
 for (i in 1:nruns){
   tmp <- run_multiple_MSEs_climate(simyears = simyears,
                            seeds = seeds[i],
-                           TAC = 2, df = df, cincrease = cincrease, mincrease = mincrease)
+                           TAC = 2, df = df, cincrease = 0, mincrease = 0)
   print(i)
 
   if(is.list(tmp)){

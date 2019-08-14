@@ -98,6 +98,7 @@ run.agebased.true.catch <- function(df, seeds = 100){
 
   SSB <- matrix(NA,nyear, nspace)
   SSB.all <- array(NA, dim = c(nyear, nseason , nspace))
+  SSB.weight <- matrix(NA,nyear, nspace)
   Biomass.save <- matrix(NA,nyear, nspace)
   Catch <- matrix(NA,nyear)
   Catch.age <- matrix(NA,nage,nyear)
@@ -223,9 +224,10 @@ run.agebased.true.catch <- function(df, seeds = 100){
     
     # fix Ssb and recruitment in all areas 
     for(space in 1:nspace){
-      SSB[yr,space] <-sum(N.save.age[,yr,space,1]*Mat.sel, na.rm = T)
-      SSB.all[1,1,space]<- sum(N.save.age[,1,space,1]*Mat.sel, na.rm = T)
-    
+      SSB[yr,space] <-sum(N.save.age[,yr,space,1]*Mat.sel, na.rm = TRUE)
+      SSB.weight[yr,space] <- sum(N.save.age[,yr,space,1]*as.numeric(df$wage_ssb[,yr]), na.rm = TRUE)
+      SSB.all[1,1,space]<- sum(N.save.age[,1,space,1]*Mat.sel, na.rm = TRUE)
+      
     # Recruitment only in season 1  
       R <- (4*h*R_0[space]*SSB[yr,space]/
             (SSB_0[space]*(1-h)+ SSB[yr,space]*(5*h-1)))*exp(-0.5*df$b[yr]*SDR^2+Ry)#*recruitmat[space]
@@ -532,7 +534,9 @@ run.agebased.true.catch <- function(df, seeds = 100){
                      Nout = N.save.age, 
                      age_comps_OM = age_comps_OM,
                      age_catch = age_comps_catch,
-                     SSB_0 = SSB_0, Nsave.all = N.save.age,
+                     SSB_0 = SSB_0, 
+                     SSB.weight = SSB.weight,
+                     Nsave.all = N.save.age,
                      survey.true = survey.true,
                      surv.tot = surv.tot,
                      Z = Z.save,

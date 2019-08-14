@@ -35,5 +35,5 @@ sim.data <- run.agebased.true.catch(df)
 ls.plot <- list(JMC.sel = ls.JMC.sel, 
                 JMC = ls.JMC)
 
-fn_plot_MSE(ls.plot, sim.data,plotfolder = 'Figs/selectivity/',plotexp = TRUE)
+fn_plot_MSE(ls.plot, sim.data,plotfolder = 'Figs/selectivity/',plotexp = FALSE)
 dev.off()

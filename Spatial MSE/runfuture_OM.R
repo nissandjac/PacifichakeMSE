@@ -25,6 +25,7 @@ runfuture_OM <- function(df,nruns = 100){
   
   SSB.save <- array(NA,dim = c(nruns, df$nyear,  df$nspace))
   SSB.tot <- array(NA, dim = c(nruns, df$nyear))
+  SSB.weight <- array(NA, dim = c(nruns, df$nyear))
   survey.save <- matrix(NA, df$nyear, nruns)
   R.save <- matrix(NA, df$nyear, nruns)
   Catch.save <- matrix(NA,df$nyear,nruns)
@@ -51,6 +52,7 @@ runfuture_OM <- function(df,nruns = 100){
     if(is.list(sim.data)){
       SSB.save[i,,] <- sim.data$SSB.all[,df$surveyseason,]
       SSB.tot[i,] <- rowSums(sim.data$SSB)
+      SSB.weight[i,] <- rowSums(sim.data$SSB.weight)
       R.save[,i] <- sim.data$N.save[1,1:df$nyear]
       survey.save[,i] <- sim.data$survey
       survey.space.save[i,,] <- sim.data$survey.true
@@ -97,10 +99,13 @@ runfuture_OM <- function(df,nruns = 100){
   }else{
     
     SSB <- as.data.frame(SSB.tot)
+    SSB.weight <- as.data.frame(SSB.weight)
+    names(SSB.weight) <- 'SSB'
     names(SSB) <- 'SSB'
   }
   
   SSB$year <- df$years
+  #SSB.weight$year <- df$years
   
   # if(nruns >1)
   # p1 <- ggplot(SSB, aes(x = year, y = p50))+
@@ -118,7 +123,7 @@ runfuture_OM <- function(df,nruns = 100){
                      survey.AC = AC.survey.save[run.true == 1,,],
                      survey.space = survey.space.save[run.true == 1,,])
   }else{
-    ls.save <- list(SSB = SSB,SSB.save = SSB.save[run.true == 1,,] ,success.runs = sum(run.true)/nruns,
+    ls.save <- list(SSB = SSB,SSB.weight  = SSB.weight,SSB.save = SSB.save[run.true == 1,,] ,success.runs = sum(run.true)/nruns,
                     catch.AC = AC.catch.save[run.true == 1,,], catch.AC.tot = AC.catch.tot,
                     survey.AC = AC.survey.save[run.true == 1,,],survey.AC.tot = AC.survey.tot,
                     survey.save = survey.save[,run.true == 1],

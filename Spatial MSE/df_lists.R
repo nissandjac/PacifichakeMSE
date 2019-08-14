@@ -35,9 +35,9 @@ for(i in 1:nruns){
       Catch = ls.save[[i]]$Catch
       
       # Allocated catch
-      Catch.q.us <- ls.save[[i]]$Catch*0.76
-      Catch.q.can <- ls.save[[i]]$Catch*0.24
-      Catch.q = ls.save[[i]]$Catch
+      Catch.q.us <- rowSums(ls.save[[i]]$Catch.quota[,2,])
+      Catch.q.can <- rowSums(ls.save[[i]]$Catch.quota[,1,])
+      Catch.q = rowSums(ls.save[[i]]$Catch.quota)
     }else{
       Catch = rowSums(ls.save[[i]]$Catch)
       Catch.us = ls.save[[i]]$Catch[,2]
@@ -121,7 +121,7 @@ for(i in 1:nruns){
   }
 }
 
-ggplot(ls.df, aes(x = year, y = Catch))+geom_line()
+ggplot(ls.df, aes(x = year, y = Catch, color = run))+geom_line()+theme(legend.position = 'none')
 
 SSB.plotquant <- ls.df[ls.df$year > 2010,] %>% 
   group_by(year) %>% 
@@ -216,17 +216,22 @@ F0.space$run <- nms
 
 Catch.q <- ls.df[ls.df$year > 2010,] %>%
   group_by(year) %>%
-  summarise(med.can = median(Catch.can/Catch.q.can,na.rm = TRUE),
+  summarise(med.can = mean(Catch.can/Catch.q.can,na.rm = TRUE),
             p95.can = quantile(Catch.can/Catch.q.can, 0.95,na.rm = TRUE),
             p5.can = quantile(Catch.can/Catch.q.can,0.05,na.rm = TRUE),
-            med.us = median(Catch.us/Catch.q.us,na.rm = TRUE),
+            med.us = mean(Catch.us/Catch.q.us,na.rm = TRUE),
             p95.us = quantile(Catch.us/Catch.q.us, 0.95,na.rm = TRUE),
-            p5.us = quantile(Catch.us/Catch.q.us,0.05,na.rm = TRUE)
+            p5.us = quantile(Catch.us/Catch.q.us,0.05,na.rm = TRUE),
+            med.tot = mean(Catch/Catch.q),
+            p5.tot = quantile(Catch/Catch.q,0.05,na.rm = TRUE),
+            p95.tot = quantile(Catch/Catch.q,0.95,na.rm = TRUE)
             
   )
 Catch.q$run <- nms
 
-
+ggplot(Catch.q, aes(x = year, y = med.can))+geom_line()+coord_cartesian(ylim = c(0.2,1.3))+
+  geom_line(aes(y = med.us))+geom_line(aes(y = p5.can))+geom_line(aes(y = p95.can), col = 'red')+geom_line(aes(y=  p95.us), col ='blue')+
+  geom_line(aes(y = p5.us), col = 'blue')
 
 return(list(ls.df, nfailed, 
             list(
