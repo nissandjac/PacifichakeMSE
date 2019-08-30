@@ -20,15 +20,31 @@ for(i in 1:length(nms)){
 
 df.obj <- data.frame(obj.plot[[1]][[2]])
 
+
 for(i in 2:length(nms)){
   df.obj <- rbind(df.obj, obj.plot[[i]][[2]])
 }
 
+indicators <- unique(df.obj$indicator)
+df.obj2 <- df.obj
+
+for(i in 1:length(indicators)){
+  df.obj2[df.obj2$HCR != 'move_0' & df.obj2$indicator == indicators[i],]$value <-
+    df.obj2[df.obj2$HCR != 'move_0' & df.obj2$indicator == indicators[i],]$value/
+    df.obj2[df.obj2$HCR == 'move_0' & df.obj2$indicator == indicators[i],]$value-1
+  
+}
+
+df.obj2$value[df.obj2$HCR == 'move_0'] <- 0
 
 
-p1 <- ggplot(df.obj, aes(x = HCR,y = value))+geom_bar(stat = 'identity', aes(fill = HCR))+facet_wrap(~indicator, scales = 'free', ncol = 2)+
-  scale_x_discrete(name = '')+  scale_y_continuous(name = '')+scale_fill_manual(values = cols[1:length(unique(df.obj$HCR))])+
+p1 <- ggplot(df.obj2, aes(x = HCR,y = value))+geom_bar(stat = 'identity', aes(fill = HCR))+
+  facet_wrap(~indicator, scales = 'free', ncol = 2)+
+  scale_x_discrete(name = '')+  
+  scale_y_continuous(name = '')+
+  scale_fill_manual(values = cols[1:length(unique(df.obj$HCR))])+
   theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5), legend.position = 'none')
+p1
 
 if(plotexp == TRUE){
 png(paste(plotfolder,'objective_bars.png'), width = 20, height =20, res = 400, unit = 'cm')
@@ -230,7 +246,8 @@ if(plotexp == TRUE){
 }  
 
 if(plotexp == FALSE){
-  grid.arrange(p3,p6,p7,p9)
+  #grid.arrange(p3,p6,p7,p9)
+  print(p1)
 }
 
 

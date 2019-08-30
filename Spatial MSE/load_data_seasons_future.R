@@ -211,7 +211,7 @@ load_data_seasons_future <- function(yr.future, nseason = 4, nspace = 2,
     psel[i,] <- c(2.4716, 0.9084,0.399418,0.215115,0.474583) # USA selectivity 
   }
   
-  psel[1,] <- c(1,1,1,1,1)
+ # psel[1,] <- c(1,1,1,1,1)
 
   # Fsel <- getSelec(df$age,psel[1,], df$Smin, df$Smax)
   # plot(Fsel, col = 'red')
@@ -274,7 +274,7 @@ load_data_seasons_future <- function(yr.future, nseason = 4, nspace = 2,
                   #                Catchobs = catch$Fishery, # Convert to kg
                   ss_catch = age_catch$nTrips,
                   flag_catch =age_catch$flag,
-                  age_catch = t(as.matrix(age_catch[,3:17])*0.01),
+                  age_catch = t(as.matrix(age_catch[,3:17])),
                   # variance parameters
                   logSDcatch = log(0.01),
                   logSDR = log(logSDR), # Fixed in stock assessment ,
