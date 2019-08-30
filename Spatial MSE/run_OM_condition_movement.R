@@ -39,7 +39,7 @@ nruns <- nparms^2
 
 yr.future <- 2
 
-df <- load_data_seasons_future(yr.future, movemaxinit = 0.5, movefiftyinit = 6)
+df <- load_data_seasons_future(yr.future, movemaxinit = 0.35, movefiftyinit = 6)
 df$surveyseason <- 2
 
 Catch.future <- c(df$Catch, rep(206507.8, yr.future)) # Project MSY
@@ -66,7 +66,7 @@ p.AC.survey <- ggplot(AC.survey, aes(x = year, y= AC.mean, color = country))+geo
   geom_point(data = ac.survey.tot)+  scale_x_continuous(limit = c(1965,2018))+
   scale_color_manual(values = c('darkred','blue4'))+
   theme(legend.position = 'none')+scale_y_continuous('mean age')
-#p.AC.survey
+p.AC.survey
 
 
 if(plot.figures == TRUE){
@@ -187,8 +187,9 @@ if(plot.figures == TRUE){
 
 ## Add the overall average age
 ac <- apply(df$age_catch,2, function(x){sum(x*1:15)})
+ac[ac<0] <- NA
 
-p.AC.catch2 <- p.AC.catch+geom_line(data = data.frame(year = df$years, am = ac, Country = 'All'))
+p.AC.catch2 <- p.AC.catch+geom_line(data = data.frame(year = df$years, am = ac, Country = 'All'), color ='black')
 
 p.AC.catch2
 
@@ -304,7 +305,7 @@ for(i in 1:length(movemax.parms)){
         
         
         SSB <- rbind(SSB, SSB.tmp)
-        SSB.weight <- rbind(SSB.weight, SSB.w.tmp)
+        #SSB.weight <- rbind(SSB.weight, SSB.w.tmp)
         AC.catch <- rbind(AC.catch, AC.catch.tmp)
         AC.survey <- rbind(AC.survey, AC.survey.tmp)
         
@@ -332,7 +333,7 @@ for(i in 1:length(movemax.parms)){
   }
 }
 
-
+sum(succes)
 ## Add the true SSB
 SSB.true <- assessment
 
@@ -395,4 +396,4 @@ if(plot.figures == TRUE){
   png('survey_country.png', width = 16, height = 12, units = 'cm', res = 400)
 }
 p1.survey
-#dev.off()
+dev.off()

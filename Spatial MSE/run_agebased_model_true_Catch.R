@@ -306,7 +306,7 @@ run.agebased.true.catch <- function(df, seeds = 100){
           
         }
         
-        Fout <- getF(E.temp,B.tmp, season, space)
+        Fout <- getF(E.temp,B.tmp, season, space, Mseason = Mseason, Fsel = Fsel, N.tmp = N.tmp, w_catch = w_catch)
         
         Fout <- Fout
         #Fout <- df$parms$F0[yr]
@@ -391,10 +391,16 @@ run.agebased.true.catch <- function(df, seeds = 100){
         if(is.na(SSB[yr,space])){
           stop('SSB is NA')
         }
-      }
-        
+      } 
+      
+      if(Catch.quota[yr,space,season]>0){
+        if((sum(Catch.save.age[, yr,space, season])/Catch.quota[yr,space,season]) > 1.05){
+          stop('F estimation overshoots more than 10%')
+        }
       }
       
+      } # End of season loop
+    
   
     
     #Catch.age[,idx]  <- (Fyear/(Fyear+Myear))*(1-exp(-(Fyear+Myear)))*rowSums(N.save.age[,idx,,1])*w_catch # Calculate the catch in kg 
@@ -548,7 +554,6 @@ run.agebased.true.catch <- function(df, seeds = 100){
                      Fsel = Fsel.save, 
                      N0 = N0,
                      p.save = p.save,
-                     #Fsave = Fseason.save[2:(nyear+1),,],
                      Ninit = Ninit,
                      SSB0 = SSB_0)
     

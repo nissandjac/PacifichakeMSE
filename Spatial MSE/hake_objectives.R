@@ -211,8 +211,8 @@ hake_objectives <- function(ls.MSE, SSB0, move = NA){
   indicator =
     c('S>0.10S0',
    #   'S>0.10<0.4S0',
-      'S>0.4S0',
-      '3 consec yrs S<S40',
+   #   'S>0.4S0',
+  #    '3 consec yrs S<S40',
    #   'years closed fishery',
       'AAV',
    #   'Mean SSB/SSB0',
@@ -231,13 +231,13 @@ hake_objectives <- function(ls.MSE, SSB0, move = NA){
                          value = c(
                            round(length(which(SSB.future$SSB>0.1))/length(SSB.future$SSB), digits = 2),
                         #   round(length(which(SSB.future$SSB>0.1 & SSB.future$SSB<0.4))/length(SSB.future$SSB), digits = 2),
-                           round(length(which(SSB.future$SSB>0.4))/length(SSB.future$SSB), digits = 2),
-                           round(mean(p.vals), digits = 2), 
+                          # round(length(which(SSB.future$SSB>0.4))/length(SSB.future$SSB), digits = 2),
+                          # round(mean(p.vals), digits = 2), 
                         #   mean(nclosed),
                            round(median(AAV.plotquant$med), digits = 2),
                #            median(SSB.plotquant$med[SSB.plotquant$year > 2017]),
                         #   median(1e6*Catch.plotquant$med[Catch.plotquant$year >2017])*1e-6,
-                           median(1e6*Catch.plotquant$med[Catch.plotquant$year > 2018 & Catch.plotquant$year <2030])*1e-6,
+                           median(1e6*Catch.plotquant$med[Catch.plotquant$year > 2018 & Catch.plotquant$year <2028])*1e-6,
                            median(1e6*Catch.plotquant$med[Catch.plotquant$year > 2025])*1e-6
                           # median(quota.plot[quota.plot$year > 2018,]$Quota_frac < 0.95)
                            )

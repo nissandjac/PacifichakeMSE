@@ -255,7 +255,7 @@ load_data_seasons <- function(nseason = 4, nspace = 2,
                   #                Catchobs = catch$Fishery, # Convert to kg
                   ss_catch = age_catch$nTrips,
                   flag_catch =age_catch$flag,
-                  age_catch = t(as.matrix(age_catch[,3:17])*0.01),
+                  age_catch = t(as.matrix(age_catch[,3:17])),
                   # variance parameters
                   logSDcatch = log(0.01),
                   logSDR = log(logSDR), # Fixed in stock assessment ,

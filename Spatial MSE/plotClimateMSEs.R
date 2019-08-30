@@ -23,10 +23,6 @@ simyears <- 50
 yr <- 1966:(2017+simyears-1)
 nruns <- 100
 source('hake_objectives.R')
-
-
-
-
 df <- load_data_seasons(nseason = 4, nspace = 2) # Prepare data for operating model
 sim.data <- run.agebased.true.catch(df)
 

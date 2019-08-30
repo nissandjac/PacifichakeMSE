@@ -82,10 +82,12 @@ run_multiple_MSEs_climate <- function(simyears = NULL,seeds = 12345, TAC = 1, df
       df$years <- year.future[1:year]
       df$nyear <- length(df$years)
       #df$tEnd <- df$tEnd+1 # Just run one more year in subsequent runs
-      df$wage_catch <- df.new$wage_catch
-      df$wage_survey <- df.new$wage_survey
-      df$wage_mid <- df.new$wage_mid
-      df$wage_ssb <- df.new$wage_ssb
+      
+      df$wage_catch <- cbind(df.new$wage_catch,df.new$wage_catch[,1])
+      df$wage_survey <- cbind(df.new$wage_survey,df.new$wage_survey[,1])
+      df$wage_mid <- cbind(df.new$wage_mid,df.new$wage_mid[,1])
+      df$wage_ssb <- cbind(df.new$wage_ssb,df.new$wage_ssb[,1])
+      
       df$Catch <- c(df$Catch, Fnew[[1]])
       
       ## Add a survey if catches are 0 
@@ -275,8 +277,8 @@ run_multiple_MSEs_climate <- function(simyears = NULL,seeds = 12345, TAC = 1, df
     Catch <- reps$Catch
     R <- reps$R
     
-    # plot(SSB)
-    # lines(rowSums(sim.data$SSB))
+    plot(sim.data$Catch)
+    lines(apply(sim.data$Catch.quota,1,sum))
     
     # # lines(rowSums(sim.data$SSB), col = 'red')
     # # #Uncertainty
@@ -375,11 +377,10 @@ run_multiple_MSEs_climate <- function(simyears = NULL,seeds = 12345, TAC = 1, df
                  SSB.mid = sim.data$SSB.all[,3,],
                  SSB.hes = SSB.hes,
                  Survey.om = sim.data$survey,
-                 F0 = sim.data$Fsave,
+                 #F0 = sim.data$Fsave,
                  parms = parms.save,
                  ams = ams,
-                 amc = amc,
-                 mconverge
+                 amc = amc
   )
   
   return(df.ret)
