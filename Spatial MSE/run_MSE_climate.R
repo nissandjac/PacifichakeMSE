@@ -17,7 +17,7 @@ parms.true <- getParameters_OM(TRUE,df) # Load parameters from assessment
 
 time <- 1
 yrinit <- df$nyear
-nruns <- 1
+nruns <- 100
 seeds <- floor(runif(n = nruns, min = 1, max = 1e6))
 ### Run the OM and the EM for x number of years in the MSE 
 ### Set targets for harvesting etc 
@@ -53,7 +53,7 @@ for (i in 1:nruns){
 
 }
 # # # #
-save(ls.save,file = 'results/Climate/MSErun_move_JMC_climate_0.Rdata')
+save(ls.save,file = 'results/Climate/MSErun_move_JMC_climate_0_HYBR.Rdata')
 
 # ### Loop MSE's with different errors in future survey and recruitment
 ls.save <- list()
@@ -78,7 +78,7 @@ for (i in 1:nruns){
   
 }
 # # # #
-save(ls.save,file = 'results/Climate/MSErun_move_JMC_climate_0_02.Rdata')
+save(ls.save,file = 'results/Climate/MSErun_move_JMC_climate_0_02_HYBR.Rdata')
 
 # ### Loop MSE's with different errors in future survey and recruitment
 ls.save <- list()
@@ -103,5 +103,5 @@ for (i in 1:nruns){
   
 }
 # # # #
-save(ls.save,file = 'results/Climate/MSErun_move_JMC_climate_0_04.Rdata')
+save(ls.save,file = 'results/Climate/MSErun_move_JMC_climate_0_04_HYBR.Rdata')
 

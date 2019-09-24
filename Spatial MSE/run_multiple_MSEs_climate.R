@@ -254,17 +254,17 @@ run_multiple_MSEs_climate <- function(simyears = NULL,seeds = 12345, TAC = 1, df
       
       xx<- Check_Identifiable_vs2(obj)
       
-      if(xx[[1]] == 'model not converging'){
-        mconverge[time] <- 1
-        
-        if(sum(mconverge, na.rm = TRUE)>1){
-          print('Convergence is bad. Stopping simulation')
-          return(df.ret= NA)
-        }
-        
-      }else{
-        mconverge[time] <- 0
-      }
+      # if(xx[[1]] == 'model not converging'){
+      #   mconverge[time] <- 1
+      #   
+      #   if(sum(mconverge, na.rm = TRUE)>1){
+      #     print('Convergence is bad. Stopping simulation')
+      #     return(df.ret= NA)
+      #   }
+      #   
+      # }else{
+      #   mconverge[time] <- 0
+      # }
     }else{
       mconverge[time] <- 0
     }
@@ -377,7 +377,7 @@ run_multiple_MSEs_climate <- function(simyears = NULL,seeds = 12345, TAC = 1, df
                  SSB.mid = sim.data$SSB.all[,3,],
                  SSB.hes = SSB.hes,
                  Survey.om = sim.data$survey,
-                 #F0 = sim.data$Fsave,
+                 F0 = apply(sim.data$Fout,c(1,3),sum),
                  parms = parms.save,
                  ams = ams,
                  amc = amc
