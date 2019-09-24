@@ -28,21 +28,27 @@ for(i in 2:length(nms)){
 indicators <- unique(df.obj$indicator)
 df.obj2 <- df.obj
 
-for(i in 1:length(indicators)){
-  df.obj2[df.obj2$HCR != 'move_0' & df.obj2$indicator == indicators[i],]$value <-
-    df.obj2[df.obj2$HCR != 'move_0' & df.obj2$indicator == indicators[i],]$value/
-    df.obj2[df.obj2$HCR == 'move_0' & df.obj2$indicator == indicators[i],]$value-1
-  
-}
 
-df.obj2$value[df.obj2$HCR == 'move_0'] <- 0
+# Fix the y scales 
+dummy <- data.frame(indicator = 'long term catch', value = c(0.2,0.3), HCR = 'ymin')
+
+
+# for(i in 1:length(indicators)){
+#   df.obj2[df.obj2$HCR != 'move_0' & df.obj2$indicator == indicators[i],]$value <-
+#     df.obj2[df.obj2$HCR != 'move_0' & df.obj2$indicator == indicators[i],]$value/
+#     df.obj2[df.obj2$HCR == 'move_0' & df.obj2$indicator == indicators[i],]$value-1
+#   
+# }
+
+#df.obj2$value[df.obj2$HCR == 'move_0'] <- 0
 
 
 p1 <- ggplot(df.obj2, aes(x = HCR,y = value))+geom_bar(stat = 'identity', aes(fill = HCR))+
-  facet_wrap(~indicator, scales = 'free', ncol = 2)+
   scale_x_discrete(name = '')+  
   scale_y_continuous(name = '')+
   scale_fill_manual(values = cols[1:length(unique(df.obj$HCR))])+
+  facet_wrap(~indicator, scales = 'free_y', ncol = 2)+
+#  geom_blank(data = dummy)+
   theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5), legend.position = 'none')
 p1
 
