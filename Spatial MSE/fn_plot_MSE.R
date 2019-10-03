@@ -349,7 +349,8 @@ if(plotexp == TRUE){
 
 p13 <- ggplot(df.catchq, aes(x = year, y = med.tot, color = run))+geom_line(size = 1.4)+
   scale_color_manual(values = cols[1:length(nms)])+
-  geom_line(aes(y = p5.tot), linetype =2,size = 1.4)+geom_line(aes(y = p95.tot), linetype =2,size = 1.4)+
+  geom_line(aes(y = p5.tot), linetype =2,size = 1.2)+
+  geom_line(aes(y = p95.tot), linetype =2,size = 1.2)+
   theme_classic()+scale_y_continuous(name ='Catch/quota')+
   geom_hline(aes(yintercept = 1), color = 'black', linetype = 2)+coord_cartesian(ylim = c(0.4,1.05))+
   theme(legend.position = c(0.2,0.4),
@@ -362,7 +363,7 @@ if(plotexp == TRUE){
   print(p13)
   dev.off()
 }  
-
+print(p13)
 
 
 }
