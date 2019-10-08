@@ -60,6 +60,9 @@ obj <-MakeADFun(df.new,parms.new,DLL="runHakeassessment") # Run the assessment
 reps <- obj$report()
 
 
+plot(reps$selectivity_save[,29])
+lines(sim.data$Fsel[29,2,])
+
 lower <- obj$par-Inf
 upper <- obj$par+Inf
 upper[names(upper) == 'logh'] <- log(0.999)

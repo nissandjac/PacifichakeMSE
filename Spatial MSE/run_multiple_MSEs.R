@@ -1,6 +1,17 @@
 ###### Run the HAKE MSE ####### 
 run_multiple_MSEs <- function(simyears = NULL,seeds = 12345, TAC = 1, df = NA,
-                                      cincrease = 0, mincrease = 0){
+                                      cincrease = 0, mincrease = 0,
+                              sel_change = 0){
+  
+  #' @simyears number of years to simulate into the future 
+  #' @seeds seed for rng calculation
+  #' @TAC Harvest control rule. 1=40:10, 2=JMC adjustment, 3=realized catch adjustment
+  #' @df data frame of parameters for the OM
+  #' @cincrease change in maximum movement rate
+  #' @mincrease change in spawners returning south
+  #' @sel_change calculate selectivity 0=no selectivity change, 1= calc x years of selectivity, 2= continous selectivity calculation
+  
+  
   require(ggplot2)
   
   if(is.null(simyears)){
@@ -159,6 +170,23 @@ run_multiple_MSEs <- function(simyears = NULL,seeds = 12345, TAC = 1, df = NA,
       move.tmp[,,,df$nyear] <- movenew
       df$movemat <- move.tmp
       #df$years <- c(df$years,df$years[length(df$years)]+1)
+      
+      # Fix the selectivity 
+      if(sel_change == 0){
+        df$flag_sel <- c(df$flag_sel,0)
+      }
+      if(sel_change == 1){
+        flag.tmp <- c(df$flag_sel,1)
+        idx <- which.min(df$flag_sel[df$flag_sel == 1])
+        flag.tmp[idx] <- 0
+        df$flag_sel <- flag.tmp
+        df$selidx <- df$selidx+1
+        
+      }
+      if(sel_change == 2){
+        df$flag_sel <- c(df$flag_sel,1)
+        df$parms$PSEL <- rbind(df$parms$PSEL,rep(0,nrow(df$parms$PSEL)))
+      }
       
       #print(df$moveout)
       sim.data <- run.agebased.true.catch(df, seeds)
