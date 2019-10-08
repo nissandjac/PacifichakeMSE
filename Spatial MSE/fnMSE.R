@@ -22,6 +22,7 @@ sim.data <- run.agebased.true.catch(df) # Run the operating model until 2018
 
 simdata0 <- sim.data # The other one is gonna get overwritten. 
 
+
 # ### Loop MSE's with different errors in future survey and recruitment
 ls.save <- list()
 ls.converge <- matrix(0, nruns)

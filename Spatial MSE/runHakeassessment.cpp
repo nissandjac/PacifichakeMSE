@@ -31,6 +31,7 @@ Type objective_function<Type>::operator() ()
   DATA_SCALAR(logQ);
   DATA_VECTOR(b); // bias adjustment factor
   DATA_VECTOR(years);
+  DATA_VECTOR(flag_sel);
 // // Selectivity
   DATA_INTEGER(Smin);
   DATA_INTEGER(Smin_survey);
@@ -237,9 +238,13 @@ for(int time=0;time<(tEnd);time++){ // Start time loop
     Type Ntot_survey = 0;
     pmax_catch_save(time) = pmax_catch;
     // Take care of selectivity
-    if ((time >= (selYear-1)) & (years(time) < 2018)){
+    REPORT(flag_sel)
+    REPORT(PSEL.cols())
+
+    if (flag_sel(time) == 1){
+
            for(int i=0;i<psel_fish.size();i++){
-           psel_fish(i) = psel_fish_zero(i)+PSEL(i,time-selYear+1)*sigma_psel;
+           psel_fish(i) = psel_fish_zero(i)+PSEL(i,time-selYear+1)*sigma_psel; // 27 is the number of years selectivity is calculated PSEL.cols()-1/ time-selYear-
            }
 
            pmax_catch = max(cumsum((psel_fish)));
