@@ -19,6 +19,8 @@ assessment <- read.csv('data/assessment_MLE.csv')
 mod <- SS_output(paste(getwd(),'/data/SS32018/', sep =''), printstats=FALSE, verbose = FALSE)
 
 SSB.ss3 <- mod$derived_quants$Value[grep('SSB_1966', mod$derived_quants$Label):grep('SSB_2018', mod$derived_quants$Label)]
+R.ss <- mod$derived_quants$Value[grep('Recr_1966', mod$derived_quants$Label):grep('Recr_2018', mod$derived_quants$Label)]
+
 ###### Load the data to run the MSE ######
 df <- load_data_seasons(nseason = 1, nspace = 1,
                         nsurvey= 2, movemax = 0.4) # Prepare data for operating model 
@@ -30,11 +32,16 @@ sim.data <- run.agebased.true.catch(df)
 
 
 # Plott stuff 
-plot(sim.data$SSB.weight)
-lines(SSB.ss3)
+plot(df$years,sim.data$SSB.weight)
+lines(df$years,SSB.ss3)
+
+plot(df$years,sim.data$N.save.age[1,1:df$tEnd,1,1])
+lines(df$years, R.ss, col = 'red')
 
 plot(sim.data$Catch)
 lines(df$Catch)
+
+
 
 parms <- getParameters_OM(trueparms = TRUE, df = df)
 

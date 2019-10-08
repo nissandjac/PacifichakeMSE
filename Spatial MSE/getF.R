@@ -1,10 +1,13 @@
-getF <- function(E.temp,B.tmp, Mseason, Fsel, N.tmp, w_catch = w_catch,
-                 method = 'Pope'){
+getF <- function(E.temp,B.tmp, Mseason, Fsel, N.tmp, w_catch = w_catch,method = 'Pope'){
 
 # Calculate fishing mortality based on catch
-@E.temp = catch
-# B.tmp = Vulnerable biomass 
-# Mseason = morta
+#' @E.temp  catch
+#' @B.tmp  Vulnerable biomass 
+#' @Mseason Natural mortality
+#' @Fsel Selectivity
+#' @Ntmp Numbers at age
+#' @w_catch Weight at age 
+#' @method Pope or Hybrid 
   
   
   
