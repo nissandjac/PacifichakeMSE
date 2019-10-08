@@ -182,7 +182,7 @@ run.agebased.true.catch <- function(df, seeds = 100){
    # }else{
    #   psel <- df$parms$psel_fish+df$parms$PSEL[,yr-df$selYear+1]
    # }
-    if(year[yr] < 2018){
+    if(year[yr] < 2019){
       w_catch <- df$wage_catch[,yr]
       w_surv <- df$wage_survey[,yr]
       w_mid <- df$wage_mid[,yr]
@@ -193,13 +193,8 @@ run.agebased.true.catch <- function(df, seeds = 100){
     }
     
     
-    if (year[yr] < 2018){
-      Ry <- df$parms$Rin[yr]
-    }else{
-      Ry <- df$parms$Rin[yr]
-      #    Ry <- 0
-    }
-    
+    Ry <- df$parms$Rin[yr]
+ 
 
     # Fyear <- F0[yr]*Fsel
     Myear <- M # Natural mortality 
@@ -280,10 +275,14 @@ run.agebased.true.catch <- function(df, seeds = 100){
         
         Fsel.save[yr,space,] <- Fsel
         
-        if(df$years[yr]<= 2018){
-        Catch_space <- df$Catch.country[yr,space]
+        if(nspace > 1){
+          if(df$years[yr]<= 2018){
+            Catch_space <- df$Catch.country[yr,space]
+          }else{
+            Catch_space <- df$Catch[yr]*Fspace[space]  
+          }
         }else{
-        Catch_space <- df$Catch[yr]*Fspace[space]  
+          Catch_space <- df$Catch[yr]
         }
         
         
@@ -306,8 +305,8 @@ run.agebased.true.catch <- function(df, seeds = 100){
           
         }
         
-        Fout <- getF(E.temp,B.tmp, season, space, 
-                     Mseason = Mseason, Fsel = Fsel, N.tmp = N.tmp, w_catch = w_catch)
+        Fout <- getF(E.temp,B.tmp,Mseason = Mseason, Fsel = Fsel, N.tmp = N.tmp, w_catch = w_catch, 
+                     method = 'Hybrid')
         
         Fout <- Fout
         #Fout <- df$parms$F0[yr]
@@ -328,11 +327,6 @@ run.agebased.true.catch <- function(df, seeds = 100){
         Z <- Mseason+Fseason
         Z.save[,yr,space,season]<- Z
         
-        # Iterate to exactly match catch 
-        
-       
-        #Fseason <- Fyear*Fnseason[season]*Fspace[space]
-        # Get the indices for the surrounding spaces
         if(((space-1) == 0)){
           spaceidx <- 2
         }

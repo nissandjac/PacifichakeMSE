@@ -149,42 +149,42 @@ load_data_seasons <- function(nseason = 4, nspace = 2, myear = 2018,
   PSEL <- as.matrix(read.csv('data/p_MLE.csv'))
   #Fin <- assessment$F0
   
-  b <- matrix(NA, nyear)
-  Yr <- 1946:max(years)
-  # Parameters 
-  yb_1 <- 1965 #_last_early_yr_nobias_adj_in_MPD
-  yb_2 <- 1971 #_first_yr_fullbias_adj_in_MPD
-  yb_3 <- 2016 #_last_yr_fullbias_adj_in_MPD
-  yb_4 <- max(years) #_first_recent_yr_nobias_adj_in_MPD
-  b_max <- 0.87 #_max_bias_adj_in_MPD
-  
-  b[1] <- 0
-  for(j in 2:length(Yr)){
-    
-    if (Yr[j] <= yb_1){
-      b[j] = 0}
-    
-    if(Yr[j] > yb_1 & Yr[j]< yb_2){
-      b[j] = b_max*((Yr[j]-yb_1)/(yb_2-yb_1));
-    }
-    
-    if(Yr[j] >= yb_2 & Yr[j] <= yb_3){
-      b[j] = b_max}
-    
-    if(Yr[j] > yb_3 & Yr[j] < yb_4){
-      b[j] = b_max*(1-(yb_3-Yr[j])/(yb_4-yb_3))
-    }
-    
-    if(Yr[j] >= yb_4){
-      b[j] = 0
-    }
-    # if (b[j]<b[j-1]){
-    #   stop('why')
-    # }
-  }  
-  
+  # b <- matrix(NA, nyear)
+  # Yr <- 1946:max(years)
+  # # Parameters 
+  # yb_1 <- 1965 #_last_early_yr_nobias_adj_in_MPD
+  # yb_2 <- 1971 #_first_yr_fullbias_adj_in_MPD
+  # yb_3 <- 2016 #_last_yr_fullbias_adj_in_MPD
+  # yb_4 <- max(years) #_first_recent_yr_nobias_adj_in_MPD
+  # b_max <- 0.87 #_max_bias_adj_in_MPD
+  # 
+  # b[1] <- 0
+  # for(j in 2:length(Yr)){
+  #   
+  #   if (Yr[j] <= yb_1){
+  #     b[j] = 0}
+  #   
+  #   if(Yr[j] > yb_1 & Yr[j]< yb_2){
+  #     b[j] = b_max*((Yr[j]-yb_1)/(yb_2-yb_1));
+  #   }
+  #   
+  #   if(Yr[j] >= yb_2 & Yr[j] <= yb_3){
+  #     b[j] = b_max}
+  #   
+  #   if(Yr[j] > yb_3 & Yr[j] < yb_4){
+  #     b[j] = b_max*(1-(yb_3-Yr[j])/(yb_4-yb_3))
+  #   }
+  #   
+  #   if(Yr[j] >= yb_4){
+  #     b[j] = 0
+  #   }
+  #   # if (b[j]<b[j-1]){
+  #   #   stop('why')
+  #   # }
+  # }  
+  # 
   #b <- matrix(1, tEnd)
-  
+  b <- as.matrix(read.csv('data/b_input.csv'))
  
   
   # if(move == TRUE){
@@ -278,7 +278,7 @@ load_data_seasons <- function(nseason = 4, nspace = 2, myear = 2018,
                   logSDR = log(logSDR), # Fixed in stock assessment ,
                   logphi_survey = log(10),
                   years = years,
-                  b = b[Yr >= years[1]],
+                  b = b,
                   bfuture = bfuture,
                   #logh = log(0.8),
                   # Space parameters 
