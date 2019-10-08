@@ -1,5 +1,7 @@
-## Load the hake data
-# year and age input 
+###### Load SS3 data, and update the operating model ######
+library(r4ss)
+
+mod <- SS_output(paste(getwd(),'/data/SS32018/', sep =''), printstats=FALSE, verbose = FALSE)
 load_data_ss <- function(mod){
   
   
@@ -16,7 +18,7 @@ load_data_ss <- function(mod){
   # weight at age 
   wage_ss <- mod$wtatage
   #wage_ss <- wage_ss[-c(2,3,4,5,28)]
-
+  
   wage_ssb <- wage_ss[wage_ss$Fleet == -2,paste(age)]
   wage_catch <- wage_ss[wage_ss$Fleet == 1 & wage_ss$Yr > (years[1]-1) & wage_ss$Yr < years[tEnd]+1, paste(age)]
   wage_survey <- wage_ss[wage_ss$Fleet == 2 & wage_ss$Yr > (years[1]-1) & wage_ss$Yr < years[tEnd]+1, paste(age)]
@@ -29,6 +31,8 @@ load_data_ss <- function(mod){
   
   sidx <- mod$cpue$Yr[mod$cpue$Use == 1]
   survey[which(years %in% sidx)] <- mod$cpue$Obs[mod$cpue$Use == 1]
+  write.csv(survey, 'data/survey.csv', row.names =FALSE)
+  
   ss.error <- rep(1,tEnd)
   ss.error[which(years %in% sidx)]  <- (1+mod$cpue$SE[mod$cpue$Use == 1])-mod$cpue$SE[2] # Dunno why this calc is necessary 
   
@@ -50,25 +54,25 @@ load_data_ss <- function(mod){
   ss.survey <- rep(0, tEnd)
   
   for(i in 1:tEnd){
-
+    
     if(years[i] %in% syears){
       
-    tmp <- age_survey_ss[age_survey_ss$year == years[i],]  
-    age_survey.tmp[,i] <- tmp$obs
-    ss.survey[i] <- mean(tmp$N)
-    survey_x[i]<- 2
-    survey_flag[i] <- 1
+      tmp <- age_survey_ss[age_survey_ss$year == years[i],]  
+      age_survey.tmp[,i] <- tmp$obs
+      ss.survey[i] <- mean(tmp$N)
+      survey_x[i]<- 2
+      survey_flag[i] <- 1
     }else{
-    age_survey.tmp[,i] <- -1  
+      age_survey.tmp[,i] <- -1  
     }
   }
-
+  
   ###### Order the catch age comps 
   
   catch.ss <- mod$agedbase[mod$agedbase$Fleet == 1,]
   
   age_catch_ss <- data.frame(year = catch.ss$Yr, age = catch.ss$Bin, obs = catch.ss$Obs,
-                              N = catch.ss$N)
+                             N = catch.ss$N)
   
   age_catch.tmp <- matrix(-1,length(mod$agebins), tEnd)
   
@@ -95,11 +99,15 @@ load_data_ss <- function(mod){
                         ss.survey = ss.survey,
                         ss.error = ss.error)
   
-  
   colnames(age_catch.tmp) <- as.character(years)
   colnames(age_survey.tmp) <- as.character(years)
   
-
+  
+  write.csv(ac.data, file = 'data/ac_data.csv', row.names = FALSE)
+  write.csv(age_catch.tmp, file = 'data/age_catch_ss.csv', row.names = FALSE)
+  write.csv(age_survey.tmp.tmp, file = 'data/age_survey_ss.csv', row.names = FALSE)
+  
+  
   b <- matrix(NA, tEnd)
   # Parameters
   yb_1 <- as.numeric(mod$breakpoints_for_bias_adjustment_ramp[1]) #_last_early_yr_nobias_adj_in_MPD
@@ -107,28 +115,28 @@ load_data_ss <- function(mod){
   yb_3 <- as.numeric(mod$breakpoints_for_bias_adjustment_ramp[3]) #_last_yr_fullbias_adj_in_MPD
   yb_4 <- as.numeric(mod$breakpoints_for_bias_adjustment_ramp[4]) #_first_recent_yr_nobias_adj_in_MPD
   b_max <- as.numeric(mod$breakpoints_for_bias_adjustment_ramp[5]) #_max_bias_adj_in_MPD
-
+  
   #b[1] <- 0
   for(j in 1:length(years)){
-
+    
     if (years[j] <= yb_1){
       b[j] = 0}
-
+    
     if(years[j] > yb_1 & years[j]< yb_2){
       b[j] = b_max*((years[j]-yb_1)/(yb_2-yb_1));
     }
-
+    
     if(years[j] >= yb_2 & years[j] <= yb_3){
       b[j] = b_max}
-
+    
     if(years[j] > yb_3 & years[j] < yb_4){
       b[j] = b_max*(1-(yb_3-years[j])/(yb_4-yb_3))
     }
-
+    
     if(years[j] >= yb_4){
       b[j] = 0
     }
-
+    
   }
   
   ### h prior distribution ###
@@ -153,6 +161,7 @@ load_data_ss <- function(mod){
   
   ### selyear
   sel.tmp <- mod$SelAgeAdj$Yr[mod$SelAgeAdj$`Change?` == 1 & mod$SelAgeAdj$Yr>years[1]][1]
+
   
   df <-list(      #### Parameters #####
                   wage_ssb = t(wage_ssb),
@@ -201,11 +210,81 @@ load_data_ss <- function(mod){
                   #    ageerr = as.matrix(age_err[,2:22])
   )
   
+  pars <- mod$parameters[,c("Value","Active_Cnt")]
+  pars <- pars[is.na(pars$Active_Cnt) == 0,] # Remove parameters that are not estimated
+  nms <- rownames(pars)
+  
+  ### Get the Rdev params
+  ninit.idx <- grep('Early_Init', nms)
+  
+  sel.tmp <- mod$SelAgeAdj$Yr[mod$SelAgeAdj$`Change?` == 1 & mod$SelAgeAdj$Yr>years[1]][1]
+  
+  
+  ridx <- c(grep('Early_RecrD', nms), grep('Main_Recr',nms))
+  pselidx <- grep('Fishery',nms)
+  pselidx <- pselidx[-grep('DEVadd', nms[pselidx])]
+  
+  surv.idx <- grep('Acoustic_Survey',nms)
+  surv.idx <- surv.idx[-grep('Q_ex', nms[surv.idx])]
+  
+  
+  PSEL <- matrix(0,length(pselidx), length(sel.tmp:df$years[length(df$years)]))
+  
+  fish_ages <- c('P3','P4', 'P5', 'P6', 'P7')
+  
+  for(i in 1:length(fish_ages)){ # Generalize later
+    idx <- grep(paste('AgeSel_',fish_ages[i],'_F',sep = ''), nms)
+    
+    nms[idx[2:length(idx)]] # Something wrong with the naming corrections. 
+    PSEL[i,] <- pars$Value[idx[2:length(idx)]]
+  }
+  colnames(PSEL) <- sel.tmp:max(df$years)
+  
+  parms.scalar <- data.frame( # Just start all the simluations with the same initial conditions 
+    logRinit = pars$Value[which(nms == "SR_LN(R0)")],
+    logh = log(pars$Value[which(nms == "SR_BH_steep")]),
+    logMinit = log(pars$Value[which(nms == "NatM_p_1_Fem_GP_1")]),
+    logSDsurv = log(pars$Value[which(nms == "Q_extraSD_Acoustic_Survey(2)")]),
+    logSDR = log(1.4),
+    logphi_catch = pars$Value[which(nms =="ln(EffN_mult)_1")]
+    # logphi_survey = log(10),
+    # logSDF = log(0.1),
+    # Selectivity parameters 
+    
+  )
+  
+  ### Write CSV's for the parameters 
+  write.csv(parms.scalar, file = 'data/parms_scalar.csv', row.names = FALSE)
+  
+  
+  psel_fish = pars$Value[pselidx]
+  psel_surv = pars$Value[surv.idx]
+  
+  df.sel <- data.frame(value = c(psel_fish,psel_surv), source = c(rep('fish', length(psel_fish)),
+                                                                  rep('survey',length(psel_surv))),
+                       age = c(1:5,2:5))
+  write.csv(df.sel, file = 'data/selectivity.csv', row.names = FALSE)
+  
+  
+  initN = rev(pars$Value[ninit.idx])
+  
+  write.table(initN, file = 'data/initN.csv', row.names = FALSE, col.names = FALSE)
+  
+  Rin = pars$Value[c(ridx,max(ridx)+1)] # Last one is zero - no information about last year
+  write.csv(Rin, file = 'data/Rdev.csv', row.names = FALSE)
+  # F0 = mod$derived_quants$Value[grep('F_',rownames(mod$derived_quants))][1:df$tEnd],
+  
+  PSEL = PSEL
+  
+  write.csv(PSEL, file = 'data/PSEL.csv', row.names = FALSE)
+  # F0 = mod$catch$F[2:length(mod$catch$F)]
+  
+  # Write CSV's for values of varying length 
+  
+  
+  
+  
   
   return(df)
   
 }
-
-
-
-

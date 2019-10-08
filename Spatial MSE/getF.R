@@ -1,5 +1,13 @@
-getF <- function(E.temp,B.tmp, season = 1, space = 1, Enew = NA, Mseason, Fsel, N.tmp, w_catch = w_catch){
+getF <- function(E.temp,B.tmp, Mseason, Fsel, N.tmp, w_catch = w_catch,
+                 method = 'Pope'){
 
+# Calculate fishing mortality based on catch
+@E.temp = catch
+# B.tmp = Vulnerable biomass 
+# Mseason = morta
+  
+  
+  
 if(E.temp > 0){
   
   
@@ -8,23 +16,24 @@ if(E.temp > 0){
   temp2 <- join*temp+0.95*(1-join)
   Fnew <- -log(1-temp)
   #Fout <- df$F0[yr]
-
-  for(i in 1:4){
-    Z <- Mseason+Fnew*Fsel
-    Alpha <- (1-exp(-Z))
-    Ctmp <- sum((Fnew/Z)*(N.tmp*w_catch*Fsel)*Alpha)
-
-    Zadj <- E.temp/(Ctmp+0.0001)
-
-    Zprime <- Mseason+Zadj*(Z-Mseason)
-    Alpha <- (1-exp(-Zprime))/(Zprime)
-
-    temp <- sum(N.tmp*w_catch*Fsel*Alpha)
-    Ftmp <-  E.temp/(temp+0.0001)
-    #          print(Ftmp)
-    j2 <- 1/(1+exp(30*(Ftmp-0.95*1)))
-
-    Fnew <- j2*Ftmp+(1-j2)
+  if (method == 'Hybrid'){
+    for(i in 1:4){
+      Z <- Mseason+Fnew*Fsel
+      Alpha <- (1-exp(-Z))
+      Ctmp <- sum((Fnew/Z)*(N.tmp*w_catch*Fsel)*Alpha)
+      
+      Zadj <- E.temp/(Ctmp+0.0001)
+      
+      Zprime <- Mseason+Zadj*(Z-Mseason)
+      Alpha <- (1-exp(-Zprime))/(Zprime)
+      
+      temp <- sum(N.tmp*w_catch*Fsel*Alpha)
+      Ftmp <-  E.temp/(temp+0.0001)
+      #          print(Ftmp)
+      j2 <- 1/(1+exp(30*(Ftmp-0.95*1)))
+      
+      Fnew <- j2*Ftmp+(1-j2)
+    }
   }
   
   }else{

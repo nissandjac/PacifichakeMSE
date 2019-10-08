@@ -8,8 +8,6 @@ require(cowplot)
 require(scales)
 require(RColorBrewer)
 
-
-
 compile("runHakeassessment.cpp")
 dyn.load(dynlib("runHakeassessment"))
 source('load_files.R')
@@ -23,7 +21,7 @@ df <- load_data_seasons(nseason = 4, nspace = 2,
 
 simyears <- 30
 TAC <- 1
-nruns <- 50
+nruns <- 1
 sim.data <- run.agebased.true.catch(df)
 
 yr.season <- seq(df$years[1],df$years[df$nyear]+1,by = 1/df$nseason)

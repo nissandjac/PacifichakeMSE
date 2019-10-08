@@ -243,8 +243,8 @@ run.agebased.true.catch <- function(df, seeds = 100){
         psel <- df$psel[space,] 
         
 
-        if(year[yr] > year[df$selYear-1] & year[yr]<2019){
-          pseltmp <- psel+df$parms$PSEL[,yr-df$selYear+1]*df$sigma_psel
+        if(df$flag_sel[yr] == 1){
+          pseltmp <- psel+df$parms$PSEL[,yr-df$selidx+1]*df$sigma_psel
         }else{
           pseltmp <- psel
         }
@@ -253,11 +253,11 @@ run.agebased.true.catch <- function(df, seeds = 100){
         if(year[yr] >2018){
           
           if(df$selectivity_change == 0){
-            if(space == 1){
-              pseltmp <- c(1,1,1,1,1)
-            }else{
+            # if(space == 1){
+            #   pseltmp <- psel#c(1,1,1,1,1)
+            # }else{
               pseltmp <- psel
-            }
+            #}
           }
           
           if(df$selectivity_change ==1){
@@ -306,7 +306,8 @@ run.agebased.true.catch <- function(df, seeds = 100){
           
         }
         
-        Fout <- getF(E.temp,B.tmp, season, space, Mseason = Mseason, Fsel = Fsel, N.tmp = N.tmp, w_catch = w_catch)
+        Fout <- getF(E.temp,B.tmp, season, space, 
+                     Mseason = Mseason, Fsel = Fsel, N.tmp = N.tmp, w_catch = w_catch)
         
         Fout <- Fout
         #Fout <- df$parms$F0[yr]
