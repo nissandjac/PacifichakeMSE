@@ -7,6 +7,7 @@ require(gridExtra)
 require(cowplot)
 require(scales)
 require(RColorBrewer)
+library(r4ss)
 
 compile("runHakeassessment.cpp")
 dyn.load(dynlib("runHakeassessment"))
@@ -22,7 +23,7 @@ SSB.ss3 <- mod$derived_quants$Value[grep('SSB_1966', mod$derived_quants$Label):g
 R.ss <- mod$derived_quants$Value[grep('Recr_1966', mod$derived_quants$Label):grep('Recr_2018', mod$derived_quants$Label)]
 
 ###### Load the data to run the MSE ######
-df <- load_data_seasons(nseason = 1, nspace = 1,
+df <- load_data_seasons(nseason = 4, nspace = 2,
                         nsurvey= 2, movemax = 0.4) # Prepare data for operating model 
 
 simyears <- 50
@@ -32,14 +33,13 @@ sim.data <- run.agebased.true.catch(df)
 
 
 # Plott stuff 
-plot(df$years,sim.data$SSB.weight)
+plot(df$years,rowSums(sim.data$SSB.weight))
 lines(df$years,SSB.ss3)
 
-plot(df$years,sim.data$N.save.age[1,1:df$tEnd,1,1])
+plot(df$years,sim.data$N.save[1,1:df$nyear])
 lines(df$years, R.ss, col = 'red')
 
-plot(sim.data$Catch)
-lines(df$Catch)
+plot(sim.data$Catch/df$Catch)
 
 
 
@@ -55,7 +55,7 @@ Rdev <- parms$Rin
 parms.new$F0 <- F0
 parms.new$Rin <- Rdev
 
-obj <-MakeADFun(df.new,parms.new,DLL="runHakeassessment", silent = TRUE) # Run the assessment 
+obj <-MakeADFun(df.new,parms.new,DLL="runHakeassessment") # Run the assessment 
 
 reps <- obj$report()
 
@@ -84,6 +84,13 @@ SSB$SE <- sdrep[rep.values == 'SSB',2]
 SSB$min <- SSB$name-2*SSB$SE
 SSB$max <- SSB$name+2*SSB$SE
 SSB$year <- df$years
-  
-plot(SSB$name)
-lines(rowSums(sim.data$SSB))
+
+Catch <- data.frame(name = sdrep[rep.values == 'Catch',1])
+Catch$SE <- sdrep[rep.values == 'Catch',2]
+Catch$min <- Catch$name-2*Catch$SE
+Catch$max <- Catch$name+2*Catch$SE
+Catch$year <- df$years
+
+plot(df$years,Catch$name)
+lines(df$years,rowSums(sim.data$Catch))
+
