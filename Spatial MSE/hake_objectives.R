@@ -217,7 +217,7 @@ hake_objectives <- function(ls.MSE, SSB0, move = NA){
       'AAV',
    #   'Mean SSB/SSB0',
    #   'median catch',
-  #    'short term catch',
+      'short term catch',
       'long term catch'
    #   'yrs bio unavailable'
    )
@@ -237,7 +237,7 @@ hake_objectives <- function(ls.MSE, SSB0, move = NA){
                            round(median(AAV.plotquant$med), digits = 2),
                #            median(SSB.plotquant$med[SSB.plotquant$year > 2017]),
                         #   median(1e6*Catch.plotquant$med[Catch.plotquant$year >2017])*1e-6,
-                         #  median(1e6*Catch.plotquant$med[Catch.plotquant$year > 2018 & Catch.plotquant$year <2028])*1e-6,
+                           median(1e6*Catch.plotquant$med[Catch.plotquant$year > 2018 & Catch.plotquant$year <2028])*1e-6,
                            median(1e6*Catch.plotquant$med[Catch.plotquant$year > 2025])*1e-6
                           # median(quota.plot[quota.plot$year > 2018,]$Quota_frac < 0.95)
                            )
