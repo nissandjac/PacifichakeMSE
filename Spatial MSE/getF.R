@@ -17,7 +17,7 @@ if(E.temp > 0){
   temp <- E.temp/(B.tmp + 0.1*E.temp)
   join <- (1+exp(30*(temp-0.95)))^-1
   temp2 <- join*temp+0.95*(1-join)
-  Fnew <- -log(1-temp)
+  Fnew <- -log(1-temp2)
   #Fout <- df$F0[yr]
   if (method == 'Hybrid'){
     for(i in 1:4){

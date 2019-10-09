@@ -39,7 +39,11 @@ lines(df$years,SSB.ss3)
 plot(df$years,sim.data$N.save[1,1:df$nyear])
 lines(df$years, R.ss, col = 'red')
 
-plot(sim.data$Catch/df$Catch)
+plot(sim.data$Fsel[50,1,])
+lines(mod$s)
+
+
+plot(sim.data$Catch/rowSums(df$Catch.country))
 
 
 
