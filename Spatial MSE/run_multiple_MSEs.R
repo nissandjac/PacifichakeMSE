@@ -402,7 +402,7 @@ run_multiple_MSEs <- function(simyears = NULL,seeds = 12345, TAC = 1, df = NA,
   df.ret <- list(Catch = Catch.year, 
                  Catch.quota = sim.data$Catch.quota,# All output is from the OM 
                  SSB = sim.data$SSB, 
-                 SSB.mid = sim.data$SSB.all[,3,],
+                 SSB.mid = sim.data$SSB.all[,,3],
                  SSB.hes = SSB.hes,
                  Survey.om = sim.data$survey,
                  F0 = apply(sim.data$Fout,c(1,3),sum),
