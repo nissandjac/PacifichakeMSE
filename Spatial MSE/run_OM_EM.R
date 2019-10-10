@@ -39,9 +39,6 @@ lines(df$years,SSB.ss3)
 plot(df$years,sim.data$N.save[1,1:df$nyear])
 lines(df$years, R.ss, col = 'red')
 
-plot(sim.data$Fsel[50,1,])
-lines(mod$s)
-
 
 plot(sim.data$Catch/rowSums(df$Catch.country))
 
@@ -77,7 +74,7 @@ lower[names(lower) == 'F0'] <- 0.01
 
 system.time(opt<-nlminb(obj$par,obj$fn,obj$gr,lower=lower,upper=upper,
                         control = list(iter.max = 1e6, 
-                                       eval.max = 1e6))) # If error one of the random effects is unused
+                                       eval.max = 1e6))) 
 
 rep <- sdreport(obj)
 sdrep <- summary(rep)

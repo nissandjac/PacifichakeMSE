@@ -94,45 +94,68 @@ run.agebased.true.catch <- function(df, seeds = 100){
   # 
   
   #Ninit[1] <- sum((4*h*R_0*SSB_init/(SSB_0*(1-h)+ SSB_init*(5*h-1)))*exp(-0.5*1*SDR^2+df$parms$Rin[1]), na.rm = T)
-  
+  year_1 <- c(year,max(year)+1)
 
-  SSB <- matrix(NA,nyear, nspace)
-  SSB.all <- array(NA, dim = c(nyear, nseason , nspace))
-  SSB.weight <- matrix(NA,nyear, nspace)
-  Biomass.save <- matrix(NA,nyear, nspace)
-  Catch <- matrix(NA,nyear)
-  Catch.age <- matrix(NA,nage,nyear)
-  CatchN <- matrix(NA,nyear)
-  CatchN.age <- matrix(NA,nage,nyear)
+  SSB <- matrix(NA,nyear, nspace, 
+                dimnames = list(year = df$years,
+                               space = 1:nspace))
+  SSB.all <- array(NA, dim = c(nyear, nspace,nseason),
+                   dimnames = list(year = year, space = 1:nspace, season = 1:nseason))
+  SSB.weight <- matrix(NA,nyear, nspace,
+                       dimnames = list(year = year, space = 1:nspace))
+  Biomass.save <- matrix(NA,nyear, nspace, 
+                         dimnames= list(year = year, space = 1:nspace))
+  Catch <- matrix(NA,nyear, dimnames = list(year = year))
+  Catch.age <- matrix(NA,nage,nyear, dimnames = list(age = age, year = year))
+  CatchN <- matrix(NA,nyear, dimnames = list(year = year))
+  CatchN.age <- matrix(NA,nage,nyear, dimnames = list(age =age, year = year))
 
   
-  R.save <- matrix(NA,nyear, nspace)
-  Fsel.save <- array(NA,dim = c(nyear,nspace, nage))
-  Fseason.save <- array(NA,dim = c(nage, nyear, nseason,nspace))
-  Fout.save <- array(NA, dim = c(nyear,nseason,nspace))
+  R.save <- matrix(NA,nyear, nspace, dimnames = list(year = year, space = 1:nspace))
+  Fsel.save <- array(NA,dim = c(nage,nyear,nspace), dimnames = list(age = age, year = year, space = 1:nspace))
+  Fseason.save <- array(NA,dim = c(nage, nyear, nspace,nseason), dimnames = list(age = age, year = year, space = 1:nspace,
+                                                                                 season = 1:nseason))
+  Fout.save <- array(NA, dim = c(nyear,nseason,nspace), 
+                     dimnames = list(year = year, season = 1:nseason, space = 1:nspace))
   
-  N.save.age <- array(NA,dim = c(nage,nyear+1, nspace, nseason))
-  N.save.age.mid <- array(NA,dim = c(nage,nyear+1, nspace, nseason))
-  V.save <- array(NA,dim = c(nyear, nspace, nseason))
-  
-  Catch.save.age <- array(NA,dim = c(nage,nyear, nspace, nseason))
-  CatchN.save.age <- array(NA,dim = c(nage,nyear, nspace, nseason))
-  Catch.quota <- array(NA, dim = c(nyear, nspace, nseason))
-  Catch.quota.N <- array(0, dim = c(nyear, nspace, nseason))
+  N.save.age <- array(NA,dim = c(nage,nyear+1, nspace, nseason), 
+                      dimnames = list(age = age, year = year_1, space = 1:nspace, season = 1:nseason))
+  N.save.age.mid <- array(NA,dim = c(nage,nyear+1, nspace, nseason), 
+                          dimnames = list(age = age, year = year_1, space = 1:nspace, season = 1:nseason))
+  V.save <- array(NA,dim = c(nyear, nspace, nseason), dimnames = list(
+    year = year, space = 1:nspace, season = 1:nseason))
+
+  Catch.save.age <- array(NA,dim = c(nage,nyear, nspace, nseason), 
+                          dimnames = list(age = age, year = year, space = 1:nspace, season = 1:nseason))
+  CatchN.save.age <- array(NA,dim = c(nage,nyear, nspace, nseason), 
+                           dimnames = list(age = age, year = year, space = 1:nspace, season =1:nseason))
+  Catch.quota <- array(NA, dim = c(nyear, nspace, nseason), 
+                       dimnames = list(year = year, space = 1:nspace, season =1:nseason))
+  Catch.quota.N <- array(0, dim = c(nyear, nspace, nseason), dimnames = list(year = year, space = 1:nspace,
+                                                                             season = 1:nseason))
     
-  survey <- array(NA,dim = c(nyear))
-  survey.true <- array(NA, dim = c(nspace, nyear))
-  surv.tot <- matrix(NA, nyear,nspace)
+  survey <- array(NA,dim = c(nyear), dimnames = list(year = year))
+  survey.true <- array(NA, dim = c(nspace, nyear), dimnames = list(space = 1:nspace, year = year))
+  surv.tot <- matrix(NA, nyear,nspace, dimnames = list(year = year, space = 1:nspace))
 
-  age_comps_surv <- array(NA, dim = c(df$age_maxage,nyear)) # Fix the max ages later
-  age_comps_surv_space <- array(NA, dim = c(df$age_maxage,nyear,nspace)) # Fix the max ages later
-  N.survey <- matrix(NA,df$age_maxage ,nyear)
+  age_comps_surv <- array(NA, dim = c(df$age_maxage,nyear), dimnames = list(age = 1:df$age_maxage,
+                                                                             year = year)) # 
+  age_comps_surv_space <- array(NA, dim = c(df$age_maxage,nyear,nspace), dimnames = list(
+    age = 1:df$age_maxage, year = year))
+ 
+  N.survey <- matrix(NA,df$age_maxage ,nyear, dimnames = list(age = 1:df$age_maxage,
+                                                              year= year))
 
-  age_comps_catch <- array(NA, dim = c(df$age_maxage,nyear))
-  age_comps_catch_space <- array(NA, dim = c(df$age_maxage,nyear,nspace))
-  age_comps_OM <- array(NA, dim = c(df$nage,nyear, nspace,nseason))
+  age_comps_catch <- array(NA, dim = c(df$age_maxage,nyear), dimnames = list(age = 1:df$age_maxage,
+                                                                             year = year))
+  age_comps_catch_space <- array(NA, dim = c(df$age_maxage,nyear,nspace), dimnames = list(
+    age = 1:df$age_maxage, year = year, space = 1:nspace))
+
+  age_comps_OM <- array(NA, dim = c(nage,nyear, nspace,nseason), 
+                        dimnames = list(age = age, year= year, space = 1:nspace, season = 1:nseason))
   
-  Z.save <- array(NA, dim = c(df$nage, nyear,nspace,nseason))
+  Z.save <- array(NA, dim = c(df$nage, nyear,nspace,nseason), dimnames = list(age= age, year = year, space = 1:nspace,
+                                                                              season = 1:nseason))
 
   Z.save[,1,1,1] <- M
   Catch.age[,1] <- 0 # Assumed no fishing before data started 
@@ -156,7 +179,7 @@ run.agebased.true.catch <- function(df, seeds = 100){
   Ninit[2:(nage-1)] <-R0 * exp(-Mage[2:(nage-1)])*exp(-0.5*SDR^2*0+Ninit_dev[1:(nage-2)])
   Ninit[nage] <- R0*exp(-(M[nage]*age[nage]))/(1-exp(-M[nage]))*exp(-0.5*SDR^2*0+Ninit_dev[nage-1])# Plus group (ignore recruitment dev's in first year )
   
-  p.save <-matrix(NA,tEnd)
+  #p.save <-matrix(NA,tEnd)
   
   
   for (space in 1:nspace){
@@ -221,7 +244,7 @@ run.agebased.true.catch <- function(df, seeds = 100){
     for(space in 1:nspace){
       SSB[yr,space] <-sum(N.save.age[,yr,space,1]*Mat.sel, na.rm = TRUE)
       SSB.weight[yr,space] <- sum(N.save.age[,yr,space,1]*as.numeric(df$wage_ssb[,yr]), na.rm = TRUE)
-      SSB.all[1,1,space]<- sum(N.save.age[,1,space,1]*Mat.sel, na.rm = TRUE)
+      SSB.all[1,space,1]<- sum(N.save.age[,1,space,1]*Mat.sel, na.rm = TRUE)
       
     # Recruitment only in season 1  
       R <- (4*h*R_0[space]*SSB[yr,space]/
@@ -268,12 +291,12 @@ run.agebased.true.catch <- function(df, seeds = 100){
             
           }
         
-        p.save[yr] <- sum(pseltmp)
+        #p.save[yr] <- sum(pseltmp)
         # 
         Fsel <- getSelec(age,pseltmp,df$Smin,df$Smax) # Constant over space right now 
         rm(pseltmp)
         
-        Fsel.save[yr,space,] <- Fsel
+        Fsel.save[,yr,space] <- Fsel
         
         if(nspace > 1){
           if(df$years[yr]<= 2018){
@@ -322,7 +345,7 @@ run.agebased.true.catch <- function(df, seeds = 100){
         
         Fout.save[yr,season,space] <- Fout # terminal fishing mortality 
         
-        Fseason.save[,yr,season,space] <- Fseason
+        Fseason.save[,yr,space,season] <- Fseason
       
         Z <- Mseason+Fseason
         Z.save[,yr,space,season]<- Z
@@ -349,7 +372,7 @@ run.agebased.true.catch <- function(df, seeds = 100){
         
         age_comps_OM[,yr,space,season] <- N.save.age[, yr,space,season]/sum(N.save.age[, yr,space,season])
         
-        SSB.all[yr,season,space]<- sum(N.save.age[,yr,space,season]*Mat.sel, na.rm = T)
+        SSB.all[yr,space,season]<- sum(N.save.age[,yr,space,season]*Mat.sel, na.rm = T)
         Catch.save.age[, yr,space, season] <- (Fseason/(Z))*(1-exp(-(Z)))*N.save.age[,yr,space,season]*w_catch
         CatchN.save.age[, yr,space, season] <- (Fseason/(Z))*(1-exp(-(Z)))*N.save.age[,yr,space,season]
         
@@ -375,7 +398,7 @@ run.agebased.true.catch <- function(df, seeds = 100){
           
           age_comps_OM[,yr,space,season] <- N.save.age[, yr,space,season]/sum(N.save.age[, yr,space,season])
           
-          SSB.all[yr,season,space]<- sum(N.save.age[,yr,space,season]*Mat.sel, na.rm = T)
+          SSB.all[yr,space,season]<- sum(N.save.age[,yr,space,season]*Mat.sel, na.rm = T)
           Catch.save.age[, yr,space, season] <- (Fseason/(Z))*(1-exp(-(Z)))*N.save.age[,yr,space,season]*w_catch
           CatchN.save.age[, yr,space, season] <- (Fseason/(Z))*(1-exp(-(Z)))*N.save.age[,yr,space,season]
          
@@ -520,8 +543,16 @@ run.agebased.true.catch <- function(df, seeds = 100){
     Nsave <- apply(N.save.age[,,,1],2,rowSums)
     SSB.save <- rowSums(SSB)
     }
+  
+    # Add names to output 
+    year_1 <- c(df$years,max(df$years+1))
+
+    # 
+
     
-    df.out   <- list(N.save = Nsave, SSB = SSB, 
+
+    df.out   <- list(N.save = Nsave, 
+                     SSB = SSB, 
                      N.save.age = N.save.age,
                      V.save = V.save,
                      SSB.all = SSB.all,
@@ -547,11 +578,10 @@ run.agebased.true.catch <- function(df, seeds = 100){
                      age_comps_catch_space = age_comps_catch_space,
                      Fseason = Fseason.save,
                      Fsel = Fsel.save, 
-                     N0 = N0,
-                     p.save = p.save,
                      Ninit = Ninit,
                      SSB0 = SSB_0)
-    
+
   return(df.out)
+    
 }
 
