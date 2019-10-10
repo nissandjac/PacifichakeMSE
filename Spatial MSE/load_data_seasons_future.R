@@ -305,33 +305,7 @@ load_data_seasons_future <- function(yr.future, nseason = 4, nspace = 2,
   df$Catch <- Catch.obs$Fishery # Add the observed catch
   df$Catch.country <- as.matrix(Catch.country[,2:3])[,c(2,1)]
   # Correct for future years 
-  if(nyear > length(df$Catch)){
-    df$Catch <- c(df$Catch,rep(mean(df$Catch), nyear-length(Catch.obs$Fishery)))
-    
-  }
-  
-  if(nyear >nrow(df$Catch.country)){
-    df$Catch.country <- rbind(df$Catch.country,t(replicate(nyear-nrow(Catch.country),colMeans(df$Catch.country))))
-  }
-  if(max(years) > 2018){
-    
-    idx.future <- length(1966:2018)+seq(2,yr.future, by = 2) # Years where survey occurs 
-    
-    df$survey_x <- c(df$survey_x,rep(-2, yr.future))
-    df$survey_x[idx.future] <- 2
-    
-    df$survey_err <- c(df$survey_err,rep(1, yr.future))
-    df$survey_err[idx.future] <- mean(df$survey_err[df$survey_err != 1])
-    
-    df$ss_survey[idx.future] <- mean(df$ss_survey[df$ss_survey != -1])
-    df$flag_survey[idx.future] <- 1
-    df$flag_catch[years > 2018] <- 1
-    
-    Rdevs <- rnorm(n = yr.future,mean = 0, sd = exp(df$logSDR))
-    #Rdevs <- rep(0, yr.future)
-    df$parms$Rin <- c(df$parms$Rin,Rdevs)
-  }
-  
+ 
   
   
   
