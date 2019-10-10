@@ -1,13 +1,37 @@
 ## Load the hake data
 # year and age input 
-load_data_seasons <- function(nseason = 4, nspace = 2, myear = 2018,
-                              movemaxinit = 0.35, movefiftyinit = 6,
-                              nsurvey = 2, logSDR = 1.4, bfuture = 0.5,
-                              moveout = 0.8, movesouth = 0.05,
-                              moveinit = NA, moveslope = 0.5,
-                              selectivity_change = 0){
+load_data_seasons <- function(nseason = 4, 
+                              nspace = 2, 
+                              myear = 2018,
+                              movemaxinit = 0.35, 
+                              movefiftyinit = 6,
+                              nsurvey = 2, 
+                              logSDR = 1.4, 
+                              bfuture = 0.5,
+                              moveout = 0.8, 
+                              movesouth = 0.05,
+                              moveinit = NA, 
+                              moveslope = 0.5,
+                              selectivity_change = 0,
+                              yr_future  = 0
+                              ){
   
-
+  #' @nseason = number of seasons 
+  #' @nspace = Spatial areas
+  #' @myear = Final year that contains empirical data
+  #' @movemaxinit = max movement rate 
+  #' @movefiftyinit = age at 50% movement rate
+  #' @nsurvey survey frequency, i.e., 2 = every second year
+  #' @logSDR Standard deviation of recruitment
+  #' @bfuture recruitment bias adjustment in the future - scalar
+  #' @moveout fraction of individuals that travel south in the last season
+  #' @movesouth fraction of individuals that move south during the year
+  #' @moveinit Initial distribution of fish
+  #' @moveslope Slope of the movement function
+  #' @selectivity_change flag for selectivity changing in the future 0
+  #' @yr_future Create dummy data for future years
+  
+  
   if(is.na(moveinit)){
     if(nspace == 2){
     moveinit <-  c(0.3,0.7)
@@ -15,7 +39,7 @@ load_data_seasons <- function(nseason = 4, nspace = 2, myear = 2018,
   }
   
   
-  years <- 1966:myear
+  years <- 1966:(myear+yr_future)
   nyear <- length(years)
   tEnd <- length(years)*nseason
   age <- 0:20
@@ -83,11 +107,29 @@ load_data_seasons <- function(nseason = 4, nspace = 2, myear = 2018,
   # weight at age 
   wage_ss <- read.csv('data/wage_ss.csv')
   wage_unfished <- read.csv('data/unfished_waa.csv')
+
   
   wage_ssb <- wage_ss[wage_ss$Fleet == -2,paste('X',age, sep = '')]
+  wage_ssb[[1]] <- unname(wage_ssb[[1]])
   wage_catch <- wage_ss[wage_ss$Fleet == 1 ,paste('X',age, sep = '')]
   wage_survey <- wage_ss[wage_ss$Fleet == 2,paste('X',age, sep = '')]
   wage_mid <- wage_ss[wage_ss$Fleet == -1,paste('X',age, sep = '')]
+  
+  # if(yr_future>0){ // Namiong issues here, fix in later update
+  #   tmp_ssb <- matrix(rep(wage_ssb[1,], each = yr_future), nrow = yr_future)
+  #   wage_ssb <- cbind(wage_ssb,tmp_ssb)
+  #    
+  #   
+  #   wage_catch <- wage_ss[wage_ss$Fleet == 1 ,paste('X',age, sep = '')]
+  #   wage_survey <- wage_ss[wage_ss$Fleet == 2,paste('X',age, sep = '')]
+  #   wage_mid <- wage_ss[wage_ss$Fleet == -1,paste('X',age, sep = '')]
+  #   
+  #   
+  #   
+  #   
+  # }
+  # 
+  
   # Catch
   catch <- read.csv('data/hake_totcatch.csv')
   
@@ -231,7 +273,7 @@ load_data_seasons <- function(nseason = 4, nspace = 2, myear = 2018,
      selYear <- 1991
      
      flag_sel <- rep(0,nyear)
-     flag_sel[which(years == selYear):nyear] <- 1
+     flag_sel[which(years == selYear):which(years == myear)] <- 1
 
           
      
@@ -311,6 +353,38 @@ load_data_seasons <- function(nseason = 4, nspace = 2, myear = 2018,
   Catch.country <- read.csv('data/catch_per_country.csv')
   df$Catch.country <- as.matrix(Catch.country[,2:3])[,c(2,1)]
   
+  if(nyear > length(df$Catch)){
+    df$Catch <- c(df$Catch,rep(mean(df$Catch), nyear-length(Catch.obs$Fishery)))
+    
+  }
+  
+  if(nyear >nrow(df$Catch.country)){
+    df$Catch.country <- rbind(df$Catch.country,t(replicate(nyear-nrow(Catch.country),colMeans(df$Catch.country))))
+  }
+  
+  if(yr_future > 0){
+    
+    idx.future <- length(1966:myear)+seq(2,yr_future, by = df$nsurvey) # Years where survey occurs 
+    
+    df$survey_x <- c(df$survey_x,rep(-2, yr_future))
+    df$survey_x[idx.future] <- 2
+    
+    df$survey_err <- c(df$survey_err,rep(1, yr_future))
+    df$survey_err[idx.future] <- mean(df$survey_err[df$survey_err != 1])
+    
+    df$ss_survey <- c(df$ss_survey, rep(0,  yr_future))
+    df$ss_survey[idx.future] <- mean(df$ss_survey[df$ss_survey != -1])
+    df$flag_survey <- c(df$flag_survey, rep(-1,yr_future))
+    df$flag_survey[idx.future] <- 1
+    df$flag_catch[years > 2018] <- 1
+    
+    Rdevs <- rnorm(n = yr_future,mean = 0, sd = exp(df$logSDR))
+    #Rdevs <- rep(0, yr_future)
+    df$parms$Rin <- c(df$parms$Rin,Rdevs)
+    
+    # Bias adjustment 
+    df$b <- c(df$b,rep(df$bfuture, yr_future))
+  }
   
   return(df)
   

@@ -211,10 +211,12 @@ run.agebased.true.catch <- function(df, seeds = 100){
       w_catch <- df$wage_catch[,yr]
       w_surv <- df$wage_survey[,yr]
       w_mid <- df$wage_mid[,yr]
+      w_ssb <- df$wage_ssb[,yr]
     }else{
       w_catch <- df$wage_catch[,1]
       w_surv <- df$wage_survey[,1]
       w_mid <- df$wage_mid[,1]
+      w_ssb <- df$wage_ssb[,1]
     }
     
     
@@ -245,7 +247,7 @@ run.agebased.true.catch <- function(df, seeds = 100){
     # fix Ssb and recruitment in all areas 
     for(space in 1:nspace){
       SSB[yr,space] <-sum(N.save.age[,yr,space,1]*Mat.sel, na.rm = TRUE)
-      SSB.weight[yr,space] <- sum(N.save.age[,yr,space,1]*as.numeric(df$wage_ssb[,yr]), na.rm = TRUE)
+      SSB.weight[yr,space] <- sum(N.save.age[,yr,space,1]*as.numeric(w_ssb), na.rm = TRUE)
       SSB.all[1,space,1]<- sum(N.save.age[,1,space,1]*Mat.sel, na.rm = TRUE)
       
     # Recruitment only in season 1  

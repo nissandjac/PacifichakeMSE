@@ -29,7 +29,7 @@ seeds <- floor(runif(n = nruns, min = 1, max = 1e6))
 simyears <- 30 # Project 30 years into the future (2048 that year)
 year.future <- c(df$years,(df$years[length(df$years)]+1):(df$years[length(df$years)]+simyears))
 N0 <- NA
-df_future <- load_data_seasons_future(2, movemaxinit = 0.35, movefiftyinit = 6)
+df_future <- load_data_seasons(movemaxinit = 0.35, movefiftyinit = 6,yr_future = 5)
 
 df_future$selectivity_change <- 0
 sim.data_1 <- run.agebased.true.catch(df_future) # Run the operating model until 2018
@@ -39,8 +39,8 @@ df_future$selectivity_change <- 2
 sim.data_3 <- run.agebased.true.catch(df_future) # Run the operating model until 2018
 
 # Plot the scenarios 
-df.plot <- data.frame(selectivity = c(sim.data_1$Fsel[55,1,],sim.data_2$Fsel[55,1,],sim.data_3$Fsel[55,1,],
-                                      sim.data_1$Fsel[55,2,],sim.data_2$Fsel[55,2,],sim.data_3$Fsel[55,2,]),
+df.plot <- data.frame(selectivity = c(sim.data_1$Fsel[,55,1],sim.data_2$Fsel[,55,1],sim.data_3$Fsel[,55,1],
+                                      sim.data_1$Fsel[,55,2],sim.data_2$Fsel[,55,2],sim.data_3$Fsel[,55,2]),
                       country = rep(c('CAN','USA'), each = 3*df$nage),
                       age = rep(df$age, 6),
                       run = rep(rep(c('Conditioned OM','Low US selectivity','2018 selectivity'),each =df$nage),2)
