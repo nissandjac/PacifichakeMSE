@@ -61,7 +61,7 @@ ls.converge <- matrix(0, nruns)
 
 
 for (i in 1:nruns){
-  tmp <- run_multiple_MSEs_climate(simyears = simyears,
+  tmp <- run_multiple_MSEs(simyears = simyears,
                                    seeds = seeds[i],
                                    TAC = 1, df = df, cincrease = 0.02, mincrease = 0.005)
   #tmp <- run_multiple_MSEs(simyears = 30, seeds[i])
@@ -86,7 +86,7 @@ ls.converge <- matrix(0, nruns)
 
 
 for (i in 1:nruns){
-  tmp <- run_multiple_MSEs_climate(simyears = simyears,
+  tmp <- run_multiple_MSEs(simyears = simyears,
                                    seeds = seeds[i],
                                    TAC = 1, df = df, cincrease = 0.04, mincrease = 0.02)
   #tmp <- run_multiple_MSEs(simyears = 30, seeds[i])
