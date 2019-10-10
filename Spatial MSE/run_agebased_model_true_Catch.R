@@ -74,6 +74,7 @@ run.agebased.true.catch <- function(df, seeds = 100){
   for(i in 1:nspace){
     SSB_0[i] <- sum(df$Matsel*N0*move.init[i])
   }
+  names(SSB_0) <- paste(rep('space',each = df$nspace),1:nspace)
   
   R_0 <- R0*move.init
   # Used the inital recruitment devs to get a start
@@ -174,6 +175,7 @@ run.agebased.true.catch <- function(df, seeds = 100){
   
   # Distribute over space 
   Ninit <- rep(NA,nage)
+  names(Ninit) <- age
   Ninit_dev <- (df$parms$initN)
   
   Ninit[2:(nage-1)] <-R0 * exp(-Mage[2:(nage-1)])*exp(-0.5*SDR^2*0+Ninit_dev[1:(nage-2)])

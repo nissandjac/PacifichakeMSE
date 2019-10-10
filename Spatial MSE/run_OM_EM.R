@@ -62,7 +62,7 @@ reps <- obj$report()
 
 
 plot(reps$selectivity_save[,29])
-lines(sim.data$Fsel[29,2,])
+lines(sim.data$Fsel[,29,2])
 
 lower <- obj$par-Inf
 upper <- obj$par+Inf
@@ -98,3 +98,5 @@ Catch$year <- df$years
 plot(df$years,Catch$name)
 lines(df$years,rowSums(sim.data$Catch))
 
+plot(SSB$name)
+lines(rowSums(sim.data$SSB))

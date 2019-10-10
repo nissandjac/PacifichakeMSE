@@ -340,7 +340,7 @@ run_multiple_MSEs <- function(simyears = NULL,seeds = 12345, TAC = 1, df = NA,
     
     
     Vreal <- sum(sim.data$N.save.age[,df$nyear,,df$nseason]*
-                   matrix(rep(df$wage_catch[,df$nyear-1],df$nspace), ncol = df$nspace)*t(sim.data$Fsel[df$nyear,,]))
+                   matrix(rep(df$wage_catch[,df$nyear-1],df$nspace), ncol = df$nspace)*(sim.data$Fsel[,df$nyear,]))
     
     Nend <- N[,dim(N)[2]]
     Fnew <- getRefpoint(opt$par, df,SSBy = SSB[length(SSB)], Fin=Fyear[length(Fyear)], Nend, TAC = TAC,
