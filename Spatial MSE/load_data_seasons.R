@@ -304,6 +304,7 @@ load_data_seasons <- function(nseason = 4, nspace = 2, myear = 2018,
                   # Parameters from the estimation model 
               
   )
+  
   Catch.obs <- read.csv('data/hake_totcatch.csv') # Total catch
   df$Catch <- Catch.obs$Fishery # Add the observed catch
   
