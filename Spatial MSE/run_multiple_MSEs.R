@@ -383,21 +383,22 @@ run_multiple_MSEs <- function(simyears = NULL,seeds = 12345, TAC = 1, df = NA,
   print(time.taken)
   
   #  Catch per country per year 
-  Catch.year <- apply(sim.data$Catch.save.age, FUN = sum, MARGIN = c(2,3))
+  #Catch.year <- apply(sim.data$Catch.save.age, FUN = sum, MARGIN = c(2,3))
   
+  Catch.year <- sim.data$Catch.save.age
   ## Calculate the average age 
   source('calcMeanAge.R')
   
   #dev.off()
-  amc <- data.frame(year = year.future[1:year], 
-                    amc.can = calcMeanAge(sim.data$age_comps_catch_space[,,1], df$age_maxage),
-                    amc.US  = calcMeanAge(sim.data$age_comps_catch_space[,,2], df$age_maxage),
-                    amc.tot = calcMeanAge(sim.data$age_catch, df$age_maxage))
-  
-  ams <- data.frame(year = year.future[1:year], 
-                    ams.can = calcMeanAge(sim.data$age_comps_country[,,1], df$age_maxage),
-                    ams.US  = calcMeanAge(sim.data$age_comps_country[,,2], df$age_maxage),
-                    ams.tot = calcMeanAge(sim.data$age_comps_surv, df$age_maxage))
+  # amc <- data.frame(year = year.future[1:year], 
+  #                   amc.can = calcMeanAge(sim.data$age_comps_catch_space[,,1], df$age_maxage),
+  #                   amc.US  = calcMeanAge(sim.data$age_comps_catch_space[,,2], df$age_maxage),
+  #                   amc.tot = calcMeanAge(sim.data$age_catch, df$age_maxage))
+  # 
+  # ams <- data.frame(year = year.future[1:year], 
+  #                   ams.can = calcMeanAge(sim.data$age_comps_country[,,1], df$age_maxage),
+  #                   ams.US  = calcMeanAge(sim.data$age_comps_country[,,2], df$age_maxage),
+  #                   ams.tot = calcMeanAge(sim.data$age_comps_surv, df$age_maxage))
   
   df.ret <- list(Catch = Catch.year, 
                  Catch.quota = sim.data$Catch.quota,# All output is from the OM 
@@ -407,8 +408,11 @@ run_multiple_MSEs <- function(simyears = NULL,seeds = 12345, TAC = 1, df = NA,
                  Survey.om = sim.data$survey,
                  F0 = apply(sim.data$Fout,c(1,3),sum),
                  parms = parms.save,
-                 ams = ams,
-                 amc = amc,
+                 N = sim.data$N.save.age,
+                 # #sim.data
+                 # 
+                 # ams = ams,
+                 # amc = amc,
                  V = sim.data$V.save
   )
   

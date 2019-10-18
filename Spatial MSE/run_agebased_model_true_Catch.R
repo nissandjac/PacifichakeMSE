@@ -195,8 +195,12 @@ run.agebased.true.catch <- function(df, seeds = 100){
       # }
   }
   
-  Fnseason <- c(0.0,0.4,0.50,0.1) # Must add to one
+  
+  
+  
+  
   Fspace <- c(0.24,0.76) # Contribution of Total catch (add to one)    #Z <- (Fyear+Myear)
+  Fnseason <- df$Fnseason
   pope.mul <- nseason/1*0.5
   pope.mul <- 0.50
   
@@ -313,7 +317,7 @@ run.agebased.true.catch <- function(df, seeds = 100){
         }
         
         
-        E.temp <- Catch_space*Fnseason[season]#*Fspace[space] # Catch distribution in the year
+        E.temp <- Catch_space*Fnseason[space, season]#*Fspace[space] # Catch distribution in the year
         B.tmp <-  sum(N.save.age[,yr,space,season]*exp(-Mseason*pope.mul)*w_catch*Fsel) # Get biomass from previous year
         N.tmp <- N.save.age[,yr,space,season]#
         V.save[yr,space,season] <- B.tmp
