@@ -235,13 +235,27 @@ load_data_seasons <- function(nseason = 4,
   #  mul <- 1
   #  }
 
-  # load parameters
+  # load parameters specifically for hake 
   parms.scalar <- read.csv('data/parms_scalar.csv')
   parms.sel <- read.csv('data/selectivity.csv')
   initN <-as.matrix(read.table('data/initN.csv'))
   
   Rdev <- as.matrix(read.csv('data/Rdev.csv'))
   PSEL <- as.matrix(read.csv('data/PSEL.csv'))
+  
+  if(nseason == 4 & nspace == 2){
+  Fnseason <- matrix(NA, 2,4)
+  
+  Fnseason[1,] <- c(0.001,0.188,0.603,0.208)
+  Fnseason[2,] <- c(0.000,0.317,0.382,0.302)/sum(c(0.000,0.317,0.382,0.302)) # Divide by sum to sum to 1 
+    
+  }else{
+    Fnseason <- matrix(NA, nspace, nseason)
+    Fnseason[1:nspace,] <- 1/nseason # Equally distributed catch
+    
+    
+  }
+  
      
   parms <- list( # Just start all the simluations with the same initial conditions 
        logRinit = parms.scalar$logRinit,
@@ -340,6 +354,7 @@ load_data_seasons <- function(nseason = 4,
                  # F0 = Fin,
                   psel = psel,
                   parms = parms,
+                  Fnseason = Fnseason,
                   selectivity_change = selectivity_change,
                   Catch = catch
                 

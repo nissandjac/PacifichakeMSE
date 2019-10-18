@@ -11,7 +11,7 @@ set.seed(seedz)
 
 source('load_files.R')
 source('load_files_OM.R')
-source('run_agebased_model_true_catch_move.R')
+#source('run_agebased_model_true_catch_move.R')
 source('load_data_seasons_future.R')
 
 df <- load_data_seasons(nseason = 4, nspace = 2, bfuture = 0.5) # Prepare data for operating model
@@ -131,3 +131,4 @@ for (i in 1:nruns){
 }
 # # # # 
 save(ls.save,file = 'results/Selectivity/MSE_sel3.Rdata')
+write.csv(seeds,file = 'results/Selectivity/seeds.csv', row.names = FALSE) # Save the seeds
