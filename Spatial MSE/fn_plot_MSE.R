@@ -26,8 +26,21 @@ for(i in 2:length(nms)){
 }
 
 indicators <- unique(df.obj$indicator)
-df.obj2 <- df.obj
 
+df.obj2 <- df.obj %>%
+  filter(indicator %in% indicators[1:6])  
+df.obj2$indicator=factor(df.obj2$indicator, 
+                         levels=c('SSB <0.10 SSB0','S>0.10<0.4S0','S>0.4S0','AAV','short term catch','long term catch'))
+
+df.sp <- df.obj %>%
+  filter(indicator %in% indicators[7:12])
+
+df.sp$indicator=factor(df.sp$indicator,
+                       levels=c('Canada TAC/V spr', 'Canada TAC/V sum', 'Canada TAC/V fall',
+                                'US TAC/V spr', 'US TAC/V sum', 'US TAC/V fall'))
+
+df.sp$country=c(rep('Canada',3), rep('US',3))
+df.sp$season=c(rep(c('Apr-Jun','July-Sept','Oct-Dec')))
 
 # Fix the y scales 
 dummy <- data.frame(indicator = 'long term catch', value = c(0.2,0.3), HCR = 'ymin')
@@ -42,19 +55,36 @@ dummy <- data.frame(indicator = 'long term catch', value = c(0.2,0.3), HCR = 'ym
 
 #df.obj2$value[df.obj2$HCR == 'move_0'] <- 0
 
+#df.obj2$ind2=factor(df.obj2$indicator, as.character(df.obj2$indicator))
 
 p1 <- ggplot(df.obj2, aes(x = HCR,y = value))+geom_bar(stat = 'identity', aes(fill = HCR))+
   scale_x_discrete(name = '')+  
   scale_y_continuous(name = '')+
   scale_fill_manual(values = cols[1:length(unique(df.obj$HCR))])+
-  facet_wrap(~indicator, scales = 'free_y', ncol = 2)+
+  facet_wrap(~indicator, scales = 'free_y', ncol = 3)+
 #  geom_blank(data = dummy)+
   theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5), legend.position = 'none')
 p1
 
+
+p1.sp<- ggplot(df.sp, aes(x = HCR,y = value, factor=season))+geom_bar(stat = 'identity', aes(fill = season), position="dodge2")+
+  scale_x_discrete(name = '')+  
+  scale_y_continuous(name = '')+
+  scale_fill_manual(values = cols[1:length(unique(df.obj$HCR))])+
+  facet_wrap(~country, scales = 'fixed', ncol = 2, dir='v')+
+  #  geom_blank(data = dummy)+
+  #geom_hline(yintercept=c(.045, .07, 0.12))+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
+p1.sp
+
+
 if(plotexp == TRUE){
 png(paste(plotfolder,'objective_bars.png'), width = 20, height =20, res = 400, unit = 'cm')
 print(p1)
+dev.off()
+
+png(paste(plotfolder,'sp_objective_bars.png'), width = 20, height =20, res = 400, unit = 'cm')
+print(p1.sp)
 dev.off()
 }  
 
