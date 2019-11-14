@@ -38,12 +38,11 @@ sim.data <- run.agebased.true.catch(df)
 
 simdata0 <- sim.data # The other one is gonna get overwritten. 
 
-# 
-plot(sim.data$Fsel[1,1,1:15], col = 'red', type ='l')
-lines(sim.data$Fsel[1,2,1:15], col = 'blue')
-
 # Plot the biomass in ggplot 
-df.plot <- data.frame(years = rep(df$years,2), SSB = c(rowSums(sim.data$SSB)*0.5,assessment$SSB), source = rep(c('SSB OM','SSB assessment'), each = length(df$years)))
+df.plot <- data.frame(years = c(df$years,assessment$year), 
+                      SSB = c(rowSums(sim.data$SSB),assessment$SSB), 
+                      source = c(rep('SSB OM',length(df$years)),rep('SSB assessment', length(assessment$year))))
+
 
 p1 <- ggplot(data = df.plot, aes(x = years, y = SSB, color = source))+geom_line(size = 2)+theme_classic()
 
