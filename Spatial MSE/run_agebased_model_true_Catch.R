@@ -204,6 +204,10 @@ run.agebased.true.catch <- function(df, seeds = 100){
   pope.mul <- nseason/1*0.5
   pope.mul <- 0.50
   
+  if(nseason == 1){
+    Fnseason <- 1
+  }
+  
   
   for (yr in 1:nyear){ # Loop over years add one year for initial distribution
     
@@ -238,7 +242,8 @@ run.agebased.true.catch <- function(df, seeds = 100){
     
     
     if(nseason == 1){
-      Fnseason = 1
+      Fnseason <- 1
+      Fnseason <- as.matrix(Fnseason) 
     }
     
     if(df$move == FALSE){
@@ -279,11 +284,11 @@ run.agebased.true.catch <- function(df, seeds = 100){
         if(year[yr] >2018){
           
           if(df$selectivity_change == 0){
-            # if(space == 1){
-            #   pseltmp <- psel#c(1,1,1,1,1)
-            # }else{
-              pseltmp <- psel
-            #}
+            if(space == 1){
+              pseltmp <- c(1,1,1,1,1)
+            }else{
+            pseltmp <- psel
+            }
           }
           
           if(df$selectivity_change ==1){

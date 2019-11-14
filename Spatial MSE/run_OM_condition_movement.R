@@ -39,7 +39,7 @@ nruns <- nparms^2
 
 yr.future <- 2
 
-df <- load_data_seasons_future(yr.future, movemaxinit = 0.35, movefiftyinit = 6)
+df <- load_data_seasons(movemaxinit = 0.7, movefiftyinit = 3, yr_future = yr.future)
 df$surveyseason <- 2
 
 Catch.future <- c(df$Catch, rep(206507.8, yr.future)) # Project MSY
@@ -137,7 +137,7 @@ df.tot <- rbind(df.plot,df.ass) %>%
 
 df.survey <- data.frame(years = df$years[df$flag_survey == 1],
                         source = 'Survey data',
-                        survey = df$survey[df$flag_survey == 1],
+                        survey = df$survey$x[df$flag_survey == 1],
                         survsd=  sqrt(df$survey[df$flag_survey == 1]^2*exp(df$survey_err[df$flag_survey == 1]+
                                                                             exp(df$parms$logSDsurv)-1))
 )

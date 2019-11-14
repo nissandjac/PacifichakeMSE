@@ -148,7 +148,7 @@ load_data_seasons <- function(nseason = 4,
   age_catch.df$flag <- 1
   
   if(nseason == 4){
-  surveyseason <- 3
+  surveyseason <- 2
   
   }else{
     surveyseason <- floor(nseason/2)
@@ -281,7 +281,7 @@ load_data_seasons <- function(nseason = 4,
        psel[i,] <- parms$psel_fish
        
      }
-     #psel[1,] <- c(1,1,1,1,1)
+     psel[1,] <- c(1,1,1,1,1)
      
 # Flag if there's a selectivity change in that year     
      selYear <- 1991
