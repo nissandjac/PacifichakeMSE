@@ -148,7 +148,7 @@ load_data_seasons <- function(nseason = 4,
   age_catch.df$flag <- 1
   
   if(nseason == 4){
-  surveyseason <- 2
+  surveyseason <- 3
   
   }else{
     surveyseason <- floor(nseason/2)
@@ -246,7 +246,9 @@ load_data_seasons <- function(nseason = 4,
   if(nseason == 4 & nspace == 2){
   Fnseason <- matrix(NA, 2,4)
   
+  #Fnseason[1,] <- c(0.0,0.4,0.50,0.1) # Must add to one 
   Fnseason[1,] <- c(0.001,0.188,0.603,0.208)
+  #Fnseason[2,] <- c(0.0,0.4,0.50,0.1) # Must add to onec
   Fnseason[2,] <- c(0.000,0.317,0.382,0.302)/sum(c(0.000,0.317,0.382,0.302)) # Divide by sum to sum to 1 
     
   }else{

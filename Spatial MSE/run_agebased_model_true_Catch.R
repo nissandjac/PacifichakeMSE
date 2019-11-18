@@ -123,6 +123,7 @@ run.agebased.true.catch <- function(df, seeds = 100){
                       dimnames = list(age = age, year = year_1, space = 1:nspace, season = 1:nseason))
   N.save.age.mid <- array(NA,dim = c(nage,nyear+1, nspace, nseason), 
                           dimnames = list(age = age, year = year_1, space = 1:nspace, season = 1:nseason))
+  R.save <- matrix(NA, nyear, nspace)
   V.save <- array(NA,dim = c(nyear, nspace, nseason), dimnames = list(
     year = year, space = 1:nspace, season = 1:nseason))
 
@@ -264,6 +265,7 @@ run.agebased.true.catch <- function(df, seeds = 100){
             (SSB_0[space]*(1-h)+ SSB[yr,space]*(5*h-1)))*exp(-0.5*df$b[yr]*SDR^2+Ry)#*recruitmat[space]
     
       N.save.age[1,yr,space,1] <- R
+      R.save[yr,space] <- R
     }
     
     
@@ -283,13 +285,13 @@ run.agebased.true.catch <- function(df, seeds = 100){
         
         if(year[yr] >2018){
           
-          if(df$selectivity_change == 0){
-            if(space == 1){
-              pseltmp <- c(1,1,1,1,1)
-            }else{
-            pseltmp <- psel
-            }
-          }
+          # if(df$selectivity_change == 0){
+          #   if(space == 1){
+          #     pseltmp <- c(1,1,1,1,1)
+          #   }else{
+          #   pseltmp <- psel
+          #   }
+          # }
           
           if(df$selectivity_change ==1){
             if(space == 1){
@@ -567,6 +569,7 @@ run.agebased.true.catch <- function(df, seeds = 100){
     df.out   <- list(N.save = Nsave, 
                      SSB = SSB, 
                      N.save.age = N.save.age,
+                     R.save = R.save,
                      V.save = V.save,
                      SSB.all = SSB.all,
                      Catch.save.age = Catch.save.age,
@@ -576,12 +579,10 @@ run.agebased.true.catch <- function(df, seeds = 100){
                      Catch.quota = Catch.quota,
                      Catch.quota.N = Catch.quota.N,
                      Fout = Fout.save,
-                     Nout = N.save.age, 
                      age_comps_OM = age_comps_OM,
                      age_catch = age_comps_catch,
                      SSB_0 = SSB_0, 
                      SSB.weight = SSB.weight,
-                     Nsave.all = N.save.age,
                      survey.true = survey.true,
                      surv.tot = surv.tot,
                      Z = Z.save,
