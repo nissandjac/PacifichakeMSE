@@ -30,9 +30,7 @@ source('load_files_OM.R')
 ```
 Load the assessment data
 ```{r}
-assessment <- read.csv('data/assessment_MLE.csv')
-assessment <- assessment[assessment$year > 1965,]
-mod <- SS_output(paste(getwd(),'/data/', sep =''), 
+mod <- SS_output(paste(getwd(),'/data/SS32018', sep =''), 
                  printstats=FALSE, 
                  verbose = FALSE, 
                  hidewarn = TRUE, 
@@ -60,8 +58,10 @@ sim.data.simple <- run.agebased.true.catch(df.simple)
 Plot the spawning biomass of the operating model. The diffference in spawning biomass is due to spatial structure 
 ```{r echo=FALSE}
 # Plot the biomass in ggplot 
-df.plot <- data.frame(years = c(df$years,df$years,assessment$year), 
-                      SSB = c(rowSums(sim.data$SSB.weight),sim.data.simple$SSB.weight,assessment$SSB), 
+SSB.obs <- mod$derived_quants$Value[grep('SSB_1966',mod$derived_quants$Label):grep('SSB_2018',mod$derived_quants$Label)]
+
+df.plot <- data.frame(years = c(df$years,df$years,df$years), 
+                      SSB = c(rowSums(sim.data$SSB.weight),sim.data.simple$SSB.weight,SSB.obs), 
                       source = c(rep('SSB OM', length(df$years)), 
                                  rep('SSB simple', length(df.simple$years)),
                                  rep('SSB assessment', length(assessment$year))
@@ -108,6 +108,18 @@ p2 <- ggplot(data = df.plot, aes(x = years, y = survey/1e6, color = source))+
 
 p2
 ```
+
+Compare the recruitment from the two countries and the assessment model
+```{r}
+df.R <- data.frame(year = c(df$years,df$years,mod$recruit$Yr[mod$recruit$Yr>1965]),
+                 R = c(rowSums(sim.data$R.save),sim.data.simple$R.save, mod$recruit$pred_recr[mod$recruit$Yr>1965]),
+                 source = c(rep('OM', df$nyear),rep('OM simple', df$nyear), rep('assessment', length(mod$recruit$Yr[mod$recruit$Yr>1964]))))
+
+ggplot(df.R, aes(x= year, y = R, color = source))+geom_line()+geom_point()+theme_classic()
+
+
+```
+
 
 Calculate average ages using the calcMeanAge() function
 ```{r}
