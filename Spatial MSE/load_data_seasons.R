@@ -283,8 +283,13 @@ load_data_seasons <- function(nseason = 4,
        psel[i,] <- parms$psel_fish
        
      }
+    
+     if(nspace == 2){
      psel[1,] <- c(1,1,1,1,1)
      
+     }
+       
+       
 # Flag if there's a selectivity change in that year     
      selYear <- 1991
      
@@ -309,7 +314,7 @@ load_data_seasons <- function(nseason = 4,
                   nseason = nseason,
                   nyear = nyear,
                   tEnd = tEnd, # The extra year is to initialize 
-                  logQ = log(1),   # Analytical solution
+                  logQ = log(1.14135),   # Analytical solution
                   # Selectivity 
                   Smin = 1,
                   Smin_survey = 2,
@@ -364,11 +369,12 @@ load_data_seasons <- function(nseason = 4,
               
   )
   
-  Catch.obs <- read.csv('data/hake_totcatch.csv') # Total catch
-  df$Catch <- Catch.obs$Fishery # Add the observed catch
+ 
   
   Catch.country <- read.csv('data/catch_per_country.csv')
   df$Catch.country <- as.matrix(Catch.country[,2:3])[,c(2,1)]
+  
+  df$Catch <- rowSums(df$Catch.country)
   
   if(nyear > length(df$Catch)){
     df$Catch <- c(df$Catch,rep(mean(df$Catch), nyear-length(Catch.obs$Fishery)))

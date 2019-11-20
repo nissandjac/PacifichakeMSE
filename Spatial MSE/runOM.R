@@ -10,13 +10,13 @@ set.seed(seedz)
 assessment <- read.csv('data/assessment_MLE.csv')
 assessment <- assessment[assessment$year > 1965,]
 # Get the stock assessment output from SS3 
-mod <- SS_output(paste(getwd(),'/data/', sep =''), printstats=FALSE, verbose = FALSE)
+mod <- SS_output(paste(getwd(),'/data/SS32018', sep =''), printstats=FALSE, verbose = FALSE)
 
 
 plot.figures = FALSE # Set true for printing to file 
 
 
-df <- load_data_seasons(nseason = 4, nspace = 2, bfuture = 0.5, movemaxinit = 0.5, movefiftyinit =8) # Prepare data for operating model
+df <- load_data_seasons(nseason = 1, nspace = 1, bfuture = 0.5, movemaxinit = 0.5, movefiftyinit =8) # Prepare data for operating model
 
 simyears <- 25 # Project 30 years into the future (2048 that year)
 year.future <- c(df$years,(df$years[length(df$years)]+1):(df$years[length(df$years)]+simyears))
@@ -25,10 +25,26 @@ sim.data <- run.agebased.true.catch(df)
 
 
 
+# 
+M <- exp(df$parms$logMinit)
+R0 <- exp(df$parms$logRinit)
+wtatage <- mod$wtatage
+
+
+N_at_age.beg <- rep(NA, df$nage)
+N_at_age.beg <- R0*exp(-M*df$age)
+# replace plus-group value with sum of geometric series
+N_at_age.beg[df$nage] <- R0*exp(-M*max(df$age))/(1 - exp(-M))
+mod$SBzero/sum(N_at_age.beg*wtatage[wtatage$Yr == 1966 & wtatage$Fleet == -2, paste(df$age)] )
+
+
+SSB.obs <- mod$derived_quants$Value[grep('SSB_1966',mod$derived_quants$Label):grep('SSB_2018',mod$derived_quants$Label)]
+SSB.OM <- rowSums(sim.data$SSB.weight)
+
 # Plot the biomass in ggplot 
-df.plot <- data.frame(years = c(df$years,assessment$year), 
-                      SSB = c(rowSums(sim.data$SSB.weight),assessment$SSB), source = c(rep('SSB OM', length(df$years)),
-                                                                                       rep('SSB assessment', length(assessment$year))))
+df.plot <- data.frame(years = c(df$years,df$years), 
+                      SSB = c(rowSums(sim.data$SSB.weight),SSB.obs), source = c(rep('SSB OM', df$nyear),
+                                                                                       rep('SSB assessment', df$nyear)))
 
 p1 <- ggplot(data = df.plot, aes(x = years, y = SSB, color = source))+geom_line(size = 2)+theme_classic()
 p1
@@ -64,16 +80,16 @@ p2
 
 source('calcMeanAge.R')
 
-age.comps <- sim.data$age_comps_OM[,1:df$nyear,,3]
+age.comps <- sim.data$age_comps_OM[,1:df$nyear,,df$surveyseason]
 age.comps <- apply(age.comps,c(1,2),sum)/2
 
 am <- calcMeanAge(age.comps,df$nage)
 
 
-age.comps.can <- sim.data$age_comps_OM[,1:df$nyear,1,3]
+age.comps.can <- sim.data$age_comps_OM[,1:df$nyear,1,df$surveyseason]
 am.can <-calcMeanAge(age.comps.can, df$nage)
 
-age.comps.US <- sim.data$age_comps_OM[,1:df$nyear,2,3]
+age.comps.US <- sim.data$age_comps_OM[,1:df$nyear,2,df$surveyseason]
 am.US <- calcMeanAge(age.comps.US, df$nage)
 
 

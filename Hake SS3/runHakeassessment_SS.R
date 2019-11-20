@@ -14,12 +14,12 @@ df$smul <- 0.5
 years <- df$years
 
 #U[2,] <- 0.01
-parms.ss <- getParameters_ss(TRUE, mod)
+parms.ss <- getParameters_ss(FALSE, mod)
 
 
 compile("runHakeassessment.cpp")
 dyn.load(dynlib("runHakeassessment"))
-obj <-MakeADFun(df,parms,DLL="runHakeassessment")#, )
+obj <-MakeADFun(df,parms.ss,DLL="runHakeassessment")#, )
 
 vars <- obj$report()
 
