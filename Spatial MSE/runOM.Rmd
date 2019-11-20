@@ -54,7 +54,30 @@ sim.data <- run.agebased.true.catch(df)
 sim.data.simple <- run.agebased.true.catch(df.simple)
 
 ```
+Compare N at age
+```{r}
+tt <- sim.data.simple
+aidx <- c(8,3:(13+df$nage-1))
+natage <- melt(mod$natage[mod$natage$`Beg/Mid` == 'B',], id.vars = 'Yr', measure.vars = paste(0:20),
+               variable.name = 'age', value.name = 'N')
 
+waa.mat <- melt(mod$wtatage[mod$wtatage$Fleet== -2,], id.vars = 'Yr', measure.vars = paste(0:20))
+
+mat <- melt(mod$ageselex[mod$ageselex$Factor == 'Fecund',], id.vars = 'Yr', measure.vars = paste(0:20),
+               variable.name = 'age', value.name = 'mat')
+mat <- mat[mat$Yr == 1963,]
+## Check SSB0 
+mod$SBzero
+mod$derived_quants$Value[mod$derived_quants$Label == 'SSB_Virgin']/2
+
+# Recalculate SSB0
+sum(natage$N[natage$Yr ==1965]*mat$mat*rowMeans(df$wage_ssb))
+
+SSB.ss <- mod$derived_quants$Value[mod$derived_quants$Label == 'SSB_Virgin']
+
+natage$N[natage$age == 0 & natage$Yr > 1965]/tt$N.save[1,]
+
+```
 Plot the spawning biomass of the operating model. The diffference in spawning biomass is due to spatial structure 
 ```{r echo=FALSE}
 # Plot the biomass in ggplot 
@@ -64,7 +87,7 @@ df.plot <- data.frame(years = c(df$years,df$years,df$years),
                       SSB = c(rowSums(sim.data$SSB.weight),sim.data.simple$SSB.weight,SSB.obs), 
                       source = c(rep('SSB OM', length(df$years)), 
                                  rep('SSB simple', length(df.simple$years)),
-                                 rep('SSB assessment', length(assessment$year))
+                                 rep('SSB assessment', length(SSB.obs))
                                  ))
 
 p1 <- ggplot(data = df.plot, aes(x = years, y = SSB, color = source))+geom_line(size = 2)+theme_classic()

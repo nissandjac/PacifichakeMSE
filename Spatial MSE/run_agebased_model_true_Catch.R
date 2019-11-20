@@ -72,7 +72,8 @@ run.agebased.true.catch <- function(df, seeds = 100){
   SSB_0 <- NA
   
   for(i in 1:nspace){
-    SSB_0[i] <- sum(df$Matsel*N0*move.init[i])
+    #SSB_0[i] <- sum(df$Matsel*N0*move.init[i])
+    SSB_0[i] <- sum(N0*move.init[i]*df$wage_ssb[,1])
   }
   names(SSB_0) <- paste(rep('space',each = df$nspace),1:nspace)
   
@@ -256,8 +257,9 @@ run.agebased.true.catch <- function(df, seeds = 100){
     
     # fix Ssb and recruitment in all areas 
     for(space in 1:nspace){
-      SSB[yr,space] <-sum(N.save.age[,yr,space,1]*Mat.sel, na.rm = TRUE)
       SSB.weight[yr,space] <- sum(N.save.age[,yr,space,1]*as.numeric(w_ssb), na.rm = TRUE)
+      SSB[yr,space] <- SSB.weight[yr,space] #sum(N.save.age[,yr,space,1]*Mat.sel, na.rm = TRUE)
+      
       SSB.all[1,space,1]<- sum(N.save.age[,1,space,1]*Mat.sel, na.rm = TRUE)
       
     # Recruitment only in season 1  
