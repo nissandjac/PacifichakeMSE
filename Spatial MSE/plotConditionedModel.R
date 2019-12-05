@@ -8,6 +8,7 @@ library(gridExtra)
 library(dplyr)
 library(cowplot)
 library(r4ss)
+library(RColorBrewer)
 # Survey age distribution 
 source('calcMeanAge.R')
 # 2018 assessment
@@ -19,7 +20,6 @@ plot.figures = TRUE# Set true for printing to file
 source('load_files_OM.R')
 source('load_files.R')
 source('runfuture_OM.R')
-source('load_data_seasons_future.R')
 source('run_agebased_model_true_catch.R')
 assessment <- read.csv('data/assessment_MLE.csv')
 
@@ -34,9 +34,10 @@ movefifty.parms <- seq(1,10, length.out = nparms)
 
 yr.future <- 2
 
-df <- load_data_seasons_future(yr.future, movemaxinit = 0.35, movefiftyinit = 6)
-df$surveyseason <- 2
-sim.data <- run.agebased.true.catch(df, 123)
+df <- load_data_seasons(nseason = 4, nspace = 2, bfuture = 0.5, movemaxinit = 0.35, movefiftyinit =6,
+                        yr_future = yr.future) # Prepare data for operating model
+df$surveyseason <- 3
+sim.data <- run.agebased.true.catch(df)
 
 Catch.future <- c(df$Catch, rep(206507.8, yr.future)) # Project MSY
 df$Catch <- Catch.future
@@ -61,7 +62,7 @@ p.AC.survey <- ggplot(AC.survey, aes(x = year, y= AC.mean, color = country))+geo
   geom_point(data = ac.survey.tot)+  scale_x_continuous(limit = c(1965,2018))+
   scale_color_manual(values = c('darkred','blue4'))+
   theme(legend.position = 'none')+scale_y_continuous('mean age')
-#p.AC.survey
+p.AC.survey
 
 
 if(plot.figures == TRUE){
@@ -126,8 +127,8 @@ cols <- brewer.pal(6, 'Dark2')
 
 df.survey <- data.frame(years = df$years[df$flag_survey == 1],
                         source = 'Survey data',
-                        survey = df$survey[df$flag_survey == 1],
-                        survsd=  sqrt(df$survey[df$flag_survey == 1]^2*exp(df$survey_err[df$flag_survey == 1]+
+                        survey = df$survey$x[df$flag_survey == 1],
+                        survsd=  sqrt(df$survey$x[df$flag_survey == 1]^2*exp(df$survey_err[df$flag_survey == 1]+
                                                                              exp(df$parms$logSDsurv)-1))
 )
 df.tot$survsd <- NA

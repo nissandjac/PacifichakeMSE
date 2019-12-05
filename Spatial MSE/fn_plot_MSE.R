@@ -24,7 +24,7 @@ df.obj <- data.frame(obj.plot[[1]][[2]])
 for(i in 2:length(nms)){
   df.obj <- rbind(df.obj, obj.plot[[i]][[2]])
 }
-
+ 
 indicators <- unique(df.obj$indicator)
 df.obj2 <- df.obj
 

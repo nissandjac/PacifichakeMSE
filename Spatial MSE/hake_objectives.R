@@ -231,7 +231,7 @@ hake_objectives <- function(ls.MSE, SSB0, move = NA){
                          value = c(
                            round(length(which(SSB.future$SSB <= 0.1))/length(SSB.future$SSB), digits = 2),
                         #   round(length(which(SSB.future$SSB>0.1 & SSB.future$SSB<0.4))/length(SSB.future$SSB), digits = 2),
-                          # round(length(which(SSB.future$SSB>0.4))/length(SSB.future$SSB), digits = 2),
+                           round(length(which(SSB.future$SSB>0.4))/length(SSB.future$SSB), digits = 2),
                           # round(mean(p.vals), digits = 2), 
                         #   mean(nclosed),
                            round(median(AAV.plotquant$med), digits = 2),
