@@ -20,7 +20,7 @@ parms.true <- getParameters_OM(TRUE,df) # Load parameters from assessment
 
 time <- 1
 yrinit <- df$nyear
-nruns <- 100
+nruns <- 1000
 seeds <- floor(runif(n = nruns, min = 1, max = 1e6))
 ### Run the OM and the EM for x number of years in the MSE 
 ### Set targets for harvesting etc 
