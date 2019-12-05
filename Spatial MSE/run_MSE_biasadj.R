@@ -11,7 +11,7 @@ set.seed(seedz)
 source('load_files.R')
 source('load_files_OM.R')
 source('run_multiple_OMs.R')
-nruns <- 100
+nruns <- 1000
 seeds <- floor(runif(n = nruns, min = 1, max = 1e6))
 
 ls.save <- list()
