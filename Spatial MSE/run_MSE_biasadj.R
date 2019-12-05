@@ -2,7 +2,7 @@ library(TMB)
 compile("runHakeassessment.cpp")
 dyn.load(dynlib("runHakeassessment"))
 library(r4ss)
-mod <- SS_output(paste(getwd(),'/data/', sep =''), printstats=FALSE, verbose = FALSE) # Read the true selectivity 
+mod <- SS_output(paste(getwd(),'/data/SS32018', sep =''), printstats=FALSE, verbose = FALSE) # Read the true selectivity 
 
 # Set the seed
 seedz <- 12345
@@ -38,9 +38,8 @@ save(ls.save,file = 'results/bias adjustment/MSErun_move_nofishing_nobiasadj.Rda
 
 ls.save <- list()
 ls.converge <- matrix(0, nruns)
-df <- load_data_seasons(nseason = 4, nspace = 2) # Prepare data for operating model
+df <- load_data_seasons(nseason = 4, nspace = 2, bfuture = 0.87) # Prepare data for operating model
 source('run_multiple_OMs.R')
-df$bfuture <- 0.87
 
 
 for (i in 1:nruns){
@@ -61,8 +60,7 @@ save(ls.save,file = 'results/bias adjustment/MSErun_move_nofishing_biasadj.Rdata
 
 ls.save <- list()
 ls.converge <- matrix(0, nruns)
-df <- load_data_seasons(nseason = 4, nspace = 2) # Prepare data for operating model
-df$bfuture <- 0.5
+df <- load_data_seasons(nseason = 4, nspace = 2, bfuture = 0.5) # Prepare data for operating model
 
 
 for (i in 1:nruns){
