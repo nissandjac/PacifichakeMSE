@@ -390,15 +390,15 @@ run_multiple_MSEs <- function(simyears = NULL,seeds = 12345, TAC = 1, df = NA,
   source('calcMeanAge.R')
   
   #dev.off()
-  # amc <- data.frame(year = year.future[1:year], 
-  #                   amc.can = calcMeanAge(sim.data$age_comps_catch_space[,,1], df$age_maxage),
-  #                   amc.US  = calcMeanAge(sim.data$age_comps_catch_space[,,2], df$age_maxage),
-  #                   amc.tot = calcMeanAge(sim.data$age_catch, df$age_maxage))
-  # 
-  # ams <- data.frame(year = year.future[1:year], 
-  #                   ams.can = calcMeanAge(sim.data$age_comps_country[,,1], df$age_maxage),
-  #                   ams.US  = calcMeanAge(sim.data$age_comps_country[,,2], df$age_maxage),
-  #                   ams.tot = calcMeanAge(sim.data$age_comps_surv, df$age_maxage))
+  amc <- data.frame(year = year.future[1:year],
+                    amc.can = calcMeanAge(sim.data$age_comps_catch_space[,,1], df$age_maxage),
+                    amc.US  = calcMeanAge(sim.data$age_comps_catch_space[,,2], df$age_maxage),
+                    amc.tot = calcMeanAge(sim.data$age_catch, df$age_maxage))
+
+  ams <- data.frame(year = year.future[1:year],
+                    ams.can = calcMeanAge(sim.data$age_comps_country[,,1], df$age_maxage),
+                    ams.US  = calcMeanAge(sim.data$age_comps_country[,,2], df$age_maxage),
+                    ams.tot = calcMeanAge(sim.data$age_comps_surv, df$age_maxage))
   
   df.ret <- list(Catch = Catch.year, 
                  Catch.quota = sim.data$Catch.quota,# All output is from the OM 
@@ -410,9 +410,9 @@ run_multiple_MSEs <- function(simyears = NULL,seeds = 12345, TAC = 1, df = NA,
                  parms = parms.save,
                  N = sim.data$N.save.age,
                  # #sim.data
-                 # 
-                 # ams = ams,
-                 # amc = amc,
+
+                 ams = ams,
+                 amc = amc,
                  V = sim.data$V.save
   )
   

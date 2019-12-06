@@ -3,17 +3,17 @@ hake_objectives <- function(ls.MSE, SSB0, move = NA){
   #' @ls.mse # A list of individual MSE runs. Should contain Biomass, Catch, and df with parameters    
   # sim.data # Initial years of the operating model   
   nruns <- length(ls.MSE)
-
+  nyears <- dim(ls.MSE[[1]][1]$Catch)[2]
   # Get the number of years run in that MSE 
   if(all(is.na(ls.MSE[[1]]))){
-    simyears <- length(ls.MSE[[2]][2]$Catch)-(length(1966:2017))+1
+    simyears <- nyears-(length(1966:2018))+1
     
     
   }else{
-    simyears <- length(ls.MSE[[1]][1]$Catch)-(length(1966:2017))+1
+    simyears <- nyears-(length(1966:2018))+1
     }
     
-  yr <- 1966:(2017+simyears-1)
+  yr <- 1966:(2018+simyears-1)
   
   idx <- 1
   
@@ -28,21 +28,25 @@ hake_objectives <- function(ls.MSE, SSB0, move = NA){
   if(is.na(move)){
     SSB.plot <- data.frame(SSB = (ls.MSE[[idx]]$SSB)/(SSB0), year = yr, run = paste('run',1, sep=''))
   }else{
-    SSB.plot <- data.frame(SSB = rowSums(ls.MSE[[idx]]$SSB)/sum(SSB0), year = yr, run = paste('run',1, sep=''))
+    SSB.plot <- data.frame(SSB = as.numeric(rowSums(ls.MSE[[idx]]$SSB))/sum(SSB0), year = yr, run = paste('run',1, sep=''))
   }  
   
   if(is.na(move)){
   Catch.plot <- data.frame(Catch = ls.MSE[[idx]]$Catch, year = yr, run = paste('run',1, sep=''))
   }else{
-    Catch.plot <- data.frame(Catch = rowSums(ls.MSE[[idx]]$Catch), year = yr, run = paste('run',1, sep=''))
+    
+    catchtmp <- as.numeric(apply(ls.MSE[[idx]]$Catch,MARGIN = 2, FUN = sum))
+    
+    
+    Catch.plot <- data.frame(Catch = catchtmp, year = yr, run = paste('run',1, sep=''))
     
     quota.tot <- apply(ls.MSE[[idx]]$Catch.quota, MARGIN = 1, FUN = sum)
-    quota.plot <- data.frame(Quota_frac = quota.tot/rowSums(ls.MSE[[idx]]$Catch), year = yr, run = paste('run',1, sep =''))
+    quota.plot <- data.frame(Quota_frac = quota.tot/catchtmp, year = yr, run = paste('run',1, sep =''))
     
     quota.us <- rowSums(ls.MSE[[idx]]$Catch.quota[,2,])
     quota.can <- rowSums(ls.MSE[[idx]]$Catch.quota[,1,])
   }  
-  AAV.plot  <- data.frame(AAV = abs(ls.MSE[[idx]]$Catch[2:length(yr)]-ls.MSE[[idx]]$Catch[1:(length(yr)-1)])/ls.MSE[[idx]]$Catch[1:(length(yr)-1)], 
+  AAV.plot  <- data.frame(AAV = abs(catchtmp[2:length(yr)]-catchtmp[1:(length(yr)-1)])/catchtmp[1:(length(yr)-1)], 
                           year = yr[2:length(yr)], run = paste('run',1, sep=''))
   
   for(i in 2:nruns){
@@ -58,16 +62,19 @@ hake_objectives <- function(ls.MSE, SSB0, move = NA){
         
         
       }else{
+        
+        catchtmp <-  as.numeric(apply(ls.tmp$Catch,MARGIN = 2, FUN = sum))
+        
         SSB.tmp <- data.frame(SSB = rowSums(ls.tmp$SSB)/sum(SSB0), year = yr, run =  paste('run',i, sep=''))
-        Catch.tmp <- data.frame(Catch = rowSums(ls.tmp$Catch), year = yr, run =  paste('run',i, sep=''))
-        quota.tmp <- data.frame(Quota_frac = rowSums(ls.tmp$Catch)/apply(ls.tmp$Catch.quota, MARGIN = 1, FUN = sum), year = yr, run =  paste('run',i, sep=''))
+        Catch.tmp <- data.frame(Catch = catchtmp, year = yr, run =  paste('run',i, sep=''))
+        quota.tmp <- data.frame(Quota_frac = catchtmp/apply(ls.tmp$Catch.quota, MARGIN = 1, FUN = sum), year = yr, run =  paste('run',i, sep=''))
         
         if(ncol(ls.tmp$Catch) == 1){
           Catch.can <- ls.tmp$Catch*0.26
           Catch.us <- ls.tmp$Catch*0.74
         }else{
-          Catch.can <- ls.tmp$Catch[,1]
-          Catch.us <- ls.tmp$Catch[,2]
+          Catch.can <- apply(ls.tmp$Catch,MARGIN = c(2,3), FUN = sum)[,1]
+          Catch.us <- apply(ls.tmp$Catch,MARGIN = c(2,3), FUN = sum)[,2]
         }
         
         quota.tmp.can <- data.frame(Catch = Catch.can/rowSums(ls.tmp$Catch.quota[,1,]),
@@ -211,7 +218,7 @@ hake_objectives <- function(ls.MSE, SSB0, move = NA){
   indicator =
     c('SSB <0.10 SSB0',
    #   'S>0.10<0.4S0',
-   #   'S>0.4S0',
+      'S>0.4S0',
   #    '3 consec yrs S<S40',
    #   'years closed fishery',
       'AAV',
