@@ -2,15 +2,19 @@ df_lists <- function(ls.save, nms){
 
 source('calcMeanAge.R')
   
+  
+nyears <- dim(ls.save[[1]][1]$Catch)[2]
+  
+  
 if(dim(ls.save[[1]]$Catch)[2] == 1){
     
-simyears <- length(ls.save[[1]][1]$Catch)-(length(1966:2017))+1
+simyears <- nyears-(length(1966:2018))+1
 }else{
-  simyears <- length(rowSums(ls.save[[1]][1]$Catch))-(length(1966:2017))+1
+  simyears <- nyears-(length(1966:2018))+1
   
 }
 
-yr <- 1966:(2017+simyears-1)
+yr <- 1966:(2018+simyears-1)
   
 nruns <- length(ls.save)
 nfailed <- rep(1, nruns)
@@ -29,7 +33,7 @@ for(i in 1:nruns){
     
   if(i == 1){
     
-    if(dim(ls.save[[1]]$Catch)[2] == 1){
+    if(dim(ls.save[[1]]$Catch)[3] == 1){
       Catch.us <- ls.save[[i]]$Catch*0.76
       Catch.can <- ls.save[[i]]$Catch*0.24
       Catch = ls.save[[i]]$Catch
@@ -39,9 +43,12 @@ for(i in 1:nruns){
       Catch.q.can <- rowSums(ls.save[[i]]$Catch.quota[,1,])
       Catch.q = rowSums(ls.save[[i]]$Catch.quota)
     }else{
-      Catch = rowSums(ls.save[[i]]$Catch)
-      Catch.us = ls.save[[i]]$Catch[,2]
-      Catch.can = ls.save[[i]]$Catch[,1]
+      
+      catchtmp <- apply(ls.save[[i]]$Catch, MARGIN = c(2,3), FUN = sum)
+      
+      Catch = rowSums(catchtmp)
+      Catch.us = catchtmp[,2]
+      Catch.can = catchtmp[,1]
       
       Catch.q = rowSums(ls.save[[i]]$Catch.quota)
       Catch.q.us = rowSums(ls.save[[i]]$Catch.quota[,2,])
@@ -49,29 +56,29 @@ for(i in 1:nruns){
       
     }
     
+    source('calcMeanAge.R')
     
-    
-    ls.df <- data.frame(year = yr, SSB.can = ls.save[[i]]$SSB[,1], SSB.US = ls.save[[i]]$SSB[,2],
-                         SSBtot =  ls.save[[i]]$SSB[,1]+ls.save[[i]]$SSB[,2],
-                         # F0.can = rowSums(ls.save[[i]]$F0[,,1], na.rm = TRUE),
-                         # F0.us = rowSums(ls.save[[i]]$F0[,,2], na.rm = TRUE),
-                         amc = ls.save[[i]]$amc$amc.tot, 
-                         ams = ls.save[[i]]$ams$ams.tot, 
-                         amc.can = ls.save[[i]]$amc$amc.can,
-                         amc.us = ls.save[[i]]$amc$amc.US,
-                         ams.can = ls.save[[i]]$ams$ams.can,
-                         ams.us = ls.save[[i]]$ams$ams.US,
-                         SSB.mid.can = ls.save[[i]]$SSB.mid[,1],
-                         SSB.mid.us = ls.save[[i]]$SSB.mid[,2],
-                         run = paste('run',i, sep = '-'),
-                         Catch.q = Catch.q,
-                         Catch.q.us = Catch.q.us,
-                         Catch.q.can = Catch.q.can,
-                         Catch = Catch,
-                         Catch.us = Catch.us,
-                         Catch.can = Catch.can,
-                         F0.us = Catch.us/ls.save[[i]]$SSB.mid[,2],
-                         F0.can = Catch.can/ls.save[[i]]$SSB.mid[,1])
+    ls.df <- data.frame(year = yr, 
+                        SSB.can = ls.save[[i]]$SSB[,1], 
+                        SSB.US = ls.save[[i]]$SSB[,2],
+                        SSBtot =  ls.save[[i]]$SSB[,1]+ls.save[[i]]$SSB[,2],
+                        F0.can = ls.save[[i]]$F0[,1],
+                        F0.us = ls.save[[i]]$F0[,2],
+                        # amc.can = ls.save[[i]]$amc$amc.can,
+                        # amc.us = ls.save[[i]]$amc$amc.US,
+                        # ams.can = ls.save[[i]]$ams$ams.can,
+                        # ams.us = ls.save[[i]]$ams$ams.US,
+                        # SSB.mid.can = ls.save[[i]]$SSB.mid[,1],
+                        SSB.mid.us = ls.save[[i]]$SSB.mid[,2],
+                        run = paste('run',i, sep = '-'),
+                        Catch.q = Catch.q,
+                        Catch.q.us = Catch.q.us,
+                        Catch.q.can = Catch.q.can,
+                        Catch = Catch,
+                        Catch.us = Catch.us,
+                        Catch.can = Catch.can,
+                        F0.us = Catch.us/ls.save[[i]]$SSB.mid[,2],
+                        F0.can = Catch.can/ls.save[[i]]$SSB.mid[,1])
                         
   }else{
     
@@ -81,13 +88,17 @@ for(i in 1:nruns){
       Catch = ls.save[[i]]$Catch
       
     }else{
-      Catch = rowSums(ls.save[[i]]$Catch)
-      Catch.us = ls.save[[i]]$Catch[,2]
-      Catch.can = ls.save[[i]]$Catch[,1]
+      
+      catchtmp <- apply(ls.save[[i]]$Catch, MARGIN = c(2,3), FUN = sum)
+      
+      Catch = rowSums(catchtmp)
+      Catch.us = catchtmp[,2]
+      Catch.can = catchtmp[,1]
       
       Catch.q = rowSums(ls.save[[i]]$Catch.quota)
       Catch.q.us = rowSums(ls.save[[i]]$Catch.quota[,2,])
       Catch.q.can = rowSums(ls.save[[i]]$Catch.quota[,1,])
+      
       
     }
     
@@ -96,12 +107,12 @@ for(i in 1:nruns){
                            SSBtot =  ls.save[[i]]$SSB[,1]+ls.save[[i]]$SSB[,2],
                            # F0.can = rowSums(ls.save[[i]]$F0[,,1], na.rm = TRUE),
                            # F0.us = rowSums(ls.save[[i]]$F0[,,2], na.rm = TRUE),
-                           amc = ls.save[[i]]$amc$amc.tot, 
-                           ams = ls.save[[i]]$ams$ams.tot, 
-                           amc.can = ls.save[[i]]$amc$amc.can,
-                           amc.us = ls.save[[i]]$amc$amc.US,
-                           ams.can = ls.save[[i]]$ams$ams.can,
-                           ams.us = ls.save[[i]]$ams$ams.US,
+                           # amc = ls.save[[i]]$amc$amc.tot, 
+                           # ams = ls.save[[i]]$ams$ams.tot, 
+                           # amc.can = ls.save[[i]]$amc$amc.can,
+                           # amc.us = ls.save[[i]]$amc$amc.US,
+                           # ams.can = ls.save[[i]]$ams$ams.can,
+                           # ams.us = ls.save[[i]]$ams$ams.US,
                            SSB.mid.can = ls.save[[i]]$SSB.mid[,1],
                            SSB.mid.us = ls.save[[i]]$SSB.mid[,2],
                            run = paste('run',i, sep = '-'),

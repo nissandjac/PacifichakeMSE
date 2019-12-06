@@ -1,5 +1,5 @@
 
-fn_plot_MSE <- function(ls, sim.data, plotfolder = '/Figs/newplots/', plotexp = TRUE){
+fn_plot_MSE <- function(ls, sim.data, plotfolder = '/Figs/newplots/', plotexp = TRUE, df){
 
   
 nms <- names(ls)  
