@@ -2,8 +2,6 @@
 require(TMB)
 #library(TMBdebug)
 require(ggplot2)
-
-
 source('plotValues.R')
 source('getUncertainty.R')
 source('load_data.R')

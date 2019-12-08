@@ -12,6 +12,7 @@ set.seed(seedz)
 source('load_files.R')
 source('load_files_OM.R')
 source('run_agebased_model_true_catch_move.R')
+source('run_multiple_MSEs.R')
 
 df <- load_data_seasons(nseason = 4, nspace = 2, bfuture = 0.5) # Prepare data for operating model
 
@@ -19,7 +20,7 @@ parms.true <- getParameters_OM(TRUE,df) # Load parameters from assessment
 
 time <- 1
 yrinit <- df$nyear
-nruns <- 100
+nruns <- 1000
 seeds <- floor(runif(n = nruns, min = 1, max = 1e6))
 ### Run the OM and the EM for x number of years in the MSE 
 ### Set targets for harvesting etc 

@@ -15,6 +15,7 @@ load_data_ss <- function(mod){
   mat <- as.numeric(mod$ageselex[mod$ageselex$Factor == 'Fecund' & mod$ageselex$Yr == 1963,paste(age)])
   # weight at age 
   wage_ss <- mod$wtatage
+  #wage_ss <- wage_ss[-c(2,3,4,5,28)]
 
   wage_ssb <- wage_ss[wage_ss$Fleet == -2,paste(age)]
   wage_catch <- wage_ss[wage_ss$Fleet == 1 & wage_ss$Yr > (years[1]-1) & wage_ss$Yr < years[tEnd]+1, paste(age)]
@@ -87,6 +88,16 @@ load_data_ss <- function(mod){
       age_catch.tmp[,i] <- -1  
     }
   }
+  
+  # Create a data frame with the remaining age comp data
+  ac.data <- data.frame(years = years, cflag = cflag, sflag = survey_flag, 
+                        survey_x = survey_x, ss.catch = ss.catch,
+                        ss.survey = ss.survey,
+                        ss.error = ss.error)
+  
+  
+  colnames(age_catch.tmp) <- as.character(years)
+  colnames(age_survey.tmp) <- as.character(years)
   
 
   b <- matrix(NA, tEnd)

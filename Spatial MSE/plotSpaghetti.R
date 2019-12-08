@@ -41,12 +41,14 @@ p1 <- ggplot(SSB.plot[SSB.plot$run %in% idx,], aes(x = years, y = SSB/sum(sim.da
   
   
 p2 <- ggplot(SSB.plot[SSB.plot$run %in% idx,], aes(x = years, y = SSB/sum(sim.data$SSB0),color = as.factor(run)))+
-  geom_line(size = 1.1, linetype = 2)+scale_color_manual(values = cols[idx])+
+  geom_line(size = 1.1, linetype = 1)+scale_color_manual(values = cols[idx])+
   geom_line(data = SSB.plot[SSB.plot$run == 1 & SSB.plot$years<2019,], color = 'black', size = 1.2)+
-  scale_y_continuous('SSB/SSB0')+coord_cartesian(ylim = c(0,2))+
+  scale_y_continuous('SSB/SSB0')+coord_cartesian(ylim = c(0,3))+
   geom_hline(aes(yintercept = 1), linetype = 2)+ theme(legend.position = "none")+
   geom_line(data = lists[[3]]$SSBtot, aes(x = year,y = med/sum(sim.data$SSB0)), size = 2, color ='black')+
-  geom_line(data = lists[[3]]$SSBtot, aes(x = year,y = avg/sum(sim.data$SSB0)), size = 2, color ='black', linetype =4)
+#  geom_ribbon(data = lists[[3]]$SSBtot,aes(ymin = p5, ymax = p5), color = alpha('gray', alpha = 0.2))+
+  geom_line(data = lists[[3]]$SSBtot, aes(x = year,y = p5/sum(sim.data$SSB0)), size = 1, color ='black', linetype = 1)+
+  geom_line(data = lists[[3]]$SSBtot, aes(x = year,y = p95/sum(sim.data$SSB0)), size = 1, color ='black', linetype = 1)
 
 p2  
 

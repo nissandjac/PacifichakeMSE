@@ -19,7 +19,7 @@ create_TMB_data <- function(sim.data, df){
   wage_mid <- df$wage_mid
   
   
-  if (max(years) > 2017){
+  if (max(years) > 2018){
   wage_catch <- cbind(wage_catch,wage_catch[,1])  
   wage_survey <- cbind(wage_survey,wage_survey[,1])  
   wage_mid <- cbind(wage_mid,wage_mid[,1])  
@@ -57,17 +57,18 @@ create_TMB_data <- function(sim.data, df){
                   wage_survey = (wage_survey),
                   wage_ssb = wage_ssb,
                   wage_mid = wage_mid,
+                  year_sel = df$year_sel,
                   #  Input parameters
                   Msel = msel,
                   Matsel= mat,
                   nage = nage,
                   age = age,
-                  year_sel = df$year_sel, # Years to model time varying sel
-                  selYear = df$selYear,
+                  selYear = df$selidx,
                   years = years,
                   tEnd = length(years), # The extra year is to initialize 
                   logQ = df$logQ,   # Analytical solution
                   # Selectivity 
+                  flag_sel = df$flag_sel,
                   Smin = df$Smin,
                   Smin_survey = df$Smin_survey,
                   Smax = df$Smax,

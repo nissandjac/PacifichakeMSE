@@ -1,0 +1,13 @@
+nseason = 4  
+nspace = 2  
+myear = 2018 
+movemaxinit = 0.35  
+movefiftyinit = 6 
+nsurvey = 2  
+logSDR = 1.4 
+bfuture = 0.5 
+moveout = 0.8  
+movesouth = 0.05 
+moveinit = NA  
+moveslope = 0.5 
+selectivity_change = 0

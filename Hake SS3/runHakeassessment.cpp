@@ -240,7 +240,7 @@ for(int time=0;time<(tEnd);time++){ // Start time loop
     // Take care of selectivity
     if ((time >= (selYear-1)) & (years(time) < 2019)){
            for(int i=0;i<psel_fish.size();i++){
-           psel_fish(i) = psel_fish_zero(i)+PSEL(i,time-selYear+1)*sigma_psel;
+           psel_fish(i) = psel_fish_zero(i)+PSEL(i,time-selYear)*sigma_psel;
            }
 
            pmax_catch = max(cumsum((psel_fish)));
