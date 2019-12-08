@@ -4,7 +4,9 @@ source('plotMSE.R')
 
 # Plot CLIMATE STUFF
 results <- 'results/Climate/'
-plotMSE(results,plotnames = c('No change','move little','movemuch'), plotexp = TRUE)
+plotnames <- c('No change','Medium increase','High increase')
+plotnames <- c('1','2','3')
+plotMSE(results,plotnames = plotnames, plotexp = TRUE)
 
 # Plot HCR stuff
 results <- 'results/HCR/'
@@ -27,7 +29,9 @@ plotMSE_biasadjustment(results, plotnames = c('0.87','0.5','0'), plotexp = TRUE)
 
 # Plot HCR stuff
 results <- 'results/Selectivity/'
-plotMSE(results, plotexp = TRUE)
+plotnames <-  c('Conditioned model','US low selectivity','2018 selectivity')
+plotnames <- c('1','2','3')
+plotMSE(results,plotnames = plotnames, plotexp = TRUE)
 
 results <- 'results/Move/'
 plotMSE(results, plotexp = FALSE, plotnames = c('Move 1','Move 2','Move 3'))

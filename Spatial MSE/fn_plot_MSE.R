@@ -1,5 +1,5 @@
 
-fn_plot_MSE <- function(ls, sim.data, plotfolder = '/Figs/newplots/', plotexp = TRUE){
+fn_plot_MSE <- function(ls, sim.data, plotfolder = '/Figs/newplots/', plotexp = TRUE, df){
 
   
 nms <- names(ls)  
@@ -20,15 +20,37 @@ for(i in 1:length(nms)){
 
 df.obj <- data.frame(obj.plot[[1]][[2]])
 
+
 for(i in 2:length(nms)){
   df.obj <- rbind(df.obj, obj.plot[[i]][[2]])
 }
+ 
+indicators <- unique(df.obj$indicator)
+df.obj2 <- df.obj
 
 
+# Fix the y scales 
+dummy <- data.frame(indicator = 'long term catch', value = c(0.2,0.3), HCR = 'ymin')
 
-p1 <- ggplot(df.obj, aes(x = HCR,y = value))+geom_bar(stat = 'identity', aes(fill = HCR))+facet_wrap(~indicator, scales = 'free', ncol = 2)+
-  scale_x_discrete(name = '')+  scale_y_continuous(name = '')+scale_fill_manual(values = cols[1:length(unique(df.obj$HCR))])+
+
+# for(i in 1:length(indicators)){
+#   df.obj2[df.obj2$HCR != 'move_0' & df.obj2$indicator == indicators[i],]$value <-
+#     df.obj2[df.obj2$HCR != 'move_0' & df.obj2$indicator == indicators[i],]$value/
+#     df.obj2[df.obj2$HCR == 'move_0' & df.obj2$indicator == indicators[i],]$value-1
+#   
+# }
+
+#df.obj2$value[df.obj2$HCR == 'move_0'] <- 0
+
+
+p1 <- ggplot(df.obj2, aes(x = HCR,y = value))+geom_bar(stat = 'identity', aes(fill = HCR))+
+  scale_x_discrete(name = '')+  
+  scale_y_continuous(name = '')+
+  scale_fill_manual(values = cols[1:length(unique(df.obj$HCR))])+
+  facet_wrap(~indicator, scales = 'free_y', ncol = 2)+
+#  geom_blank(data = dummy)+
   theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5), legend.position = 'none')
+p1
 
 if(plotexp == TRUE){
 png(paste(plotfolder,'objective_bars.png'), width = 20, height =20, res = 400, unit = 'cm')
@@ -230,7 +252,8 @@ if(plotexp == TRUE){
 }  
 
 if(plotexp == FALSE){
-  grid.arrange(p3,p6,p7,p9)
+  #grid.arrange(p3,p6,p7,p9)
+  print(p1)
 }
 
 
@@ -271,12 +294,22 @@ for(i in 2:length(nms)){
 
 p11 <- ggplot(df.catchq, aes(x = year, y = med.can))+geom_line(color = 'red')+
   geom_line(aes(y = med.us), color = 'blue')+
-  theme_classic()+scale_y_continuous(name ='Catch/')+facet_wrap(~run)+  
+  theme_classic()+scale_y_continuous(name ='Catch/quota')+facet_wrap(~run)+  
+  coord_cartesian(ylim = c(0.6,1.1))+
   theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))+
   geom_ribbon(aes(ymin = p5.can, ymax = p95.can), fill = alpha('red', alpha = 0.2), linetype = 0)+
-  geom_ribbon(aes(ymin = p5.us, ymax = p95.us), fill = alpha('blue', alpha = 0.2), linetype = 0)
+  geom_ribbon(aes(ymin = p5.us, ymax = p95.us), fill = alpha('blue', alpha = 0.2), linetype = 0)+
+  geom_hline(aes(yintercept = 1), color = 'black', linetype = 2)
 
-# p11
+p11
+
+if(plotexp == TRUE){
+  png(paste(plotfolder,'Realized_catch.png'), width = 12, height =16, res = 400, unit = 'cm')
+  print(p11)
+  dev.off()
+}  
+
+
 
 df.SSB <- data.frame(ls.data[[1]][[3]]$SSBtot)
 
@@ -313,5 +346,25 @@ if(plotexp == TRUE){
   print(p12)
   dev.off()
 }  
+
+
+p13 <- ggplot(df.catchq, aes(x = year, y = med.tot, color = run))+geom_line(size = 1.4)+
+  scale_color_manual(values = cols[1:length(nms)])+
+  geom_line(aes(y = p5.tot), linetype =2,size = 1.2)+
+  geom_line(aes(y = p95.tot), linetype =2,size = 1.2)+
+  theme_classic()+scale_y_continuous(name ='Catch/quota')+
+  geom_hline(aes(yintercept = 1), color = 'black', linetype = 2)+coord_cartesian(ylim = c(0.4,1.05))+
+  theme(legend.position = c(0.2,0.4),
+        legend.title = element_blank())
+
+p13
+
+if(plotexp == TRUE){
+  png(paste(plotfolder,'Catch_quota_tot.png'), width = 16, height =12, res = 400, unit = 'cm')
+  print(p13)
+  dev.off()
+}  
+print(p13)
+
 
 }

@@ -10,10 +10,12 @@ library(gridExtra)
 library(dplyr)
 library(cowplot)
 library(r4ss)
+library(RColorBrewer)
 # Survey age distribution 
 source('calcMeanAge.R')
 # 2018 assessment
 mod <- SS_output(paste(getwd(),'/data/SS32018/', sep =''), printstats=FALSE, verbose = FALSE)
+cols <- brewer.pal(6, 'Dark2')
 
 
 plot.figures = TRUE# Set true for printing to file 
@@ -30,20 +32,15 @@ survey.obs <- read.csv('data/survey_country.csv')
 survey.ac <- read.csv('data/ac_survey_country.csv')
 
 nparms <- 5
-movemax.parms <- seq(0.1,0.9, length.out = nparms)
+movemax.parms <- seq(0.15,0.7, length.out = nparms)
 movefifty.parms <- seq(1,10, length.out = nparms)
 
 nruns <- nparms^2
 
 yr.future <- 2
 
-df <- load_data_seasons_future(yr.future, movemaxinit = 0.35, movefiftyinit = 6)
+df <- load_data_seasons(movemaxinit = 0.7, movefiftyinit = 3, yr_future = yr.future)
 df$surveyseason <- 2
-sim.data <- run.agebased.true.catch(df, 123)
-
-
-
-#df$parms$PSEL <- 0*df$parms$PSEL
 
 Catch.future <- c(df$Catch, rep(206507.8, yr.future)) # Project MSY
 df$Catch <- Catch.future
@@ -52,8 +49,9 @@ AC.catch.tot <- AC.survey.tot <- array(NA, dim = c(df$age_maxage,df$nyear,
                                                    df$nspace,length(movemax.parms)*length(movefifty.parms)))
 survey.ml <- array(NA,dim = c(df$nyear,df$nspace,length(movemax.parms)*length(movefifty.parms)))
 
-catch.ac.obs <- read.csv('data/age_in_catch_obs.csv')
-standard.move <- runfuture_OM(df, 1)
+#catch.ac.obs <- read.csv('data/age_in_catch_obs.csv')
+catch.ac.obs <- read.csv('data/ac_catch_new.csv')
+standard.move <- runfuture_OM(df,nruns = 1)
 
 ac.survey.tot <- survey.ac %>% 
   group_by(year, country) %>% 
@@ -68,7 +66,7 @@ p.AC.survey <- ggplot(AC.survey, aes(x = year, y= AC.mean, color = country))+geo
   geom_point(data = ac.survey.tot)+  scale_x_continuous(limit = c(1965,2018))+
   scale_color_manual(values = c('darkred','blue4'))+
   theme(legend.position = 'none')+scale_y_continuous('mean age')
-#p.AC.survey
+p.AC.survey
 
 
 if(plot.figures == TRUE){
@@ -118,7 +116,7 @@ p1
 #           labels = 'auto')
 # dev.off()
 if(plot.figures == TRUE){
-  png(filename = 'Figs/Biomass_survey.png', width = 16, height = 10, res = 400, units = 'cm')
+  png(filename = 'Figs/survey_combined.png', width = 16, height = 10, res = 400, units = 'cm')
   print(plot_grid(p1,p.AC.survey, nrow = 2, align = 'hv', 
                   label_x = c(0.95,0.95),
                   label_y = c(0.98,0.98),
@@ -136,11 +134,10 @@ df.ass <- data.frame(survey = mod$cpue$Exp,source = 'assessment',years = mod$cpu
 df.tot <- rbind(df.plot,df.ass) %>% 
   group_by(years, source) %>% 
   summarise(survey = sum(survey))
-cols <- brewer.pal(6, 'Dark2')
 
 df.survey <- data.frame(years = df$years[df$flag_survey == 1],
                         source = 'Survey data',
-                        survey = df$survey[df$flag_survey == 1],
+                        survey = df$survey$x[df$flag_survey == 1],
                         survsd=  sqrt(df$survey[df$flag_survey == 1]^2*exp(df$survey_err[df$flag_survey == 1]+
                                                                             exp(df$parms$logSDsurv)-1))
 )
@@ -167,16 +164,16 @@ print(p2)
 dev.off()
 
 }
+catch.ac.obs <- read.csv('data/ac_catch_new.csv')
 
-catch.ac.obs <- read.csv('data/age_in_catch_obs.csv')
 catch.model <- data.frame(year = rep(df$years,2),
-                          Country = rep(c('US','Can'), each = df$nyear),
+                          Country = rep(c('USA','CAN'), each = df$nyear),
                           am = c(standard.move$catch.AC[,2],standard.move$catch.AC[,1]))
 
 
 p.AC.catch <- ggplot(catch.ac.obs, aes(x = year, y= am, color = Country))+geom_line(size = 1, linetype = 2)+theme_classic()+
   geom_line(data = catch.model, linetype = 1, size = 1)+geom_point()+
-  scale_color_manual(values = c('darkred','blue4'))+
+  scale_color_manual(values = c('darkred','blue4','green'))+coord_cartesian(xlim = c(min(df$years),2019))+
   theme(legend.position = 'none')+scale_y_continuous('mean age')
 
 p.AC.catch
@@ -188,13 +185,25 @@ if(plot.figures == TRUE){
   
   }
 
+## Add the overall average age
+ac <- apply(df$age_catch,2, function(x){sum(x*1:15)})
+ac[ac<0] <- NA
+
+p.AC.catch2 <- p.AC.catch+geom_line(data = data.frame(year = df$years, am = ac, Country = 'All'), color ='black')
+
+p.AC.catch2
+
 
 surv.tot <- survey.obs %>% 
   group_by(year) %>%   
   summarise(survey = sum(survey))
 
 #surv.model <- data.frame(year = df$years, )
+surv.tot$frac <- survey.obs$survey[survey.obs$country == 'CAN']/survey.obs$survey[survey.obs$country == 'USA']
 
+ggplot(surv.tot, aes(x = year, y = frac))+geom_line()+geom_hline(aes(yintercept =1), lty = 2)+
+  geom_hline(aes(yintercept = 0.26), col= 'red', lty = 2)+
+  geom_hline(aes(yintercept = median(frac)), col= 'green')
 
 
 # Fishing mortality per area 
@@ -220,11 +229,7 @@ if(plot.figures == TRUE){
   
 }
 
-
 ## Do the comparison with Kristins data 
-
-
-
 
 save.idx <- 1
 i <- 1
@@ -260,6 +265,7 @@ for(i in 1:length(movemax.parms)){
         
         
         SSB <- move.tmp$SSB
+        SSB.weight <- move.tmp$SSB.weight
         SSB$run <- paste(as.character(i),'-',as.character(j), sep ='')
         
         r.succes[save.idx] <- move.tmp$success.runs
@@ -287,6 +293,9 @@ for(i in 1:length(movemax.parms)){
         SSB.tmp <- move.tmp$SSB
         SSB.tmp$run <- paste(as.character(i),'-',as.character(j), sep ='')
         
+        SSB.w.tmp <- move.tmp$SSB.weight
+        SSB.w.tmp$run <- paste(as.character(i),'-',as.character(j), sep ='')
+        
         AC.catch.tmp <- data.frame(AC = c(move.tmp$catch.AC[,1],move.tmp$catch.AC[,2]),
                                    Country = rep(c('CAN','USA'), each = df$nyear), year = rep(df$years,2))
         AC.survey.tmp <- data.frame(AC = c(move.tmp$survey.AC[,1],move.tmp$survey.AC[,2]),
@@ -296,6 +305,7 @@ for(i in 1:length(movemax.parms)){
         
         
         SSB <- rbind(SSB, SSB.tmp)
+        #SSB.weight <- rbind(SSB.weight, SSB.w.tmp)
         AC.catch <- rbind(AC.catch, AC.catch.tmp)
         AC.survey <- rbind(AC.survey, AC.survey.tmp)
         
@@ -323,16 +333,19 @@ for(i in 1:length(movemax.parms)){
   }
 }
 
-
+sum(succes)
 ## Add the true SSB
 SSB.true <- assessment
 
-p.ssb <- ggplot(SSB, aes(x = year, y= SSB*1e-6, color = run))+geom_line()+theme_classic()+
+SSB.2 <- mod$derived_quants$Value[grep('SSB_1966',x = mod$derived_quants$Label):grep('SSB_2018',x = mod$derived_quants$Label)]
+
+
+p.ssb <- ggplot(SSB, aes(x = year, y= SSB*1e-6, color = run))+geom_line(size = 1.2)+theme_classic()+
   theme(legend.position="none")+geom_line(data = SSB.true, color = 'black', linetype = 2)+
   scale_y_continuous('SSB (million tons)')
 
 if(plot.figures == TRUE){
-png(filename = 'SSB.png', width = 16, height = 12, res = 400, units = 'cm')
+png(filename = 'Figs/SSB.png', width = 16, height = 12, res = 400, units = 'cm')
 }
   p.ssb
 
@@ -383,4 +396,4 @@ if(plot.figures == TRUE){
   png('survey_country.png', width = 16, height = 12, units = 'cm', res = 400)
 }
 p1.survey
-#dev.off()
+dev.off()

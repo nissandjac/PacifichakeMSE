@@ -12,6 +12,8 @@ df <- load_data_seasons()
 sim.data <- run.agebased.true.catch(df)
 ## Calculate the theoretical TAC 
 SSB <- seq(0, sum(sim.data$SSB0), length.out = dim(df.tac)[1])
+SSB_0 <- sum(sim.data$SSB0)
+
 TAC <- matrix(NA, dim(df.tac)[1])
 
 TAC[(SSB/SSB_0)< 0.1]<- 0 # add a very low catch (fix later)
@@ -31,40 +33,45 @@ df.tac$theotac <- TAC
 
 ### Do a regression on the difference between
 
-lm.JMC <- lm(TAC ~ AssessTac, data = df.tac)
+lm.JMC <- lm(TAC ~ AssessTac, data = df.tac[df.tac$Year >= 2012,])
+lm.STAR <- lm(TAC ~ AssessTac, data = df.tac[df.tac$Year < 2012,])
 lm.realized <- lm(Realized ~ AssessTac, data = df.tac)
 
 
 #### Print the TAC calc adjustment ####
 
-df.adjTAC <- data.frame(incpt = c(lm.JMC$coefficients[1],lm.realized$coefficients[1]),
-                        slp = c(lm.JMC$coefficients[2],lm.realized$coefficients[2]),
-                        adj = c('JMC','Realized'))
+df.adjTAC <- data.frame(incpt = c(lm.JMC$coefficients[1],lm.realized$coefficients[1], lm.STAR$coefficients[1]),
+                        slp = c(lm.JMC$coefficients[2],lm.realized$coefficients[2], lm.STAR$coefficients[2]),
+                        adj = c('JMC','Realized','STAR'))
 
 #write.csv(df.adjTAC, 'adjusted_tac_fn.csv', row.names = FALSE)
 
 df.plot <- data.frame(TAC = TAC,
                       TAC.JMC = predict(lm.JMC, newdata = data.frame(AssessTac = TAC)),
                       TAC.realized = predict(lm.realized, newdata = data.frame(AssessTac = TAC)),
+                      TAC.STAR = predict(lm.STAR, newdata = data.frame(AssessTac = TAC)),
                       SSB = SSB)
 
 df.plot$TAC.JMC[df.plot$TAC.JMC > df.plot$TAC] <-df.plot$TAC[df.plot$TAC.JMC >TAC] 
 df.plot$TAC.realized[df.plot$TAC.realized > df.plot$TAC] <-df.plot$TAC[df.plot$TAC.realized >TAC] 
-
+df.plot$TAC.STAR[df.plot$TAC.STAR > df.plot$TAC] <-df.plot$TAC[df.plot$TAC.STAR >TAC] 
 # Flor data 
 df.plot$Floor <- df.plot$TAC*0.5
 df.plot$Floor[df.plot$Floor<= 180000] <- 180000
 df.plot$TAC.HCR <- df.plot$TAC
 
-df.plot.w <- melt(df.plot[,-4], id.vars = 'TAC', value.name = 'Quota', variable.name = 'HCR')
+df.plot.w <- melt(df.plot[,-5], id.vars = 'TAC', value.name = 'Quota', variable.name = 'HCR')
 nhcr <- unique(df.plot.w$HCR)
+cols <- RColorBrewer::brewer.pal(4,'Dark2')
+
 
 p1 <- ggplot(df.plot.w, aes(x= TAC*1e-3, y = Quota*1e-3, color = HCR))+geom_line(linetype = 2, size = 0.8)+
-  scale_y_continuous('Catch \n(thousand tonnes)')+scale_color_manual(values = c(cols[1:3],'black'),
-                                                                     labels = c('JMC','Realized','Floor','HCR'))+
+  scale_y_continuous('Catch \n(thousand tonnes)')+scale_color_manual(values = c(cols[1:4],'black'),
+                                                                     labels = c('JMC','Realized','STAR','Floor','HCR'))+
   scale_x_continuous('Harvest control rule')+ coord_cartesian(ylim=c(0, 800), xlim = c(0,1000))+
   geom_point(data = df.tac,aes(x=AssessTac*1e-3, y = Realized*1e-3), color = alpha(cols[2],0.5))+
-  geom_point(data = df.tac,aes(x=AssessTac*1e-3,y = TAC*1e-3), color = alpha(cols[1],0.5))+
+  geom_point(data = df.tac[df.tac$Year < 2012,],aes(x=AssessTac*1e-3,y = TAC*1e-3), color = alpha(cols[1],0.5))+
+  geom_point(data = df.tac[df.tac$Year >= 2012,],aes(x=AssessTac*1e-3,y = TAC*1e-3), color = alpha(cols[4],0.5))+
   theme(legend.title = element_blank(),
         legend.key.size =  unit(.2, "cm"),
         legend.text=element_text(size=7),

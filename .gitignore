@@ -2,6 +2,9 @@
 *.o
 *.dll
 
-# Ignore Rhistory and Rdata uploads 
+# Ignore redundant R files
 .Rhistory
 .RData
+.Rproj.user/
+.Rproj
+

@@ -211,7 +211,7 @@ load_data_seasons_future <- function(yr.future, nseason = 4, nspace = 2,
     psel[i,] <- c(2.4716, 0.9084,0.399418,0.215115,0.474583) # USA selectivity 
   }
   
-  psel[1,] <- c(1,1,1,1,1)
+ # psel[1,] <- c(1,1,1,1,1)
 
   # Fsel <- getSelec(df$age,psel[1,], df$Smin, df$Smax)
   # plot(Fsel, col = 'red')
@@ -274,7 +274,7 @@ load_data_seasons_future <- function(yr.future, nseason = 4, nspace = 2,
                   #                Catchobs = catch$Fishery, # Convert to kg
                   ss_catch = age_catch$nTrips,
                   flag_catch =age_catch$flag,
-                  age_catch = t(as.matrix(age_catch[,3:17])*0.01),
+                  age_catch = t(as.matrix(age_catch[,3:17])),
                   # variance parameters
                   logSDcatch = log(0.01),
                   logSDR = log(logSDR), # Fixed in stock assessment ,
@@ -305,33 +305,7 @@ load_data_seasons_future <- function(yr.future, nseason = 4, nspace = 2,
   df$Catch <- Catch.obs$Fishery # Add the observed catch
   df$Catch.country <- as.matrix(Catch.country[,2:3])[,c(2,1)]
   # Correct for future years 
-  if(nyear > length(df$Catch)){
-    df$Catch <- c(df$Catch,rep(mean(df$Catch), nyear-length(Catch.obs$Fishery)))
-    
-  }
-  
-  if(nyear >nrow(df$Catch.country)){
-    df$Catch.country <- rbind(df$Catch.country,t(replicate(nyear-nrow(Catch.country),colMeans(df$Catch.country))))
-  }
-  if(max(years) > 2018){
-    
-    idx.future <- length(1966:2018)+seq(2,yr.future, by = 2) # Years where survey occurs 
-    
-    df$survey_x <- c(df$survey_x,rep(-2, yr.future))
-    df$survey_x[idx.future] <- 2
-    
-    df$survey_err <- c(df$survey_err,rep(1, yr.future))
-    df$survey_err[idx.future] <- mean(df$survey_err[df$survey_err != 1])
-    
-    df$ss_survey[idx.future] <- mean(df$ss_survey[df$ss_survey != -1])
-    df$flag_survey[idx.future] <- 1
-    df$flag_catch[years > 2018] <- 1
-    
-    Rdevs <- rnorm(n = yr.future,mean = 0, sd = exp(df$logSDR))
-    #Rdevs <- rep(0, yr.future)
-    df$parms$Rin <- c(df$parms$Rin,Rdevs)
-  }
-  
+ 
   
   
   
