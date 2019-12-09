@@ -3,12 +3,15 @@ calcMeanAge <- function(agemat, maxage){
   age <- 1:maxage
   dims <- dim(agemat)
   ## Adjust the agematrix to fit the maxage
-  agecalc <- matrix(NA, maxage, dims[2])  
 
-  agecalc[1:(maxage-1),] <- agemat[1:(maxage-1),]
-  agecalc[maxage,] <- colSums(agemat[maxage:dims[1],])
-  agecalc <- agecalc/colSums(agecalc)  
-  
+  if(dims[1] == maxage){
+    agecalc <- agemat
+  }else{
+    agecalc <- matrix(NA, maxage, dims[2])  
+    agecalc[1:(maxage-1),] <- agemat[1:(maxage-1),]
+    agecalc[maxage,] <- colSums(agemat[maxage:dims[1],])
+    agecalc <- agecalc/colSums(agecalc)  
+  }
   
   
   

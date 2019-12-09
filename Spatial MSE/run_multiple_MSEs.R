@@ -305,8 +305,8 @@ run_multiple_MSEs <- function(simyears = NULL,seeds = 12345, TAC = 1, df = NA,
     Catch <- reps$Catch
     R <- reps$R
     
-    plot(sim.data$Catch)
-    lines(apply(sim.data$Catch.quota,1,sum))
+    # plot(sim.data$Catch)
+    # lines(df$Catch)
     
     # # lines(rowSums(sim.data$SSB), col = 'red')
     # # #Uncertainty
