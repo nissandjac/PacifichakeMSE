@@ -3,7 +3,7 @@ library(TMB)
 compile("runHakeassessment.cpp")
 dyn.load(dynlib("runHakeassessment"))
 library(r4ss)
-mod <- SS_output(paste(getwd(),'/data/', sep =''), printstats=FALSE, verbose = FALSE) # Read the true selectivity 
+mod <- SS_output(paste(getwd(),'/data/SS32018', sep =''), printstats=FALSE, verbose = FALSE) # Read the true selectivity 
 
 # Set the seed
 seedz <- 12345
