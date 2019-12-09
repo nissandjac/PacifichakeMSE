@@ -4,6 +4,11 @@ hake_objectives <- function(ls.MSE, SSB0, move = NA){
   # sim.data # Initial years of the operating model   
   nruns <- length(ls.MSE)
   nyears <- dim(ls.MSE[[1]][1]$Catch)[2]
+  
+  
+  if(dim(ls.MSE[[1]][1]$Catch)[2] == 1){
+    nyears <- dim(ls.MSE[[1]][1]$Catch)[1]
+  }
   # Get the number of years run in that MSE 
   if(all(is.na(ls.MSE[[1]]))){
     simyears <- nyears-(length(1966:2018))+1
@@ -37,6 +42,9 @@ hake_objectives <- function(ls.MSE, SSB0, move = NA){
     
     catchtmp <- as.numeric(apply(ls.MSE[[idx]]$Catch,MARGIN = 2, FUN = sum))
     
+    if(length(catchtmp) == 1){
+      catchtmp <- ls.MSE[[idx]]$Catch
+    }
     
     Catch.plot <- data.frame(Catch = catchtmp, year = yr, run = paste('run',1, sep=''))
     
@@ -64,6 +72,11 @@ hake_objectives <- function(ls.MSE, SSB0, move = NA){
       }else{
         
         catchtmp <-  as.numeric(apply(ls.tmp$Catch,MARGIN = 2, FUN = sum))
+        
+        if(length(catchtmp) == 1){
+          catchtmp <- ls.MSE[[idx]]$Catch
+        }
+        
         
         SSB.tmp <- data.frame(SSB = rowSums(ls.tmp$SSB)/sum(SSB0), year = yr, run =  paste('run',i, sep=''))
         Catch.tmp <- data.frame(Catch = catchtmp, year = yr, run =  paste('run',i, sep=''))
