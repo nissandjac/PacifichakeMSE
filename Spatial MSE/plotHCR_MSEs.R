@@ -20,12 +20,12 @@ ls.JTC <- ls.save
 load('results/b = 0.5/MSErun_move_realized.Rdata')
 ls.Real <- ls.save
 
-load('results/MSErun_move_realized_move1.Rdata')
-ls.move1 <- ls.save
-load('results/MSErun_move_realized_move2.Rdata')
-ls.move2 <- ls.save
-load('results/MSErun_move_realized_move3.Rdata')
-ls.move3 <- ls.save
+# load('results/MSErun_move_realized_move1.Rdata')
+# ls.move1 <- ls.save
+# load('results/MSErun_move_realized_move2.Rdata')
+# ls.move2 <- ls.save
+# load('results/MSErun_move_realized_move3.Rdata')
+# ls.move3 <- ls.save
 
 # load('results/Selectivity/MSErun_move_JTC_sel.Rdata')
 # ls.JTC.sel <- ls.save

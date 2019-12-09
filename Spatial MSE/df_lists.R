@@ -5,8 +5,8 @@ source('calcMeanAge.R')
   
 nyears <- dim(ls.save[[1]][1]$Catch)[2]
 
-if(dim(ls.MSE[[1]][1]$Catch)[2] == 1){
-  nyears <- dim(ls.MSE[[1]][1]$Catch)[1]
+if(dim(ls.save[[1]][1]$Catch)[2] == 1){
+  nyears <- dim(ls.save[[1]][1]$Catch)[1]
 }
   
 if(dim(ls.save[[1]]$Catch)[2] == 1){

@@ -101,7 +101,7 @@ hake_objectives <- function(ls.MSE, SSB0, move = NA){
       Catch.plot <- rbind(Catch.plot,Catch.tmp)
       quota.plot <- rbind(quota.plot, quota.tmp)
       
-      AAV.tmp <- data.frame(AAV  = abs(ls.tmp$Catch[2:length(yr)]-ls.tmp$Catch[1:(length(yr)-1)])/ls.tmp$Catch[1:(length(yr)-1)], 
+      AAV.tmp <- data.frame(AAV  = abs(catchtmp[2:length(yr)]-catchtmp[1:(length(yr)-1)])/catchtmp[1:(length(yr)-1)], 
                             year = yr[2:length(yr)], run =  paste('run',i, sep=''))
       AAV.plot <- rbind(AAV.plot, AAV.tmp)
       

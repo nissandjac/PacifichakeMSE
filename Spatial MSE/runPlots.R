@@ -4,13 +4,15 @@ source('plotMSE.R')
 
 # Plot CLIMATE STUFF
 results <- 'results/Climate/'
-plotnames <- c('No change','Medium increase','High increase')
-plotnames <- c('1','2','3')
+plotnames <- c('No change','medium increase','high increase')
+#plotnames <-  factor(plotnames, levels = c('No change','Medium increase', 'High increase'))
+
+#plotnames <- c('1','2','3')
 plotMSE(results,plotnames = plotnames, plotexp = TRUE)
 
 # Plot HCR stuff
 results <- 'results/HCR/'
-plotMSE(results, plotexp = TRUE, plotnames = c('Floor 50','HCR','JMC','Real'))
+plotMSE(results, plotexp = TRUE, plotnames = c('Floor 50','HCR','Historical TAC','Realized'))
 
 results <- 'results/survey/JMC/'
 plotMSE(results, plotexp = TRUE, plotnames = c('survey1','survey2','survey3'))

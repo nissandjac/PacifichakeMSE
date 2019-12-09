@@ -43,6 +43,7 @@ dummy <- data.frame(indicator = 'long term catch', value = c(0.2,0.3), HCR = 'ym
 # }
 
 #df.obj2$value[df.obj2$HCR == 'move_0'] <- 0
+df.obj2$HCR <- factor(df.obj2$HCR, levels = names(ls))
 
 
 p1 <- ggplot(df.obj2, aes(x = HCR,y = value))+geom_bar(stat = 'identity', aes(fill = HCR))+
@@ -158,6 +159,9 @@ for(i in 2:length(nms)){
 
 
 ### SSB in the middle of the year 
+df.SSB$run <- factor(df.SSB$run, levels = names(ls))
+
+
 
 p6 <- ggplot(df.SSB, aes(x = year, y = med.can*1e-6))+geom_line(color = 'red', size = 1.2)+
   geom_line(aes(y = med.US*1e-6), color = 'blue', size = 1.2)+
@@ -170,7 +174,7 @@ p6
 
 
 if(plotexp == TRUE){
-  png(paste(plotfolder,'SSB_mid_year.png'), width = 16, height =16, res = 400, unit = 'cm')
+  png(paste(plotfolder,'SSB_mid_year.png'), width = 16, height =10, res = 400, unit = 'cm')
   print(p6)
   dev.off()
 }  
@@ -352,8 +356,8 @@ if(plotexp == TRUE){
 
 p13 <- ggplot(df.catchq, aes(x = year, y = med.tot, color = run))+geom_line(size = 1.4)+
   scale_color_manual(values = cols[1:length(nms)])+
-  geom_line(aes(y = p5.tot), linetype =2,size = 1.2)+
-  geom_line(aes(y = p95.tot), linetype =2,size = 1.2)+
+  geom_line(aes(y = p5.tot), linetype =2,size = 0.9)+
+  geom_line(aes(y = p95.tot), linetype =2,size = 0.9)+
   theme_classic()+scale_y_continuous(name ='Catch/quota')+
   geom_hline(aes(yintercept = 1), color = 'black', linetype = 2)+coord_cartesian(ylim = c(0.4,1.05))+
   theme(legend.position = c(0.2,0.4),
@@ -362,7 +366,7 @@ p13 <- ggplot(df.catchq, aes(x = year, y = med.tot, color = run))+geom_line(size
 p13
 
 if(plotexp == TRUE){
-  png(paste(plotfolder,'Catch_quota_tot.png'), width = 16, height =12, res = 400, unit = 'cm')
+  png(paste(plotfolder,'Catch_quota_tot.png'), width = 16, height =8, res = 400, unit = 'cm')
   print(p13)
   dev.off()
 }  
