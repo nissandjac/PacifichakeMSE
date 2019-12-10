@@ -234,7 +234,7 @@ hake_objectives <- function(ls.MSE, SSB0, move = NA){
       'S>0.4S0',
   #    '3 consec yrs S<S40',
    #   'years closed fishery',
-      'AAV',
+      'Catch variability',
    #   'Mean SSB/SSB0',
    #   'median catch',
       'short term catch',
