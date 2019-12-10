@@ -50,7 +50,7 @@ runfuture_OM <- function(df,nruns = 100){
     sim.data <- run.agebased.true.catch(df,seed =  seedz[i])
     
     if(is.list(sim.data)){
-      SSB.save[i,,] <- sim.data$SSB.all[,df$surveyseason,]
+      SSB.save[i,,] <- sim.data$SSB.all[,,df$surveyseason]
       SSB.tot[i,] <- rowSums(sim.data$SSB)
       SSB.weight[i,] <- rowSums(sim.data$SSB.weight)
       R.save[,i] <- sim.data$N.save[1,1:df$nyear]

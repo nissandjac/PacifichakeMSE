@@ -325,6 +325,7 @@ for(i in 2:length(nms)){
 p11 <- ggplot(df.catchq, aes(x = year, y = med.can))+geom_line(color = 'red')+
   geom_line(aes(y = med.us), color = 'blue')+
   theme_classic()+scale_y_continuous(name ='Catch/quota')+facet_wrap(~run)+  
+  coord_cartesian(ylim = c(0.6,1.1))+
   theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))+
   geom_ribbon(aes(ymin = p5.can, ymax = p95.can), fill = alpha('red', alpha = 0.2), linetype = 0)+
   geom_ribbon(aes(ymin = p5.us, ymax = p95.us), fill = alpha('blue', alpha = 0.2), linetype = 0)+
