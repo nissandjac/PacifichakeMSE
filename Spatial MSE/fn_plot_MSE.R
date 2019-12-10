@@ -266,29 +266,29 @@ if(plotexp == FALSE){
 # Plot Fishing mortality 
 df.F0 <- data.frame(ls.data[[1]][[3]]$F0)
 
-
-for(i in 2:length(nms)){
-  df.F0 <- rbind(df.F0, ls.data[[i]][[3]]$F0)
-}
-
-
-### SSB in the middle of the year 
-
-p10 <- ggplot(df.F0, aes(x = year, y = med.can))+geom_line(color = 'red')+
-  geom_line(aes(y = med.us), color = 'blue')+coord_cartesian(ylim = c(0,1))+
-  theme_classic()+scale_y_continuous(name ='Exploitation rate')+facet_wrap(~run)+  
-  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))+
-  geom_ribbon(aes(ymin = p5.can, ymax = p95.can), fill = alpha('red', alpha = 0.2), linetype = 0)+
-  geom_ribbon(aes(ymin = p5.us, ymax = p95.us), fill = alpha('blue', alpha = 0.2), linetype = 0)
-
-p10
-
-if(plotexp == TRUE){
-  png(paste(plotfolder,'F0.png'), width = 12, height =16, res = 400, unit = 'cm')
-  print(p10)
-  dev.off()
-}  
-
+  if(all(is.na(df$F0)) == 0){
+    for(i in 2:length(nms)){
+      df.F0 <- rbind(df.F0, ls.data[[i]][[3]]$F0)
+    }
+    
+    
+    ### SSB in the middle of the year 
+    
+    p10 <- ggplot(df.F0, aes(x = year, y = med.can))+geom_line(color = 'red')+
+      geom_line(aes(y = med.us), color = 'blue')+coord_cartesian(ylim = c(0,1))+
+      theme_classic()+scale_y_continuous(name ='Exploitation rate')+facet_wrap(~run)+  
+      theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))+
+      geom_ribbon(aes(ymin = p5.can, ymax = p95.can), fill = alpha('red', alpha = 0.2), linetype = 0)+
+      geom_ribbon(aes(ymin = p5.us, ymax = p95.us), fill = alpha('blue', alpha = 0.2), linetype = 0)
+    
+    p10
+    
+    if(plotexp == TRUE){
+      png(paste(plotfolder,'F0.png'), width = 12, height =16, res = 400, unit = 'cm')
+      print(p10)
+      dev.off()
+    }  
+  }
 # Plot realized catch
 df.catchq<- data.frame(ls.data[[1]][[3]]$Catch.q)
 

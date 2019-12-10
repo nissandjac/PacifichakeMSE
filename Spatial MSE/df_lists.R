@@ -61,6 +61,11 @@ for(i in 1:nruns){
     
     source('calcMeanAge.R')
     
+    
+    if(is.null(ls.save[[i]]$F0)){
+      ls.save[[i]]$F0 <- matrix(NA, length(yr),2)
+    }
+    
     ls.df <- data.frame(year = yr, 
                         SSB.can = ls.save[[i]]$SSB[,1], 
                         SSB.US = ls.save[[i]]$SSB[,2],
@@ -104,8 +109,11 @@ for(i in 1:nruns){
       
       
     }
-    
-    
+      
+      if(is.null(ls.save[[i]]$F0)){
+        ls.save[[i]]$F0 <- matrix(NA, length(yr),2)
+      }
+      
       ls.tmp <- data.frame(year = yr, SSB.can = ls.save[[i]]$SSB[,1], SSB.US = ls.save[[i]]$SSB[,2],
                            SSBtot =  ls.save[[i]]$SSB[,1]+ls.save[[i]]$SSB[,2],
                            F0.can = ls.save[[i]]$F0[,1],
