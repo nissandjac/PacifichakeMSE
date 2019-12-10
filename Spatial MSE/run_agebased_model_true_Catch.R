@@ -72,7 +72,8 @@ run.agebased.true.catch <- function(df, seeds = 100){
   SSB_0 <- NA
   
   for(i in 1:nspace){
-    SSB_0[i] <- sum(df$Matsel*N0*move.init[i])
+    #SSB_0[i] <- sum(df$Matsel*N0*move.init[i])
+    SSB_0[i] <- sum(N0*move.init[i]*df$wage_ssb[,1])
   }
   names(SSB_0) <- paste(rep('space',each = df$nspace),1:nspace)
   
@@ -123,6 +124,7 @@ run.agebased.true.catch <- function(df, seeds = 100){
                       dimnames = list(age = age, year = year_1, space = 1:nspace, season = 1:nseason))
   N.save.age.mid <- array(NA,dim = c(nage,nyear+1, nspace, nseason), 
                           dimnames = list(age = age, year = year_1, space = 1:nspace, season = 1:nseason))
+  R.save <- matrix(NA, nyear, nspace)
   V.save <- array(NA,dim = c(nyear, nspace, nseason), dimnames = list(
     year = year, space = 1:nspace, season = 1:nseason))
 
@@ -195,10 +197,18 @@ run.agebased.true.catch <- function(df, seeds = 100){
       # }
   }
   
-  Fnseason <- c(0.0,0.4,0.50,0.1) # Must add to one
+  
+  
+  
+  
   Fspace <- c(0.24,0.76) # Contribution of Total catch (add to one)    #Z <- (Fyear+Myear)
+  Fnseason <- df$Fnseason
   pope.mul <- nseason/1*0.5
   pope.mul <- 0.50
+  
+  if(nseason == 1){
+    Fnseason <- 1
+  }
   
   
   for (yr in 1:nyear){ # Loop over years add one year for initial distribution
@@ -211,10 +221,12 @@ run.agebased.true.catch <- function(df, seeds = 100){
       w_catch <- df$wage_catch[,yr]
       w_surv <- df$wage_survey[,yr]
       w_mid <- df$wage_mid[,yr]
+      w_ssb <- df$wage_ssb[,yr]
     }else{
       w_catch <- df$wage_catch[,1]
       w_surv <- df$wage_survey[,1]
       w_mid <- df$wage_mid[,1]
+      w_ssb <- df$wage_ssb[,1]
     }
     
     
@@ -232,7 +244,8 @@ run.agebased.true.catch <- function(df, seeds = 100){
     
     
     if(nseason == 1){
-      Fnseason = 1
+      Fnseason <- 1
+      Fnseason <- as.matrix(Fnseason) 
     }
     
     if(df$move == FALSE){
@@ -244,8 +257,9 @@ run.agebased.true.catch <- function(df, seeds = 100){
     
     # fix Ssb and recruitment in all areas 
     for(space in 1:nspace){
-      SSB[yr,space] <-sum(N.save.age[,yr,space,1]*Mat.sel, na.rm = TRUE)
-      SSB.weight[yr,space] <- sum(N.save.age[,yr,space,1]*as.numeric(df$wage_ssb[,yr]), na.rm = TRUE)
+      SSB.weight[yr,space] <- sum(N.save.age[,yr,space,1]*as.numeric(w_ssb), na.rm = TRUE)
+      SSB[yr,space] <- SSB.weight[yr,space] #sum(N.save.age[,yr,space,1]*Mat.sel, na.rm = TRUE)
+      
       SSB.all[1,space,1]<- sum(N.save.age[,1,space,1]*Mat.sel, na.rm = TRUE)
       
     # Recruitment only in season 1  
@@ -253,6 +267,7 @@ run.agebased.true.catch <- function(df, seeds = 100){
             (SSB_0[space]*(1-h)+ SSB[yr,space]*(5*h-1)))*exp(-0.5*df$b[yr]*SDR^2+Ry)#*recruitmat[space]
     
       N.save.age[1,yr,space,1] <- R
+      R.save[yr,space] <- R
     }
     
     
@@ -272,13 +287,13 @@ run.agebased.true.catch <- function(df, seeds = 100){
         
         if(year[yr] >2018){
           
-          if(df$selectivity_change == 0){
-            # if(space == 1){
-            #   pseltmp <- psel#c(1,1,1,1,1)
-            # }else{
-              pseltmp <- psel
-            #}
-          }
+          # if(df$selectivity_change == 0){
+          #   if(space == 1){
+          #     pseltmp <- c(1,1,1,1,1)
+          #   }else{
+          #   pseltmp <- psel
+          #   }
+          # }
           
           if(df$selectivity_change ==1){
             if(space == 1){
@@ -311,7 +326,7 @@ run.agebased.true.catch <- function(df, seeds = 100){
         }
         
         
-        E.temp <- Catch_space*Fnseason[season]#*Fspace[space] # Catch distribution in the year
+        E.temp <- Catch_space*Fnseason[space, season]#*Fspace[space] # Catch distribution in the year
         B.tmp <-  sum(N.save.age[,yr,space,season]*exp(-Mseason*pope.mul)*w_catch*Fsel) # Get biomass from previous year
         N.tmp <- N.save.age[,yr,space,season]#
         V.save[yr,space,season] <- B.tmp
@@ -556,6 +571,7 @@ run.agebased.true.catch <- function(df, seeds = 100){
     df.out   <- list(N.save = Nsave, 
                      SSB = SSB, 
                      N.save.age = N.save.age,
+                     R.save = R.save,
                      V.save = V.save,
                      SSB.all = SSB.all,
                      Catch.save.age = Catch.save.age,
@@ -565,12 +581,10 @@ run.agebased.true.catch <- function(df, seeds = 100){
                      Catch.quota = Catch.quota,
                      Catch.quota.N = Catch.quota.N,
                      Fout = Fout.save,
-                     Nout = N.save.age, 
                      age_comps_OM = age_comps_OM,
                      age_catch = age_comps_catch,
                      SSB_0 = SSB_0, 
                      SSB.weight = SSB.weight,
-                     Nsave.all = N.save.age,
                      survey.true = survey.true,
                      surv.tot = surv.tot,
                      Z = Z.save,

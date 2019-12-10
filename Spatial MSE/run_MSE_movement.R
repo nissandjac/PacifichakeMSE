@@ -87,7 +87,7 @@ save(ls.save,file = 'results/Move/MSErun_move_realized_move2.Rdata')
 
 ls.save <- list()
 ls.converge <- matrix(0, nruns)
-df <- load_data_seasons(nseason = 4, nspace = 2,movemaxinit = 0.6, movefiftyinit = 4) # Prepare data for operating model
+df <- load_data_seasons(nseason = 4, nspace = 2,movemaxinit = 0.5, movefiftyinit = 4) # Prepare data for operating model
 test <- run.agebased.true.catch(df)
 
 for (i in 1:nruns){

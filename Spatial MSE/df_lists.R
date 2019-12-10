@@ -233,8 +233,10 @@ ggplot(Catch.q, aes(x = year, y = med.can))+geom_line()+coord_cartesian(ylim = c
   geom_line(aes(y = med.us))+geom_line(aes(y = p5.can))+geom_line(aes(y = p95.can), col = 'red')+geom_line(aes(y=  p95.us), col ='blue')+
   geom_line(aes(y = p5.us), col = 'blue')
 
-return(list(ls.df, nfailed, 
-            list(
+return(list(
+  ls.df, 
+  nfailed, 
+  list(
               SSBplot = SSB.plotquant, 
               SSBmid = SSB.plotmid,
               SSBtot = SSB.plottot,
@@ -246,5 +248,7 @@ return(list(ls.df, nfailed,
               F0 =F0.space,
               Catch.q = Catch.q
             
-)))
+    )
+  )
+)
 }

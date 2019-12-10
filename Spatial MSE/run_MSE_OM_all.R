@@ -8,7 +8,6 @@ dyn.load(dynlib("runHakeassessment"))
 
 seedz <- 12345
 set.seed(seedz)
-seeds <- floor(runif(n = nruns, min = 1, max = 1e6))
 
 source('load_files.R')
 source('load_files_OM.R')
@@ -19,10 +18,11 @@ df <- load_data_seasons(nseason = 4, nspace = 2, bfuture = 0.5, movemaxinit = 0.
 time <- 1
 yrinit <- df$nyear
 nruns <- 100
+
 simyears <- 30 # Project 25 years into the future (2048 that year)
 year.future <- c(df$years,(df$years[length(df$years)]+1):(df$years[length(df$years)]+simyears))
 N0 <- NA
 sim.data <- run.agebased.true.catch(df)
 simdata0 <- sim.data # The other one is gonna get overwritten. 
 
-folders <- 'results/HCR/'
+folders <- 'results/Selectivity/'
