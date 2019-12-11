@@ -2,15 +2,22 @@ df_lists <- function(ls.save, nms){
 
 source('calcMeanAge.R')
   
+  
+nyears <- dim(ls.save[[1]][1]$Catch)[2]
+
+if(dim(ls.save[[1]][1]$Catch)[2] == 1){
+  nyears <- dim(ls.save[[1]][1]$Catch)[1]
+}
+  
 if(dim(ls.save[[1]]$Catch)[2] == 1){
     
-simyears <- length(ls.save[[1]][1]$Catch)-(length(1966:2017))+1
+simyears <- nyears-(length(1966:2018))+1
 }else{
-  simyears <- length(rowSums(ls.save[[1]][1]$Catch))-(length(1966:2017))+1
+  simyears <- nyears-(length(1966:2018))+1
   
 }
 
-yr <- 1966:(2017+simyears-1)
+yr <- 1966:(2018+simyears-1)
   
 nruns <- length(ls.save)
 nfailed <- rep(1, nruns)
@@ -39,9 +46,12 @@ for(i in 1:nruns){
       Catch.q.can <- rowSums(ls.save[[i]]$Catch.quota[,1,])
       Catch.q = rowSums(ls.save[[i]]$Catch.quota)
     }else{
-      Catch = rowSums(ls.save[[i]]$Catch)
-      Catch.us = ls.save[[i]]$Catch[,2]
-      Catch.can = ls.save[[i]]$Catch[,1]
+      
+      catchtmp <- apply(ls.save[[i]]$Catch, MARGIN = c(2,3), FUN = sum)
+      
+      Catch = rowSums(catchtmp)
+      Catch.us = catchtmp[,2]
+      Catch.can = catchtmp[,1]
       
       Catch.q = rowSums(ls.save[[i]]$Catch.quota)
       Catch.q.us = rowSums(ls.save[[i]]$Catch.quota[,2,])
@@ -49,29 +59,34 @@ for(i in 1:nruns){
       
     }
     
+    source('calcMeanAge.R')
     
     
-    ls.df <- data.frame(year = yr, SSB.can = ls.save[[i]]$SSB[,1], SSB.US = ls.save[[i]]$SSB[,2],
-                         SSBtot =  ls.save[[i]]$SSB[,1]+ls.save[[i]]$SSB[,2],
-                         # F0.can = rowSums(ls.save[[i]]$F0[,,1], na.rm = TRUE),
-                         # F0.us = rowSums(ls.save[[i]]$F0[,,2], na.rm = TRUE),
-                         amc = ls.save[[i]]$amc$amc.tot, 
-                         ams = ls.save[[i]]$ams$ams.tot, 
-                         amc.can = ls.save[[i]]$amc$amc.can,
-                         amc.us = ls.save[[i]]$amc$amc.US,
-                         ams.can = ls.save[[i]]$ams$ams.can,
-                         ams.us = ls.save[[i]]$ams$ams.US,
-                         SSB.mid.can = ls.save[[i]]$SSB.mid[,1],
-                         SSB.mid.us = ls.save[[i]]$SSB.mid[,2],
-                         run = paste('run',i, sep = '-'),
-                         Catch.q = Catch.q,
-                         Catch.q.us = Catch.q.us,
-                         Catch.q.can = Catch.q.can,
-                         Catch = Catch,
-                         Catch.us = Catch.us,
-                         Catch.can = Catch.can,
-                         F0.us = Catch.us/ls.save[[i]]$SSB.mid[,2],
-                         F0.can = Catch.can/ls.save[[i]]$SSB.mid[,1])
+    if(is.null(ls.save[[i]]$F0)){
+      ls.save[[i]]$F0 <- matrix(NA, length(yr),2)
+    }
+    
+    ls.df <- data.frame(year = yr, 
+                        SSB.can = ls.save[[i]]$SSB[,1], 
+                        SSB.US = ls.save[[i]]$SSB[,2],
+                        SSBtot =  ls.save[[i]]$SSB[,1]+ls.save[[i]]$SSB[,2],
+                        F0.can = ls.save[[i]]$F0[,1],
+                        F0.us = ls.save[[i]]$F0[,2],
+                        # amc.can = ls.save[[i]]$amc$amc.can,
+                        # amc.us = ls.save[[i]]$amc$amc.US,
+                        # ams.can = ls.save[[i]]$ams$ams.can,
+                        # ams.us = ls.save[[i]]$ams$ams.US,
+                        SSB.mid.can = ls.save[[i]]$SSB.mid[,1],
+                        SSB.mid.us = ls.save[[i]]$SSB.mid[,2],
+                        run = paste('run',i, sep = '-'),
+                        Catch.q = Catch.q,
+                        Catch.q.us = Catch.q.us,
+                        Catch.q.can = Catch.q.can,
+                        Catch = Catch,
+                        Catch.us = Catch.us,
+                        Catch.can = Catch.can,
+                        F0.us = Catch.us/ls.save[[i]]$SSB.mid[,2],
+                        F0.can = Catch.can/ls.save[[i]]$SSB.mid[,1])
                         
   }else{
     
@@ -81,27 +96,34 @@ for(i in 1:nruns){
       Catch = ls.save[[i]]$Catch
       
     }else{
-      Catch = rowSums(ls.save[[i]]$Catch)
-      Catch.us = ls.save[[i]]$Catch[,2]
-      Catch.can = ls.save[[i]]$Catch[,1]
+      
+      catchtmp <- apply(ls.save[[i]]$Catch, MARGIN = c(2,3), FUN = sum)
+      
+      Catch = rowSums(catchtmp)
+      Catch.us = catchtmp[,2]
+      Catch.can = catchtmp[,1]
       
       Catch.q = rowSums(ls.save[[i]]$Catch.quota)
       Catch.q.us = rowSums(ls.save[[i]]$Catch.quota[,2,])
       Catch.q.can = rowSums(ls.save[[i]]$Catch.quota[,1,])
       
+      
     }
-    
-    
+      
+      if(is.null(ls.save[[i]]$F0)){
+        ls.save[[i]]$F0 <- matrix(NA, length(yr),2)
+      }
+      
       ls.tmp <- data.frame(year = yr, SSB.can = ls.save[[i]]$SSB[,1], SSB.US = ls.save[[i]]$SSB[,2],
                            SSBtot =  ls.save[[i]]$SSB[,1]+ls.save[[i]]$SSB[,2],
-                           # F0.can = rowSums(ls.save[[i]]$F0[,,1], na.rm = TRUE),
-                           # F0.us = rowSums(ls.save[[i]]$F0[,,2], na.rm = TRUE),
-                           amc = ls.save[[i]]$amc$amc.tot, 
-                           ams = ls.save[[i]]$ams$ams.tot, 
-                           amc.can = ls.save[[i]]$amc$amc.can,
-                           amc.us = ls.save[[i]]$amc$amc.US,
-                           ams.can = ls.save[[i]]$ams$ams.can,
-                           ams.us = ls.save[[i]]$ams$ams.US,
+                           F0.can = ls.save[[i]]$F0[,1],
+                           F0.us = ls.save[[i]]$F0[,2],
+                           # amc = ls.save[[i]]$amc$amc.tot, 
+                           # ams = ls.save[[i]]$ams$ams.tot, 
+                           # amc.can = ls.save[[i]]$amc$amc.can,
+                           # amc.us = ls.save[[i]]$amc$amc.US,
+                           # ams.can = ls.save[[i]]$ams$ams.can,
+                           # ams.us = ls.save[[i]]$ams$ams.US,
                            SSB.mid.can = ls.save[[i]]$SSB.mid[,1],
                            SSB.mid.us = ls.save[[i]]$SSB.mid[,2],
                            run = paste('run',i, sep = '-'),
@@ -161,46 +183,46 @@ Catch.plotquant <- ls.df[ls.df$year > 2010,] %>%
             p5 = quantile(Catch,0.05)
             ) 
 Catch.plotquant$run <- nms
-
-ams.plotquant <- ls.df[ls.df$year > 2010,] %>% 
-  group_by(year) %>% 
-  summarise(med = median(ams,na.rm = TRUE), 
-            p95 = quantile(ams, 0.95,na.rm = TRUE),
-            p5 = quantile(ams,0.05,na.rm = TRUE)
-  ) 
-ams.plotquant$run <- nms
-
-amc.plotquant <- ls.df[ls.df$year > 2010,] %>% 
-  group_by(year) %>% 
-  summarise(med= median(amc,na.rm = TRUE), 
-            p95 = quantile(amc, 0.95,na.rm = TRUE),
-            p5 = quantile(amc,0.05,na.rm = TRUE)
-  ) 
-amc.plotquant$run <- nms
-
-ams.space <- ls.df[ls.df$year > 2010,] %>% 
-  group_by(year) %>% 
-  summarise(med.can = median(ams.can,na.rm = TRUE), 
-            p95.can = quantile(ams.can, 0.95,na.rm = TRUE),
-            p5.can = quantile(ams.can,0.05,na.rm = TRUE),
-            med.us = median(ams.us,na.rm = TRUE), 
-            p95.us = quantile(ams.us, 0.95,na.rm = TRUE),
-            p5.us = quantile(ams.us,0.05,na.rm = TRUE)
-                              
-  ) 
-ams.space$run <- nms
-
-amc.space <- ls.df[ls.df$year > 2010,] %>% 
-  group_by(year) %>% 
-  summarise(med.can = median(amc.can,na.rm = TRUE), 
-            p95.can = quantile(amc.can, 0.95,na.rm = TRUE),
-            p5.can = quantile(amc.can,0.05,na.rm = TRUE),
-            med.us = median(amc.us,na.rm = TRUE), 
-            p95.us = quantile(amc.us, 0.95,na.rm = TRUE),
-            p5.us = quantile(amc.us,0.05,na.rm = TRUE)
-            
-  ) 
-amc.space$run <- nms
+# 
+# ams.plotquant <- ls.df[ls.df$year > 2010,] %>% 
+#   group_by(year) %>% 
+#   summarise(med = median(ams,na.rm = TRUE), 
+#             p95 = quantile(ams, 0.95,na.rm = TRUE),
+#             p5 = quantile(ams,0.05,na.rm = TRUE)
+#   ) 
+# ams.plotquant$run <- nms
+# 
+# amc.plotquant <- ls.df[ls.df$year > 2010,] %>% 
+#   group_by(year) %>% 
+#   summarise(med= median(amc,na.rm = TRUE), 
+#             p95 = quantile(amc, 0.95,na.rm = TRUE),
+#             p5 = quantile(amc,0.05,na.rm = TRUE)
+#   ) 
+# amc.plotquant$run <- nms
+# 
+# ams.space <- ls.df[ls.df$year > 2010,] %>% 
+#   group_by(year) %>% 
+#   summarise(med.can = median(ams.can,na.rm = TRUE), 
+#             p95.can = quantile(ams.can, 0.95,na.rm = TRUE),
+#             p5.can = quantile(ams.can,0.05,na.rm = TRUE),
+#             med.us = median(ams.us,na.rm = TRUE), 
+#             p95.us = quantile(ams.us, 0.95,na.rm = TRUE),
+#             p5.us = quantile(ams.us,0.05,na.rm = TRUE)
+#                               
+#   ) 
+# ams.space$run <- nms
+# 
+# amc.space <- ls.df[ls.df$year > 2010,] %>% 
+#   group_by(year) %>% 
+#   summarise(med.can = median(amc.can,na.rm = TRUE), 
+#             p95.can = quantile(amc.can, 0.95,na.rm = TRUE),
+#             p5.can = quantile(amc.can,0.05,na.rm = TRUE),
+#             med.us = median(amc.us,na.rm = TRUE), 
+#             p95.us = quantile(amc.us, 0.95,na.rm = TRUE),
+#             p5.us = quantile(amc.us,0.05,na.rm = TRUE)
+#             
+#   ) 
+# amc.space$run <- nms
 
 F0.space <- ls.df[ls.df$year > 2010,] %>%
   group_by(year) %>%
@@ -241,10 +263,10 @@ return(list(
               SSBmid = SSB.plotmid,
               SSBtot = SSB.plottot,
               Catchplot = Catch.plotquant,
-              amcplot = amc.plotquant,
-              amsplot = ams.plotquant,
-              amc.space = amc.space,
-              ams.space = ams.space,
+              # amcplot = amc.plotquant,
+              # amsplot = ams.plotquant,
+              # amc.space = amc.space,
+              # ams.space = ams.space,
               F0 =F0.space,
               Catch.q = Catch.q
             

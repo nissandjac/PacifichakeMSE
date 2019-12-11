@@ -20,6 +20,8 @@ ls.plots <- list()
 
 fls <- fls[grep('.Rdata', x = fls)]
 
+print(paste('order = ', fls))
+
 for(i in 1:length(fls)){
  load(paste(results,fls[i], sep= ''))
  ls.plots[[i]] <- ls.save
