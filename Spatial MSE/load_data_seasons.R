@@ -260,9 +260,7 @@ load_data_seasons <- function(nseason = 4,
     
   }
 
-<<<<<<< HEAD
 
-=======
   rmul <-1
   
   if(nspace == 2){
@@ -272,7 +270,7 @@ load_data_seasons <- function(nseason = 4,
   
   
   
->>>>>>> 6594249901ede807af10a5fd6bfce4be257950d8
+
   parms <- list( # Just start all the simluations with the same initial conditions 
        logRinit = parms.scalar$logRinit+log(rmul),
        logh = parms.scalar$logh,

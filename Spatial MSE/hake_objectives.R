@@ -5,7 +5,7 @@ hake_objectives <- function(ls.MSE, SSB0, move = NA){
   #ls.MSE=ls.save
   nruns <- length(ls.MSE)
   nyears <- dim(ls.MSE[[1]][1]$Catch)[2]
-  
+
   
   if(dim(ls.MSE[[1]][1]$Catch)[2] == 1){
     nyears <- dim(ls.MSE[[1]][1]$Catch)[1]
@@ -58,7 +58,7 @@ hake_objectives <- function(ls.MSE, SSB0, move = NA){
     quota.tot <- apply(ls.MSE[[idx]]$Catch.quota, MARGIN = 1, FUN = sum)
     quota.plot <- data.frame(Quota_frac = quota.tot/catchtmp, year = yr, run = paste('run',1, sep =''))
 
-    
+
     #sum quota over year by area
     quota.us.tot <- data.frame(quota=rowSums(ls.MSE[[idx]]$Catch.quota[,2,]), year=yr, run=paste('run',1, sep =''))
     quota.can.tot <- data.frame(quota=rowSums(ls.MSE[[idx]]$Catch.quota[,1,]), year=yr, run=paste('run',1, sep =''))
@@ -180,7 +180,7 @@ hake_objectives <- function(ls.MSE, SSB0, move = NA){
       
       vtac.can.seas<- rbind(vtac.can.seas, vtac.tmp.can.seas)
       vtac.us.seas<- rbind(vtac.us.seas, vtac.tmp.us.seas)
-      
+
       AAV.tmp <- data.frame(AAV  = abs(catchtmp[2:length(yr)]-catchtmp[1:(length(yr)-1)])/catchtmp[1:(length(yr)-1)], 
 
                             year = yr[2:length(yr)], run =  paste('run',i, sep=''))
