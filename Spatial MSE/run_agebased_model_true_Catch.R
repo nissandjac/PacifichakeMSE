@@ -207,7 +207,11 @@ run.agebased.true.catch <- function(df, seeds = 100){
   pope.mul <- 0.50
   
   if(nseason == 1){
+<<<<<<< HEAD
     Fnseason <- 1
+=======
+    Fnseason <- matrix(rep(1, df$nspace))
+>>>>>>> 6594249901ede807af10a5fd6bfce4be257950d8
   }
   
   
@@ -240,6 +244,7 @@ run.agebased.true.catch <- function(df, seeds = 100){
     # Fnseason <- matrix(1, nseason)
     # Fnseason <- Fnseason/sum(Fnseason)
     # Fnseason <- c(0,0.5,0.5,0)
+<<<<<<< HEAD
   
     
     
@@ -247,6 +252,9 @@ run.agebased.true.catch <- function(df, seeds = 100){
       Fnseason <- 1
       Fnseason <- as.matrix(Fnseason) 
     }
+=======
+
+>>>>>>> 6594249901ede807af10a5fd6bfce4be257950d8
     
     if(df$move == FALSE){
       Fspace <- 1 # All catches in the south
@@ -463,8 +471,12 @@ run.agebased.true.catch <- function(df, seeds = 100){
       }
     }  
     
-    Msurveymul <- 0
-    
+    if(nseason == 1){
+       Msurveymul <- 0.5
+      }else{
+        Msurveymul <- 0
+    }
+        
     for (space in 1:nspace){
     survey.true[space,yr] <- sum(N.save.age[,yr,space,df$surveyseason]*
                                     exp(-Msurveymul*Z.save[,yr,space,df$surveyseason])*surv.sel*q*w_surv)
@@ -490,7 +502,7 @@ run.agebased.true.catch <- function(df, seeds = 100){
     if (df$flag_survey[yr] == 1){
         
         
-        if(year[yr] > 1990){
+        if(year[yr] > 2018){
         err <- rnorm(n = 1,mean = 0, sd = surv.sd)
         surv <- exp(log(sum(Nsurv*surv.sel*q*w_surv))+err) # If the xtra factor is not included the mean is > 1
         }else{
@@ -516,7 +528,7 @@ run.agebased.true.catch <- function(df, seeds = 100){
       
       for(space in 1:nspace){
       Ntot.year <- N.save.age[,yr,space,df$surveyseason]
-      surv.tot[yr,space]  <- sum(Ntot.year*surv.sel*q)
+      surv.tot[yr,space]  <- sum(Ntot.year*surv.sel*q*exp(-Msurveymul*Z.save[,yr,space,df$surveyseason]))
         
       age_comps_surv_space[1,yr,space] <- 0 # No year 1 recorded
         
@@ -586,9 +598,8 @@ run.agebased.true.catch <- function(df, seeds = 100){
                      SSB_0 = SSB_0, 
                      SSB.weight = SSB.weight,
                      survey.true = survey.true,
-                     surv.tot = surv.tot,
                      Z = Z.save,
-                     survey = survey,
+                     survey = as.numeric(survey),
                      age_comps_surv = age_comps_surv,
                      age_comps_country = age_comps_surv_space,
                      age_comps_catch_space = age_comps_catch_space,

@@ -3,7 +3,7 @@ library(TMB)
 compile("runHakeassessment.cpp")
 dyn.load(dynlib("runHakeassessment"))
 library(r4ss)
-mod <- SS_output(paste(getwd(),'/data/', sep =''), printstats=FALSE, verbose = FALSE) # Read the true selectivity 
+mod <- SS_output(paste(getwd(),'/data/SS32018', sep =''), printstats=FALSE, verbose = FALSE) # Read the true selectivity 
 
 # Set the seed
 seedz <- 12345
@@ -20,7 +20,7 @@ parms.true <- getParameters_OM(TRUE,df) # Load parameters from assessment
 
 time <- 1
 yrinit <- df$nyear
-nruns <- 100
+nruns <- 1000
 seeds <- floor(runif(n = nruns, min = 1, max = 1e6))
 ### Run the OM and the EM for x number of years in the MSE 
 ### Set targets for harvesting etc 
@@ -131,4 +131,5 @@ for (i in 1:nruns){
 }
 # # # # 
 save(ls.save,file = 'results/Selectivity/MSE_sel3.Rdata')
+
 write.csv(seeds,file = 'results/Selectivity/seeds.csv', row.names = FALSE) # Save the seeds
