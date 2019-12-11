@@ -40,7 +40,7 @@ run_multiple_OMs <- function(simyears = 30,seed = 12345, df, Catchin,
   
   ## 
   if(length(Catchin) == 1){
-    Catchin <- rep(Catchin, simyears-1)
+    Catchin <- as.matrix(rep(Catchin, simyears-1))
   }
   
   for (time in 1:(simyears-1)){
@@ -181,7 +181,7 @@ run_multiple_OMs <- function(simyears = 30,seed = 12345, df, Catchin,
   
 
   
-  df.ret <- list(SSB = sim.data$SSB.all[,3,],
+  df.ret <- list(SSB = sim.data$SSB.all[,,3],
                  ams = sim.data$age_comps_country,
                  amc = sim.data$age_comps_catch_space
   )

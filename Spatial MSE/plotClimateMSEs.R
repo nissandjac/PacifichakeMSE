@@ -26,9 +26,9 @@ source('hake_objectives.R')
 df <- load_data_seasons(nseason = 4, nspace = 2) # Prepare data for operating model
 sim.data <- run.agebased.true.catch(df)
 
-ls.plot <- list(move_0 = ls.0,
-                move_002 = ls.002,
-                move_004 = ls.004)
+ls.plot <- list('base model' = ls.0,
+                'medium change' = ls.002,
+                'high change' = ls.004)
 
 fn_plot_MSE(ls.plot, sim.data,plotfolder = 'Figs/Climate/',plotexp = TRUE)
 

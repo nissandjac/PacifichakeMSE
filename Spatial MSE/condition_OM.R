@@ -77,7 +77,8 @@ df.2 <- data.frame(AC = c(calcMeanAge(sim.data.move$age_comps_catch_space[,,2], 
 
 df.plot <- rbind(df.move,df.2)
 ggplot(df.move, aes(x = year, y = AC, color = Country))+geom_line()+theme_bw()+
-  geom_line(data = df.2, linetype = 2)+
+
+    geom_line(data = df.2, linetype = 2)+
   geom_line(data = catch.ac.obs, aes(y = am), linetype = 3)+
   geom_point(data = catch.ac.obs, aes(y = am), size = 2)
 

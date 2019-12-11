@@ -8,10 +8,10 @@ load_data_seasons <- function(nseason = 4,
                               nsurvey = 2, 
                               logSDR = 1.4, 
                               bfuture = 0.5,
-                              moveout = 0.8, 
+                              moveout = 0.85, 
                               movesouth = 0.05,
                               moveinit = NA, 
-                              moveslope = 0.5,
+                              moveslope = 0.9,
                               selectivity_change = 0,
                               yr_future  = 0
                               ){
@@ -34,7 +34,7 @@ load_data_seasons <- function(nseason = 4,
   
   if(is.na(moveinit)){
     if(nspace == 2){
-    moveinit <-  c(0.3,0.7)
+    moveinit <-  c(0.25,0.75)
     }
   }
   
@@ -77,8 +77,9 @@ load_data_seasons <- function(nseason = 4,
       }
     }
     
+    movemat[,1:2,,] <- 0 # Recruits and 1 year olds don't move
+    
     if(nseason == 4){ # For the standard model
-      movemat[,1:2,,] <- 0 # Recruits and 1 year olds don't move
       
       movemat[1,3:nage,2:3,] <- movesouth # Don't move south during the year
       movemat[1,3:nage,1,] <- moveout*0.5 # continuing south movement at spawning time
@@ -106,6 +107,7 @@ load_data_seasons <- function(nseason = 4,
   
   # weight at age 
   wage_ss <- read.csv('data/wage_ss.csv')
+  wage_ss <- wage_ss[wage_ss$Yr %in% years,]
   wage_unfished <- read.csv('data/unfished_waa.csv')
 
   
@@ -258,9 +260,21 @@ load_data_seasons <- function(nseason = 4,
     
   }
   
-     
+<<<<<<< HEAD
+
+=======
+  rmul <-1
+  
+  if(nspace == 2){
+    rmul <- 1.1
+  }
+  
+  
+  
+  
+>>>>>>> 6594249901ede807af10a5fd6bfce4be257950d8
   parms <- list( # Just start all the simluations with the same initial conditions 
-       logRinit = parms.scalar$logRinit,
+       logRinit = parms.scalar$logRinit+log(rmul),
        logh = parms.scalar$logh,
        logMinit = parms.scalar$logMinit,
        logSDsurv = parms.scalar$logSDsurv,
@@ -295,8 +309,6 @@ load_data_seasons <- function(nseason = 4,
      
      flag_sel <- rep(0,nyear)
      flag_sel[which(years == selYear):which(years == myear)] <- 1
-
-          
      
   df <-list(      #### Parameters #####
                   wage_ssb = t(wage_ssb),
@@ -345,7 +357,7 @@ load_data_seasons <- function(nseason = 4,
                   bfuture = bfuture,
                   #logh = log(0.8),
                   # Space parameters 
-                  smul = 0.6, # Annual survey timing 
+                  smul = 0.5, # Annual survey timing 
                   sigma_psel = 1.4,
                   nspace = nspace,
                   #TAC = TAC,
@@ -377,7 +389,10 @@ load_data_seasons <- function(nseason = 4,
   df$Catch <- rowSums(df$Catch.country)
   
   if(nyear > length(df$Catch)){
-    df$Catch <- c(df$Catch,rep(mean(df$Catch), nyear-length(Catch.obs$Fishery)))
+
+    
+    df$Catch <- c(df$Catch,rep(mean(df$Catch), nyear-length(df$Catch)))
+
     
   }
   

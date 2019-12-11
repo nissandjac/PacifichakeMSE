@@ -2,6 +2,8 @@
 fn_plot_MSE <- function(ls, sim.data, plotfolder = '/Figs/newplots/', plotexp = TRUE){
 
   
+# Do some calculations for survey and catch age comps 
+
 nms <- names(ls)  
 obj.plot <- list()
 cols <- brewer.pal(6, 'Dark2')
@@ -24,7 +26,7 @@ df.obj <- data.frame(obj.plot[[1]][[2]])
 for(i in 2:length(nms)){
   df.obj <- rbind(df.obj, obj.plot[[i]][[2]])
 }
-
+ 
 indicators <- unique(df.obj$indicator)
 
 df.obj2 <- df.obj %>%
@@ -54,6 +56,7 @@ dummy <- data.frame(indicator = 'long term catch', value = c(0.2,0.3), HCR = 'ym
 # }
 
 #df.obj2$value[df.obj2$HCR == 'move_0'] <- 0
+df.obj2$HCR <- factor(df.obj2$HCR, levels = names(ls))
 
 #df.obj2$ind2=factor(df.obj2$indicator, as.character(df.obj2$indicator))
 
@@ -79,7 +82,7 @@ p1.sp
 
 
 if(plotexp == TRUE){
-png(paste(plotfolder,'objective_bars.png'), width = 20, height =20, res = 400, unit = 'cm')
+png(paste(plotfolder,'objective_bars.png', sep = ''), width = 20, height =20, res = 400, unit = 'cm')
 print(p1)
 dev.off()
 
@@ -138,43 +141,43 @@ if(plotexp == TRUE){
   print(p3)
   dev.off()
 }  
-
-df.ams <- data.frame(ls.data[[1]][[3]]$amsplot)
-df.amc <- data.frame(ls.data[[1]][[3]]$amcplot)
-
-
-for(i in 2:length(nms)){
-  df.ams <- rbind(df.ams, ls.data[[i]][[3]]$amsplot)
-  df.amc <- rbind(df.amc, ls.data[[i]][[3]]$amcplot)
-}
-
-
-rm.idx <- which(is.na(df.ams$med)) # remove years with no measurement
-
-p4 <- ggplot(df.ams[-rm.idx,], aes(x = year, y = med, color = run))+geom_line(size = 2)+
-  #  geom_ribbon(aes(ymin = p5, ymax = p95, color = run), linetype = 2, fill = NA)+
-  scale_color_manual(values=cols)+scale_y_continuous(name = 'Average age in survey')+
-  geom_line(aes(y = p5, color = run), linetype = 2)+geom_line(aes(y = p95, color = run), linetype = 2)
-
-if(plotexp == TRUE){
-  png(paste(plotfolder,'total_average_age_surv.png'), width = 12, height =16, res = 400, unit = 'cm')
-  print(p4)
-  dev.off()
-}  
-
-
-
-p5 <- ggplot(df.amc, aes(x = year, y = med, color = run))+geom_line(size = 2)+
-  #  geom_ribbon(aes(ymin = p5, ymax = p95, color = run), linetype = 2, fill = NA)+
-  scale_color_manual(values=cols)+scale_y_continuous(name = 'Average age in catch')+
-  geom_line(aes(y = p5, color = run), linetype = 2)+geom_line(aes(y = p95, color = run), linetype = 2)
-#  scale_fill_manual(values = alpha(cols, alpha = 0.2), name="fill")
-if(plotexp == TRUE){
-  png(paste(plotfolder,'total_average_age_catch.png'), width = 12, height =16, res = 400, unit = 'cm')
-  print(p5)
-  dev.off()
-}  
-
+# 
+# df.ams <- data.frame(ls.data[[1]][[3]]$amsplot)
+# df.amc <- data.frame(ls.data[[1]][[3]]$amcplot)
+# 
+# 
+# for(i in 2:length(nms)){
+#   df.ams <- rbind(df.ams, ls.data[[i]][[3]]$amsplot)
+#   df.amc <- rbind(df.amc, ls.data[[i]][[3]]$amcplot)
+# }
+# 
+# 
+# rm.idx <- which(is.na(df.ams$med)) # remove years with no measurement
+# 
+# p4 <- ggplot(df.ams[-rm.idx,], aes(x = year, y = med, color = run))+geom_line(size = 2)+
+#   #  geom_ribbon(aes(ymin = p5, ymax = p95, color = run), linetype = 2, fill = NA)+
+#   scale_color_manual(values=cols)+scale_y_continuous(name = 'Average age in survey')+
+#   geom_line(aes(y = p5, color = run), linetype = 2)+geom_line(aes(y = p95, color = run), linetype = 2)
+# 
+# if(plotexp == TRUE){
+#   png(paste(plotfolder,'total_average_age_surv.png'), width = 12, height =16, res = 400, unit = 'cm')
+#   print(p4)
+#   dev.off()
+# }  
+# 
+# 
+# 
+# p5 <- ggplot(df.amc, aes(x = year, y = med, color = run))+geom_line(size = 2)+
+#   #  geom_ribbon(aes(ymin = p5, ymax = p95, color = run), linetype = 2, fill = NA)+
+#   scale_color_manual(values=cols)+scale_y_continuous(name = 'Average age in catch')+
+#   geom_line(aes(y = p5, color = run), linetype = 2)+geom_line(aes(y = p95, color = run), linetype = 2)
+# #  scale_fill_manual(values = alpha(cols, alpha = 0.2), name="fill")
+# if(plotexp == TRUE){
+#   png(paste(plotfolder,'total_average_age_catch.png'), width = 12, height =16, res = 400, unit = 'cm')
+#   print(p5)
+#   dev.off()
+# }  
+# 
 
 
 df.SSB <- data.frame(ls.data[[1]][[3]]$SSBmid)
@@ -186,6 +189,9 @@ for(i in 2:length(nms)){
 
 
 ### SSB in the middle of the year 
+df.SSB$run <- factor(df.SSB$run, levels = names(ls))
+
+
 
 p6 <- ggplot(df.SSB, aes(x = year, y = med.can*1e-6))+geom_line(color = 'red', size = 1.2)+
   geom_line(aes(y = med.US*1e-6), color = 'blue', size = 1.2)+
@@ -198,55 +204,55 @@ p6
 
 
 if(plotexp == TRUE){
-  png(paste(plotfolder,'SSB_mid_year.png'), width = 16, height =16, res = 400, unit = 'cm')
+  png(paste(plotfolder,'SSB_mid_year.png'), width = 16, height =10, res = 400, unit = 'cm')
   print(p6)
   dev.off()
 }  
-
-df.ams.space <- data.frame(ls.data[[1]][[3]]$ams.space)
-
-for(i in 2:length(nms)){
-  df.ams.space <- rbind(df.ams.space, ls.data[[i]][[3]]$ams.space)
-}
-
-cols <- c('darkred', 'blue4')
-
-p7 <- ggplot(df.ams.space,aes(x = year, y = med.can))+geom_line(size = 2, color = cols[1])+
-  geom_ribbon(aes(ymin = p5.can, ymax = p95.can), linetype = 0, fill = alpha(cols[1], alpha = 0.2), color = cols[1])+
-  geom_line(aes(y = med.us), size = 2, color = cols[2])+
-  geom_ribbon(aes(ymin = p5.us, ymax = p95.us), linetype = 0, fill = alpha(cols[2], alpha = 0.2), color = cols[2])+
-  scale_y_continuous(name = 'Average age in survey')+
-  facet_wrap(~run)+theme(legend.position = 'n')+
-  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
-
-#  scale_fill_manual(values = alpha(cols, alpha = 0.2), name="fill")
-if(plotexp == TRUE){
-  png(paste(plotfolder,'average_age_survey_country.png'), width = 12, height =16, res = 400, unit = 'cm')
-  print(p7)
-  dev.off()
-}  
-
-
-df.amc.space <- data.frame(ls.data[[1]][[3]]$amc.space)
-
-for(i in 2:length(nms)){
-  df.amc.space <- rbind(df.amc.space, ls.data[[i]][[3]]$amc.space)
-}
-p8 <- ggplot(df.amc.space,aes(x = year, y = med.can))+geom_line(size = 2, color = cols[1])+
-  geom_ribbon(aes(ymin = p5.can, ymax = p95.can), linetype = 0, fill = alpha(cols[1], alpha = 0.2), color = cols[1])+
-  geom_line(aes(y = med.us), size = 2, color = cols[2])+
-  geom_ribbon(aes(ymin = p5.us, ymax = p95.us), linetype = 0, fill = alpha(cols[2], alpha = 0.2), color = cols[2])+
-  scale_y_continuous(name = 'Average age in catch')+
-  facet_wrap(~run)+theme(legend.position = 'n')+
-  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
-
-p8
-
-if(plotexp == TRUE){
-  png(paste(plotfolder,'average_age_catch_country.png'), width = 12, height =16, res = 400, unit = 'cm')
-  print(p8)
-  dev.off()
-}  
+# 
+# df.ams.space <- data.frame(ls.data[[1]][[3]]$ams.space)
+# 
+# for(i in 2:length(nms)){
+#   df.ams.space <- rbind(df.ams.space, ls.data[[i]][[3]]$ams.space)
+# }
+# 
+# cols <- c('darkred', 'blue4')
+# 
+# p7 <- ggplot(df.ams.space,aes(x = year, y = med.can))+geom_line(size = 2, color = cols[1])+
+#   geom_ribbon(aes(ymin = p5.can, ymax = p95.can), linetype = 0, fill = alpha(cols[1], alpha = 0.2), color = cols[1])+
+#   geom_line(aes(y = med.us), size = 2, color = cols[2])+
+#   geom_ribbon(aes(ymin = p5.us, ymax = p95.us), linetype = 0, fill = alpha(cols[2], alpha = 0.2), color = cols[2])+
+#   scale_y_continuous(name = 'Average age in survey')+
+#   facet_wrap(~run)+theme(legend.position = 'n')+
+#   theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
+# 
+# #  scale_fill_manual(values = alpha(cols, alpha = 0.2), name="fill")
+# if(plotexp == TRUE){
+#   png(paste(plotfolder,'average_age_survey_country.png'), width = 12, height =16, res = 400, unit = 'cm')
+#   print(p7)
+#   dev.off()
+# }  
+# 
+# # 
+# df.amc.space <- data.frame(ls.data[[1]][[3]]$amc.space)
+# 
+# for(i in 2:length(nms)){
+#   df.amc.space <- rbind(df.amc.space, ls.data[[i]][[3]]$amc.space)
+# }
+# p8 <- ggplot(df.amc.space,aes(x = year, y = med.can))+geom_line(size = 2, color = cols[1])+
+#   geom_ribbon(aes(ymin = p5.can, ymax = p95.can), linetype = 0, fill = alpha(cols[1], alpha = 0.2), color = cols[1])+
+#   geom_line(aes(y = med.us), size = 2, color = cols[2])+
+#   geom_ribbon(aes(ymin = p5.us, ymax = p95.us), linetype = 0, fill = alpha(cols[2], alpha = 0.2), color = cols[2])+
+#   scale_y_continuous(name = 'Average age in catch')+
+#   facet_wrap(~run)+theme(legend.position = 'n')+
+#   theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
+# 
+# p8
+# 
+# if(plotexp == TRUE){
+#   png(paste(plotfolder,'average_age_catch_country.png'), width = 12, height =16, res = 400, unit = 'cm')
+#   print(p8)
+#   dev.off()
+# }  
 
 # How accurate is the SSB estimation 
 source('calcSE.R')
@@ -290,29 +296,29 @@ if(plotexp == FALSE){
 # Plot Fishing mortality 
 df.F0 <- data.frame(ls.data[[1]][[3]]$F0)
 
-
-for(i in 2:length(nms)){
-  df.F0 <- rbind(df.F0, ls.data[[i]][[3]]$F0)
-}
-
-
-### SSB in the middle of the year 
-
-p10 <- ggplot(df.F0, aes(x = year, y = med.can))+geom_line(color = 'red')+
-  geom_line(aes(y = med.us), color = 'blue')+coord_cartesian(ylim = c(0,1))+
-  theme_classic()+scale_y_continuous(name ='Exploitation rate')+facet_wrap(~run)+  
-  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))+
-  geom_ribbon(aes(ymin = p5.can, ymax = p95.can), fill = alpha('red', alpha = 0.2), linetype = 0)+
-  geom_ribbon(aes(ymin = p5.us, ymax = p95.us), fill = alpha('blue', alpha = 0.2), linetype = 0)
-
-p10
-
-if(plotexp == TRUE){
-  png(paste(plotfolder,'F0.png'), width = 12, height =16, res = 400, unit = 'cm')
-  print(p10)
-  dev.off()
-}  
-
+  if(all(is.na(df$F0)) == 0){
+    for(i in 2:length(nms)){
+      df.F0 <- rbind(df.F0, ls.data[[i]][[3]]$F0)
+    }
+    
+    
+    ### SSB in the middle of the year 
+    
+    p10 <- ggplot(df.F0, aes(x = year, y = med.can))+geom_line(color = 'red')+
+      geom_line(aes(y = med.us), color = 'blue')+coord_cartesian(ylim = c(0,1))+
+      theme_classic()+scale_y_continuous(name ='Exploitation rate')+facet_wrap(~run)+  
+      theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))+
+      geom_ribbon(aes(ymin = p5.can, ymax = p95.can), fill = alpha('red', alpha = 0.2), linetype = 0)+
+      geom_ribbon(aes(ymin = p5.us, ymax = p95.us), fill = alpha('blue', alpha = 0.2), linetype = 0)
+    
+    p10
+    
+    if(plotexp == TRUE){
+      png(paste(plotfolder,'F0.png'), width = 12, height =16, res = 400, unit = 'cm')
+      print(p10)
+      dev.off()
+    }  
+  }
 # Plot realized catch
 df.catchq<- data.frame(ls.data[[1]][[3]]$Catch.q)
 
@@ -380,8 +386,8 @@ if(plotexp == TRUE){
 
 p13 <- ggplot(df.catchq, aes(x = year, y = med.tot, color = run))+geom_line(size = 1.4)+
   scale_color_manual(values = cols[1:length(nms)])+
-  geom_line(aes(y = p5.tot), linetype =2,size = 1.2)+
-  geom_line(aes(y = p95.tot), linetype =2,size = 1.2)+
+  geom_line(aes(y = p5.tot), linetype =2,size = 0.9)+
+  geom_line(aes(y = p95.tot), linetype =2,size = 0.9)+
   theme_classic()+scale_y_continuous(name ='Catch/quota')+
   geom_hline(aes(yintercept = 1), color = 'black', linetype = 2)+coord_cartesian(ylim = c(0.4,1.05))+
   theme(legend.position = c(0.2,0.4),
@@ -390,7 +396,7 @@ p13 <- ggplot(df.catchq, aes(x = year, y = med.tot, color = run))+geom_line(size
 p13
 
 if(plotexp == TRUE){
-  png(paste(plotfolder,'Catch_quota_tot.png'), width = 16, height =12, res = 400, unit = 'cm')
+  png(paste(plotfolder,'Catch_quota_tot.png'), width = 16, height =8, res = 400, unit = 'cm')
   print(p13)
   dev.off()
 }  
