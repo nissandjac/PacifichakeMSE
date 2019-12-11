@@ -4,17 +4,22 @@ hake_objectives <- function(ls.MSE, SSB0, move = NA){
   # sim.data # Initial years of the operating model
   #ls.MSE=ls.save
   nruns <- length(ls.MSE)
-
+  nyears <- dim(ls.MSE[[1]][1]$Catch)[2]
+  
+  
+  if(dim(ls.MSE[[1]][1]$Catch)[2] == 1){
+    nyears <- dim(ls.MSE[[1]][1]$Catch)[1]
+  }
   # Get the number of years run in that MSE 
   if(all(is.na(ls.MSE[[1]]))){
-    simyears <- length(ls.MSE[[2]][2]$Catch)-(length(1966:2017))+1
+    simyears <- nyears-(length(1966:2018))+1
     
     
   }else{
-    simyears <- length(ls.MSE[[1]][1]$Catch)-(length(1966:2017))+1
+    simyears <- nyears-(length(1966:2018))+1
     }
     
-  yr <- 1966:(2017+simyears-1)
+  yr <- 1966:(2018+simyears-1)
   
   idx <- 1
   
@@ -30,19 +35,29 @@ hake_objectives <- function(ls.MSE, SSB0, move = NA){
     SSB.plot <- data.frame(SSB = (ls.MSE[[idx]]$SSB)/(SSB0), year = yr, run = paste('run',1, sep=''))
     
   }else{
-    SSB.plot <- data.frame(SSB = rowSums(ls.MSE[[idx]]$SSB)/sum(SSB0), year = yr, run = paste('run',1, sep=''))
+
+    SSB.plot <- data.frame(SSB = as.numeric(rowSums(ls.MSE[[idx]]$SSB))/sum(SSB0), year = yr, run = paste('run',1, sep=''))
     V.us.plot <- data.frame(V = ls.MSE[[idx]]$V[,2,3], year = yr, run = paste('run',1, sep='')) #vulnerable biomass at mid-year start of season 3
     V.ca.plot <- data.frame(V = ls.MSE[[idx]]$V[,1,3], year = yr, run = paste('run',1, sep='')) #vulnerable biomass at mid-year start of season 3
+
   }  
   
   if(is.na(move)){ #if there is no movement (single area model)
     Catch.plot <- data.frame(Catch = ls.MSE[[idx]]$Catch, year = yr, run = paste('run',1, sep=''))
   }else{
-    Catch.plot <- data.frame(Catch = rowSums(ls.MSE[[idx]]$Catch), year = yr, run = paste('run',1, sep=''))
-    quota.tot <- apply(ls.MSE[[idx]]$Catch.quota, MARGIN = 1, FUN = sum)
+
     
-    #note that quota.plot is the quota/over catch, where as spatial quota is just quota summed by area
-    quota.plot <- data.frame(Quota_frac = quota.tot/rowSums(ls.MSE[[idx]]$Catch), year = yr, run = paste('run',1, sep =''))
+    catchtmp <- as.numeric(apply(ls.MSE[[idx]]$Catch,MARGIN = 2, FUN = sum))
+    
+    if(length(catchtmp) == 1){
+      catchtmp <- ls.MSE[[idx]]$Catch
+    }
+    
+    Catch.plot <- data.frame(Catch = catchtmp, year = yr, run = paste('run',1, sep=''))
+    
+    quota.tot <- apply(ls.MSE[[idx]]$Catch.quota, MARGIN = 1, FUN = sum)
+    quota.plot <- data.frame(Quota_frac = quota.tot/catchtmp, year = yr, run = paste('run',1, sep =''))
+
     
     #sum quota over year by area
     quota.us.tot <- data.frame(quota=rowSums(ls.MSE[[idx]]$Catch.quota[,2,]), year=yr, run=paste('run',1, sep =''))
@@ -66,7 +81,7 @@ hake_objectives <- function(ls.MSE, SSB0, move = NA){
                                V.TAC.fa=ls.MSE[[idx]]$V[,1,4]/ls.MSE[[idx]]$Catch.quota[,1,4],
                                year = yr, run =  paste('run',1, sep=''))
   }  
-  AAV.plot  <- data.frame(AAV = abs(ls.MSE[[idx]]$Catch[2:length(yr)]-ls.MSE[[idx]]$Catch[1:(length(yr)-1)])/ls.MSE[[idx]]$Catch[1:(length(yr)-1)], 
+  AAV.plot  <- data.frame(AAV = abs(catchtmp[2:length(yr)]-catchtmp[1:(length(yr)-1)])/catchtmp[1:(length(yr)-1)], 
                           year = yr[2:length(yr)], run = paste('run',1, sep=''))
   
   for(i in 2:nruns){
@@ -83,16 +98,24 @@ hake_objectives <- function(ls.MSE, SSB0, move = NA){
         
         
       }else{
+        
+        catchtmp <-  as.numeric(apply(ls.tmp$Catch,MARGIN = 2, FUN = sum))
+        
+        if(length(catchtmp) == 1){
+          catchtmp <- ls.MSE[[idx]]$Catch
+        }
+        
+        
         SSB.tmp <- data.frame(SSB = rowSums(ls.tmp$SSB)/sum(SSB0), year = yr, run =  paste('run',i, sep=''))
-        Catch.tmp <- data.frame(Catch = rowSums(ls.tmp$Catch), year = yr, run =  paste('run',i, sep=''))
-        quota.tmp <- data.frame(Quota_frac = rowSums(ls.tmp$Catch)/apply(ls.tmp$Catch.quota, MARGIN = 1, FUN = sum), year = yr, run =  paste('run',i, sep=''))
+        Catch.tmp <- data.frame(Catch = catchtmp, year = yr, run =  paste('run',i, sep=''))
+        quota.tmp <- data.frame(Quota_frac = catchtmp/apply(ls.tmp$Catch.quota, MARGIN = 1, FUN = sum), year = yr, run =  paste('run',i, sep=''))
         
         if(ncol(ls.tmp$Catch) == 1){ #if a single area model, catch by country fixed as proportion of total
           Catch.can <- ls.tmp$Catch*0.26
           Catch.us <- ls.tmp$Catch*0.74
         }else{
-          Catch.can <- ls.tmp$Catch[,1]
-          Catch.us <- ls.tmp$Catch[,2]
+          Catch.can <- apply(ls.tmp$Catch,MARGIN = c(2,3), FUN = sum)[,1]
+          Catch.us <- apply(ls.tmp$Catch,MARGIN = c(2,3), FUN = sum)[,2]
         }
         
         quota.tmp.can <- data.frame(Catch = Catch.can/rowSums(ls.tmp$Catch.quota[,1,]),
@@ -140,6 +163,7 @@ hake_objectives <- function(ls.MSE, SSB0, move = NA){
       Catch.plot <- rbind(Catch.plot,Catch.tmp)
       quota.plot <- rbind(quota.plot, quota.tmp)
       
+
       quota.us<- rbind(quota.us, quota.tmp.us)
       quota.can<- rbind(quota.can, quota.tmp.can)
         
@@ -157,7 +181,8 @@ hake_objectives <- function(ls.MSE, SSB0, move = NA){
       vtac.can.seas<- rbind(vtac.can.seas, vtac.tmp.can.seas)
       vtac.us.seas<- rbind(vtac.us.seas, vtac.tmp.us.seas)
       
-      AAV.tmp <- data.frame(AAV  = abs(ls.tmp$Catch[2:length(yr)]-ls.tmp$Catch[1:(length(yr)-1)])/ls.tmp$Catch[1:(length(yr)-1)], 
+      AAV.tmp <- data.frame(AAV  = abs(catchtmp[2:length(yr)]-catchtmp[1:(length(yr)-1)])/catchtmp[1:(length(yr)-1)], 
+
                             year = yr[2:length(yr)], run =  paste('run',i, sep=''))
       AAV.plot <- rbind(AAV.plot, AAV.tmp)
       
@@ -433,7 +458,7 @@ hake_objectives <- function(ls.MSE, SSB0, move = NA){
       'S>0.4S0',
   #    '3 consec yrs S<S40',
    #   'years closed fishery',
-      'AAV',
+      'Catch variability',
    #   'Mean SSB/SSB0',
    #   'median catch',
       'short term catch',
@@ -456,7 +481,9 @@ hake_objectives <- function(ls.MSE, SSB0, move = NA){
                            as.factor(indicator), 
                          value = c(
                            round(length(which(SSB.future$SSB <= 0.1))/length(SSB.future$SSB), digits = 2),
+
                            round(length(which(SSB.future$SSB>0.1 & SSB.future$SSB<0.4))/length(SSB.future$SSB), digits = 2),
+
                            round(length(which(SSB.future$SSB>0.4))/length(SSB.future$SSB), digits = 2),
                           # round(mean(p.vals), digits = 2), 
                         #   mean(nclosed),
