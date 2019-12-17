@@ -13,7 +13,8 @@ load_data_seasons <- function(nseason = 4,
                               moveinit = NA, 
                               moveslope = 0.9,
                               selectivity_change = 0,
-                              yr_future  = 0
+                              yr_future  = 0,
+                              sel_hist = 1
                               ){
   
   #' @nseason = number of seasons 
@@ -243,7 +244,14 @@ load_data_seasons <- function(nseason = 4,
   initN <-as.matrix(read.table('data/initN.csv'))
   
   Rdev <- as.matrix(read.csv('data/Rdev.csv'))
+  
+  
+  if(sel_hist == 1){
   PSEL <- as.matrix(read.csv('data/PSEL.csv'))
+  }else{
+  PSEL <- matrix(0, 5, 28)
+  }
+  
   
   if(nseason == 4 & nspace == 2){
   Fnseason <- matrix(NA, 2,4)

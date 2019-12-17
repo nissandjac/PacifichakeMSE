@@ -31,8 +31,8 @@ plotMSE_biasadjustment(results, plotnames = c('0.87','0.5','0'), plotexp = TRUE)
 
 # Plot HCR stuff
 results <- 'results/Selectivity/'
-plotnames <-  c('Conditioned model','US low selectivity','2018 selectivity')
-plotnames <- c('1','2','3')
+plotnames <-  c('Conditioned \nmodel','US small \nselectivity','2018 selectivity')
+#plotnames <- c('1','2','3')
 plotMSE(results,plotnames = plotnames, plotexp = TRUE)
 
 # results <- 'results/Move/'
