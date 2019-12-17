@@ -291,7 +291,8 @@ run.agebased.true.catch <- function(df, seeds = 100){
           
           if(df$selectivity_change ==1){
             if(space == 1){
-            pseltmp <- psel
+            #pseltmp <- psel
+            pseltmp <- c(1,1,1,1,1)
             }else{
             pseltmp <- c(0.05,0.05,0,0,0)
             }
