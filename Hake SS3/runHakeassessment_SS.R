@@ -14,7 +14,7 @@ df$smul <- 0.5
 years <- df$years
 
 #U[2,] <- 0.01
-parms.ss <- getParameters_ss(FALSE, mod)
+parms.ss <- getParameters_ss(TRUE, mod)
 
 
 compile("runHakeassessment.cpp")
