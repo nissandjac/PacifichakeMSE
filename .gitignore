@@ -5,6 +5,7 @@
 # Ignore redundant R files
 .Rhistory
 .RData
+.Rdata
 .Rproj.user/
 .Rproj
 
