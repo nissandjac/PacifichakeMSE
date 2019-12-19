@@ -3,8 +3,8 @@
 *.dll
 
 # Ignore redundant R files
-.Rhistory
-.RData
-.Rdata
-.Rproj.user/
-.Rproj
+*.Rhistory
+*.RData
+*.Rdata
+*.Rproj.user/
+*.Rproj
