@@ -142,6 +142,8 @@ load_data_ss <- function(mod){
   
   ### selyear
   sel.tmp <- mod$SelAgeAdj$Yr[mod$SelAgeAdj$`Change?` == 1 & mod$SelAgeAdj$Yr>years[1]][1]
+  flag_sel <- rep(0,length(years))
+  flag_sel[years %in% unique(mod$SelAgeAdj$Yr[mod$SelAgeAdj$`Change?` == 1 & mod$SelAgeAdj$Yr>years[1]])] <- 1
   
   df <-list(      #### Parameters #####
                   wage_ssb = t(wage_ssb),
@@ -155,6 +157,7 @@ load_data_ss <- function(mod){
                   age = age,
                   year_sel = length(sel.tmp:years[length(years)]), # Years to model time varying sel
                   selYear = which(sel.tmp == years),
+                  flag_sel = flag_sel,
                   tEnd = length(years), # The extra year is to initialize 
                   logQ = mod$parameters$Value[mod$parameters$Label == "LnQ_base_Acoustic_Survey(2)"],   # Analytical solution
                   # Selectivity 
