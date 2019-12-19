@@ -493,8 +493,7 @@ REPORT(selectivity_save)
 REPORT(surveyselc)
 REPORT(N_beg)
 REPORT(N_mid)
-REPORT(pmax_catch_save)
-REPORT(sigma_psel)
+REPORT(Surveyobs)
 
   return ans;
 }
