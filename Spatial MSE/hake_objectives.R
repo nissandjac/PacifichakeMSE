@@ -64,8 +64,12 @@ hake_objectives <- function(ls.MSE, SSB0, move = NA){
     quota.can.tot <- data.frame(quota=rowSums(ls.MSE[[idx]]$Catch.quota[,1,]), year=yr, run=paste('run',1, sep =''))
     
     #Catch by year by area
-    Catch.us.tot<- data.frame(Catch=ls.MSE[[idx]]$Catch[,2], year=yr, run=paste('run',1, sep =''))
-    Catch.can.tot<- data.frame(Catch=ls.MSE[[idx]]$Catch[,1], year=yr, run=paste('run',1, sep =''))
+    
+    catch.area<-apply(ls.MSE[[idx]]$Catch, MARGIN=c(2,3), FUN=sum)
+    
+    
+    Catch.us.tot<- data.frame(Catch=catch.area[,2], year=yr, run=paste('run',1, sep =''))
+    Catch.can.tot<- data.frame(Catch=catch.area[,1], year=yr, run=paste('run',1, sep =''))
     
     vtac.us<- data.frame(V.TAC=V.us.plot$V/Catch.us.tot$Catch, year=yr, run=paste('run',1, sep =''))
     vtac.can<- data.frame(V.TAC=V.ca.plot$V/Catch.can.tot$Catch, year=yr, run=paste('run',1, sep =''))
@@ -81,6 +85,7 @@ hake_objectives <- function(ls.MSE, SSB0, move = NA){
                                V.TAC.fa=ls.MSE[[idx]]$V[,1,4]/ls.MSE[[idx]]$Catch.quota[,1,4],
                                year = yr, run =  paste('run',1, sep=''))
   }  
+  
   AAV.plot  <- data.frame(AAV = abs(catchtmp[2:length(yr)]-catchtmp[1:(length(yr)-1)])/catchtmp[1:(length(yr)-1)], 
                           year = yr[2:length(yr)], run = paste('run',1, sep=''))
   
@@ -164,8 +169,8 @@ hake_objectives <- function(ls.MSE, SSB0, move = NA){
       quota.plot <- rbind(quota.plot, quota.tmp)
       
 
-      quota.us<- rbind(quota.us, quota.tmp.us)
-      quota.can<- rbind(quota.can, quota.tmp.can)
+     # quota.us<- rbind(quota.us, quota.tmp.us)
+      #quota.can<- rbind(quota.can, quota.tmp.can)
         
       V.ca.plot<- rbind(V.ca.plot, v.tmp.can)
       V.us.plot<- rbind(V.us.plot, v.tmp.us)
@@ -268,7 +273,7 @@ hake_objectives <- function(ls.MSE, SSB0, move = NA){
   ## Probability of S < S10
   SSB.future <- SSB.plot[SSB.plot$year > 2018,]
   
-  #####KM alternative metric calculation October 10, 2010
+  #####KM alternative metric calculation October 10, 2019
   ###create Prob S<S10 stat by run and look at med across years
   SSB10.stat <- SSB.future %>% 
     group_by(run) %>% 
@@ -338,7 +343,7 @@ hake_objectives <- function(ls.MSE, SSB0, move = NA){
               p75 = quantile(avg, 0.75), 
               p5 = quantile(avg,0.05))
   
-  vtac.ca.stat<- vtac.ca %>% 
+  vtac.ca.stat<- vtac.can %>% 
     group_by(run) %>% 
     summarise(prop = length(which(V.TAC>(1/0.3)))/length(V.TAC)) %>%
     summarise(med=median(prop),
@@ -493,11 +498,11 @@ hake_objectives <- function(ls.MSE, SSB0, move = NA){
                            median(1e6*Catch.plotquant$med[Catch.plotquant$year > 2018 & Catch.plotquant$year <2028])*1e-6,
                            median(1e6*Catch.plotquant$med[Catch.plotquant$year > 2025])*1e-6,
                           vtac.can.seas.stat$med.sp,
-               vtac.can.seas.stat$med.su,
-               vtac.can.seas.stat$med.fa,
+                          vtac.can.seas.stat$med.su,
+                          vtac.can.seas.stat$med.fa,
                           vtac.us.seas.stat$med.sp,
-               vtac.us.seas.stat$med.su,
-               vtac.us.seas.stat$med.fa
+                          vtac.us.seas.stat$med.su,
+                          vtac.us.seas.stat$med.fa
                
                      
                           # median(quota.plot[quota.plot$year > 2018,]$Quota_frac < 0.95)
