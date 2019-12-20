@@ -15,8 +15,10 @@ mod <- SS_output(paste(getwd(),'/data/SS32018', sep =''), printstats=FALSE, verb
 plot.figures = FALSE # Set true for printing to file 
 
 
+
 df <- load_data_seasons(nseason = 4, nspace = 2, bfuture = 0.5, movemaxinit = 0.5, movefiftyinit =8) # Prepare data for operating model
 #df$move.init <- rep(1, df$nspace)
+
 
 simyears <- 25 # Project 30 years into the future (2048 that year)
 year.future <- c(df$years,(df$years[length(df$years)]+1):(df$years[length(df$years)]+simyears))
@@ -137,6 +139,3 @@ df.r <- data.frame(r = c(r.ss3,rowSums(sim.data$R.save)),
                               )
 
 ggplot(df.r, aes(x= year, y = r, color = source))+geom_line()
-  
-
-mean(df.r$r[df.r$source == 'SS3']/df.r$r[df.r$source == 'OM'])

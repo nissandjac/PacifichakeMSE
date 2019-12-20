@@ -207,7 +207,9 @@ run.agebased.true.catch <- function(df, seeds = 100){
   pope.mul <- 0.50
   
   if(nseason == 1){
+
     Fnseason <- matrix(rep(1, df$nspace))
+
   }
   
   

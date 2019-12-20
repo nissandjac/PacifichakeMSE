@@ -390,6 +390,7 @@ run_multiple_MSEs <- function(simyears = NULL,seeds = 12345, TAC = 1, df = NA,
   source('calcMeanAge.R')
   
   #dev.off()
+
   amc <- data.frame(year = year.future[1:year],
                     amc.can = calcMeanAge(sim.data$age_comps_catch_space[,,1], df$age_maxage),
                     amc.US  = calcMeanAge(sim.data$age_comps_catch_space[,,2], df$age_maxage),
@@ -409,8 +410,7 @@ run_multiple_MSEs <- function(simyears = NULL,seeds = 12345, TAC = 1, df = NA,
                  F0 = apply(sim.data$Fout,c(1,3),sum),
                  parms = parms.save,
                  N = sim.data$N.save.age,
-                 # #sim.data
-
+                 
                  ams = ams,
                  amc = amc,
                  V = sim.data$V.save

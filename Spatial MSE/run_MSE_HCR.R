@@ -1,5 +1,8 @@
 ###### Initialize the operating model ###### 
 library(TMB)
+
+setwd(paste(getwd(),'/Spatial MSE',sep=''))
+
 compile("runHakeassessment.cpp")
 dyn.load(dynlib("runHakeassessment"))
 library(r4ss)

@@ -267,7 +267,8 @@ load_data_seasons <- function(nseason = 4,
     
     
   }
-  
+
+
   rmul <-1
   
   if(nspace == 2){
@@ -277,6 +278,7 @@ load_data_seasons <- function(nseason = 4,
   
   
   
+
   parms <- list( # Just start all the simluations with the same initial conditions 
        logRinit = parms.scalar$logRinit+log(rmul),
        logh = parms.scalar$logh,
@@ -313,8 +315,6 @@ load_data_seasons <- function(nseason = 4,
      
      flag_sel <- rep(0,nyear)
      flag_sel[which(years == selYear):which(years == myear)] <- 1
-     
- 
      
   df <-list(      #### Parameters #####
                   wage_ssb = t(wage_ssb),
@@ -395,7 +395,10 @@ load_data_seasons <- function(nseason = 4,
   df$Catch <- rowSums(df$Catch.country)
   
   if(nyear > length(df$Catch)){
+
+    
     df$Catch <- c(df$Catch,rep(mean(df$Catch), nyear-length(df$Catch)))
+
     
   }
   

@@ -34,6 +34,3 @@ results <- 'results/Selectivity/'
 plotnames <-  c('Conditioned \nmodel','US small \nselectivity','2018 selectivity')
 #plotnames <- c('1','2','3')
 plotMSE(results,plotnames = plotnames, plotexp = TRUE)
-
-# results <- 'results/Move/'
-# plotMSE(results, plotexp = FALSE, plotnames = c('Move 1','Move 2','Move 3'))
