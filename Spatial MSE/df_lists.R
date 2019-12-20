@@ -72,10 +72,12 @@ for(i in 1:nruns){
                         SSBtot =  ls.save[[i]]$SSB[,1]+ls.save[[i]]$SSB[,2],
                         F0.can = ls.save[[i]]$F0[,1],
                         F0.us = ls.save[[i]]$F0[,2],
-                        # amc.can = ls.save[[i]]$amc$amc.can,
-                        # amc.us = ls.save[[i]]$amc$amc.US,
-                        # ams.can = ls.save[[i]]$ams$ams.can,
-                        # ams.us = ls.save[[i]]$ams$ams.US,
+                        amc = ls.save[[i]]$amc$amc.tot,
+                        ams = ls.save[[i]]$ams$ams.tot,
+                        amc.can = ls.save[[i]]$amc$amc.can,
+                        amc.us = ls.save[[i]]$amc$amc.US,
+                        ams.can = ls.save[[i]]$ams$ams.can,
+                        ams.us = ls.save[[i]]$ams$ams.US,
                         SSB.mid.can = ls.save[[i]]$SSB.mid[,1],
                         SSB.mid.us = ls.save[[i]]$SSB.mid[,2],
                         run = paste('run',i, sep = '-'),
@@ -118,12 +120,12 @@ for(i in 1:nruns){
                            SSBtot =  ls.save[[i]]$SSB[,1]+ls.save[[i]]$SSB[,2],
                            F0.can = ls.save[[i]]$F0[,1],
                            F0.us = ls.save[[i]]$F0[,2],
-                           # amc = ls.save[[i]]$amc$amc.tot, 
-                           # ams = ls.save[[i]]$ams$ams.tot, 
-                           # amc.can = ls.save[[i]]$amc$amc.can,
-                           # amc.us = ls.save[[i]]$amc$amc.US,
-                           # ams.can = ls.save[[i]]$ams$ams.can,
-                           # ams.us = ls.save[[i]]$ams$ams.US,
+                           amc = ls.save[[i]]$amc$amc.tot,
+                           ams = ls.save[[i]]$ams$ams.tot,
+                           amc.can = ls.save[[i]]$amc$amc.can,
+                           amc.us = ls.save[[i]]$amc$amc.US,
+                           ams.can = ls.save[[i]]$ams$ams.can,
+                           ams.us = ls.save[[i]]$ams$ams.US,
                            SSB.mid.can = ls.save[[i]]$SSB.mid[,1],
                            SSB.mid.us = ls.save[[i]]$SSB.mid[,2],
                            run = paste('run',i, sep = '-'),
@@ -184,45 +186,45 @@ Catch.plotquant <- ls.df[ls.df$year > 2010,] %>%
             ) 
 Catch.plotquant$run <- nms
 # 
-# ams.plotquant <- ls.df[ls.df$year > 2010,] %>% 
-#   group_by(year) %>% 
-#   summarise(med = median(ams,na.rm = TRUE), 
-#             p95 = quantile(ams, 0.95,na.rm = TRUE),
-#             p5 = quantile(ams,0.05,na.rm = TRUE)
-#   ) 
-# ams.plotquant$run <- nms
-# 
-# amc.plotquant <- ls.df[ls.df$year > 2010,] %>% 
-#   group_by(year) %>% 
-#   summarise(med= median(amc,na.rm = TRUE), 
-#             p95 = quantile(amc, 0.95,na.rm = TRUE),
-#             p5 = quantile(amc,0.05,na.rm = TRUE)
-#   ) 
-# amc.plotquant$run <- nms
-# 
-# ams.space <- ls.df[ls.df$year > 2010,] %>% 
-#   group_by(year) %>% 
-#   summarise(med.can = median(ams.can,na.rm = TRUE), 
-#             p95.can = quantile(ams.can, 0.95,na.rm = TRUE),
-#             p5.can = quantile(ams.can,0.05,na.rm = TRUE),
-#             med.us = median(ams.us,na.rm = TRUE), 
-#             p95.us = quantile(ams.us, 0.95,na.rm = TRUE),
-#             p5.us = quantile(ams.us,0.05,na.rm = TRUE)
-#                               
-#   ) 
-# ams.space$run <- nms
-# 
-# amc.space <- ls.df[ls.df$year > 2010,] %>% 
-#   group_by(year) %>% 
-#   summarise(med.can = median(amc.can,na.rm = TRUE), 
-#             p95.can = quantile(amc.can, 0.95,na.rm = TRUE),
-#             p5.can = quantile(amc.can,0.05,na.rm = TRUE),
-#             med.us = median(amc.us,na.rm = TRUE), 
-#             p95.us = quantile(amc.us, 0.95,na.rm = TRUE),
-#             p5.us = quantile(amc.us,0.05,na.rm = TRUE)
-#             
-#   ) 
-# amc.space$run <- nms
+ams.plotquant <- ls.df[ls.df$year > 2010,] %>%
+  group_by(year) %>%
+  summarise(med = median(ams,na.rm = TRUE),
+            p95 = quantile(ams, 0.95,na.rm = TRUE),
+            p5 = quantile(ams,0.05,na.rm = TRUE)
+  )
+ams.plotquant$run <- nms
+
+amc.plotquant <- ls.df[ls.df$year > 2010,] %>%
+  group_by(year) %>%
+  summarise(med= median(amc,na.rm = TRUE),
+            p95 = quantile(amc, 0.95,na.rm = TRUE),
+            p5 = quantile(amc,0.05,na.rm = TRUE)
+  )
+amc.plotquant$run <- nms
+
+ams.space <- ls.df[ls.df$year > 2010,] %>%
+  group_by(year) %>%
+  summarise(med.can = median(ams.can,na.rm = TRUE),
+            p95.can = quantile(ams.can, 0.95,na.rm = TRUE),
+            p5.can = quantile(ams.can,0.05,na.rm = TRUE),
+            med.us = median(ams.us,na.rm = TRUE),
+            p95.us = quantile(ams.us, 0.95,na.rm = TRUE),
+            p5.us = quantile(ams.us,0.05,na.rm = TRUE)
+
+  )
+ams.space$run <- nms
+
+amc.space <- ls.df[ls.df$year > 2010,] %>%
+  group_by(year) %>%
+  summarise(med.can = median(amc.can,na.rm = TRUE),
+            p95.can = quantile(amc.can, 0.95,na.rm = TRUE),
+            p5.can = quantile(amc.can,0.05,na.rm = TRUE),
+            med.us = median(amc.us,na.rm = TRUE),
+            p95.us = quantile(amc.us, 0.95,na.rm = TRUE),
+            p5.us = quantile(amc.us,0.05,na.rm = TRUE)
+
+  )
+amc.space$run <- nms
 
 F0.space <- ls.df[ls.df$year > 2010,] %>%
   group_by(year) %>%
@@ -263,10 +265,10 @@ return(list(
               SSBmid = SSB.plotmid,
               SSBtot = SSB.plottot,
               Catchplot = Catch.plotquant,
-              # amcplot = amc.plotquant,
-              # amsplot = ams.plotquant,
-              # amc.space = amc.space,
-              # ams.space = ams.space,
+              amcplot = amc.plotquant,
+              amsplot = ams.plotquant,
+              amc.space = amc.space,
+              ams.space = ams.space,
               F0 =F0.space,
               Catch.q = Catch.q
             

@@ -14,7 +14,7 @@ df$smul <- 0.5
 years <- df$years
 
 #U[2,] <- 0.01
-parms.ss <- getParameters_ss(FALSE, mod)
+parms.ss <- getParameters_ss(TRUE, mod)
 
 
 compile("runHakeassessment.cpp")
@@ -27,7 +27,7 @@ age_survey  <- obj$report()$age_survey_est
 age_catch <- obj$report()$age_catch
 # Compare the two models with the same parameters 
 
-SSBass <- vars$SSB_real
+SSBass <- vars$SSB
 SSB.ss3 <- mod$derived_quants$Value[grep('SSB_1966', mod$derived_quants$Label):grep('SSB_2018', mod$derived_quants$Label)]
 R.ss <- mod$derived_quants$Value[grep('Recr_1966', mod$derived_quants$Label):grep('Recr_2018', mod$derived_quants$Label)]
 
@@ -44,8 +44,8 @@ idx <- which(mod$ageselex$Yr == selyear & mod$ageselex$Factor == 'Asel')
 lines(df$age,as.numeric(mod$ageselex[idx,8:28]), col = 'red')
 
 
-plot(df$years,df$Catchobs)
-lines(df$years,obj$report()$Catch)
+plot(df$years,df$Catchobs/obj$report()$Catch)
+
 
 
 # Compare surveys 
@@ -88,7 +88,7 @@ ac.ss3$year <- df$years
 ac.ss3.plot <- melt(ac.ss3, id.vars = 'year', variable.name = 'age')
 ac.ss3.plot <- ac.ss3.plot[ac.ss3.plot$year %in% df$years[df$flag_catch == 1],]
 
-yr <- 1975
+yr <- 1970
 
 df.N <- data.frame(N = c(as.numeric(N.ss[N.ss$Yr == yr,ix]), vars$N_beg[,which(df$years == yr)]),
                    model = c(rep('ss', df$nage),rep('tmb', df$nage)), age = rep(df$age,2))
@@ -166,7 +166,7 @@ source('getUncertainty.R')
 df$nyear <- length(years)
 df$year <- years
 
-SSB <- getUncertainty('SSB_real',df)
+SSB <- getUncertainty('SSB',df)
 F0 <- getUncertainty('Fyear',df)
 Catch <- getUncertainty('Catch',df)
 Surveyobs <- getUncertainty('Surveyobs',df)

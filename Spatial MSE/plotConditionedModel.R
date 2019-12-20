@@ -36,8 +36,15 @@ yr.future <- 2
 
 df <- load_data_seasons(nseason = 4, nspace = 2, bfuture = 0.5, movemaxinit = 0.35, movefiftyinit =6,
                         yr_future = yr.future) # Prepare data for operating model
+
+df.2 <- load_data_seasons(nseason = 4, nspace = 2, bfuture = 0.5, movemaxinit = 0.35, movefiftyinit =6,
+                          yr_future = yr.future,
+                          sel_hist = 0) # Prepare data for operating model
+
+
 df$surveyseason <- 3
 sim.data <- run.agebased.true.catch(df)
+sim.data_nosel <- run.agebased.true.catch(df.2)
 
 Catch.future <- c(df$Catch, rep(206507.8, yr.future)) # Project MSY
 df$Catch <- Catch.future
@@ -48,6 +55,7 @@ survey.ml <- array(NA,dim = c(df$nyear,df$nspace,length(movemax.parms)*length(mo
 
 catch.ac.obs <- read.csv('data/age_in_catch_obs.csv')
 standard.move <- runfuture_OM(df, 1)
+standard.move_sel <- runfuture_OM(df.2, 1)
 
 ac.survey.tot <- survey.ac %>% 
   group_by(year, country) %>% 
@@ -167,6 +175,22 @@ p.AC.catch <- ggplot(catch.ac.obs, aes(x = year, y= am, color = Country))+geom_l
   theme(legend.position = 'none')+scale_y_continuous('mean age')
 
 p.AC.catch
+
+catch.model.2 <- data.frame(year = rep(df$years,4),
+                          Country = rep(c('US','Can','US no sel','Can no sel'), each = df$nyear),
+                          am = c(standard.move$catch.AC[,2],standard.move$catch.AC[,1],
+                                 standard.move_sel$catch.AC[,2], standard.move_sel$catch.AC[,1]))
+
+cols <- LaCroixColoR::lacroix_palette('PinaFraise',n = 4)
+
+p.AC.catch <- ggplot(catch.ac.obs, aes(x = year, y= am, color = Country))+geom_line(size = 1, linetype = 2)+theme_classic()+
+  geom_line(data = catch.model.2, linetype = 1, size = 1)+geom_point()+
+  scale_color_manual(values = rep(c('darkred','blue4'), each = 2))+
+  theme()+scale_y_continuous('mean age')
+
+p.AC.catch
+
+
 
 if(plot.figures == TRUE){
   png(filename = 'Figs/AC_catch.png', width = 16, height = 8, res = 400, units = 'cm')
