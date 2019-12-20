@@ -31,6 +31,7 @@ Type objective_function<Type>::operator() ()
   DATA_SCALAR(logQ);
   DATA_VECTOR(b); // bias adjustment factor
   DATA_VECTOR(years);
+  DATA_VECTOR(flag_sel);
 // // Selectivity
   DATA_INTEGER(Smin);
   DATA_INTEGER(Smin_survey);
@@ -206,7 +207,6 @@ N_mid.setZero();
 // }
 // // Run the model over time
 array<Type> SSB(tEnd);
-array<Type>SSB_real(tEnd); // Actual SSB weight (not maature)
 array<Type>Surveyobs(tEnd); // Survey observed Surveyobs
 array<Type>Surveyobs_tot(tEnd); // Total Surveyobs over age 2
 array<Type>age_survey_est(age_maxage,tEnd);
@@ -238,9 +238,13 @@ for(int time=0;time<(tEnd);time++){ // Start time loop
     Type Ntot_survey = 0;
     pmax_catch_save(time) = pmax_catch;
     // Take care of selectivity
-    if ((time >= (selYear-1)) & (years(time) < 2019)){
+    REPORT(flag_sel)
+    REPORT(PSEL.cols())
+
+    if (flag_sel(time) == 1){
+
            for(int i=0;i<psel_fish.size();i++){
-           psel_fish(i) = psel_fish_zero(i)+PSEL(i,time-selYear)*sigma_psel;
+           psel_fish(i) = psel_fish_zero(i)+PSEL(i,time-selYear+1)*sigma_psel; // 27 is the number of years selectivity is calculated PSEL.cols()-1/ time-selYear-
            }
 
            pmax_catch = max(cumsum((psel_fish)));
@@ -277,8 +281,9 @@ for(int time=0;time<(tEnd);time++){ // Start time loop
     }
 
     for(int i=0;i<nage;i++){ // Loop over other ages
-         SSB(time) += N_beg(i,time)*Matsel(i); // hat
-         SSB_real(time) += N_beg(i,time)*wage_ssb(i,time);
+         SSB(time) += N_beg(i,time)*wage_ssb(i,time); // hat
+         //SSB(time) += N_beg(i,time)*Matsel(i); // hat
+
       }
 
     for(int i=0;i<(nage);i++){ // Loop over other ages
@@ -373,8 +378,8 @@ vector<Type>sum2(tEnd);
 sum1.setZero();
 sum2.setZero();
 
-for(int time=1;time<tEnd;time++){ // Loop over available years
 
+for(int time=1;time<tEnd;time++){ // Loop over available years
         if(flag_survey(time) == 1){ // Flag if  there was a measurement that year
         for(int i=1;i<age_maxage;i++){ // Loop over other ages (first one is empty for survey)
           sum1(time) += lgamma(ss_survey(time)*age_survey(i,time)+1);
@@ -383,6 +388,7 @@ for(int time=1;time<tEnd;time++){ // Loop over available years
         ans_survcomp += lgamma(ss_survey(time)+1)-sum1(time)+lgamma(phi_survey*ss_survey(time))-lgamma(ss_survey(time)+phi_survey*ss_survey(time))+sum2(time);
 
       }
+
 }
 
 
@@ -393,6 +399,7 @@ sum3.setZero();
 sum4.setZero();
 
 for(int time=1;time<tEnd;time++){ // Loop over available years
+  if(Catch(time)>0){
 
         if(flag_catch(time) == 1){ // Flag if  there was a measurement that year
         for(int i=1;i<age_maxage;i++){ // Loop over other ages (first one is empty for survey)
@@ -400,8 +407,8 @@ for(int time=1;time<tEnd;time++){ // Loop over available years
           sum4(time) += lgamma(ss_catch(time)*age_catch(i,time) + phi_catch*ss_catch(time)*age_catch_est(i,time)) - lgamma(phi_catch*ss_catch(time)*age_catch_est(i,time));
         }
         ans_catchcomp += lgamma(ss_catch(time)+1)-sum3(time)+lgamma(phi_catch*ss_catch(time))-lgamma(ss_catch(time)+phi_catch*ss_catch(time))+sum4(time);
-
       }
+        }
 }
 
 
@@ -471,7 +478,6 @@ ADREPORT(age_survey)
 ADREPORT(age_survey_est)
 ADREPORT(ans_tot)
 ADREPORT(SSBzero)
-ADREPORT(SSB_real)
 
 REPORT(SSB)
 REPORT(Fyear)
@@ -483,13 +489,10 @@ REPORT(Zsave)
 REPORT(age_survey_est)
 REPORT(age_catch_est)
 REPORT(CatchN)
-REPORT(CatchNAge)
 REPORT(selectivity_save)
 REPORT(surveyselc)
 REPORT(N_beg)
 REPORT(N_mid)
-REPORT(pmax_catch_save)
-REPORT(SSB_real)
 REPORT(Surveyobs)
 
   return ans;

@@ -20,7 +20,7 @@ parms.true <- getParameters_OM(TRUE,df) # Load parameters from assessment
 
 time <- 1
 yrinit <- df$nyear
-nruns <- 1000
+nruns <- 100
 seeds <- floor(runif(n = nruns, min = 1, max = 1e6))
 ### Run the OM and the EM for x number of years in the MSE 
 ### Set targets for harvesting etc 
@@ -39,8 +39,8 @@ df_future$selectivity_change <- 2
 sim.data_3 <- run.agebased.true.catch(df_future) # Run the operating model until 2018
 
 # Plot the scenarios 
-df.plot <- data.frame(selectivity = c(sim.data_1$Fsel[,55,1],sim.data_2$Fsel[,55,1],sim.data_3$Fsel[,55,1],
-                                      sim.data_1$Fsel[,55,2],sim.data_2$Fsel[,55,2],sim.data_3$Fsel[,55,2]),
+df.plot <- data.frame(selectivity = c(sim.data_1$Fsel[,58,1],sim.data_2$Fsel[,58,1],sim.data_3$Fsel[,58,1],
+                                      sim.data_1$Fsel[,58,2],sim.data_2$Fsel[,58,2],sim.data_3$Fsel[,58,2]),
                       country = rep(c('CAN','USA'), each = 3*df$nage),
                       age = rep(df$age, 6),
                       run = rep(rep(c('Conditioned OM','Low US selectivity','2018 selectivity'),each =df$nage),2)
@@ -52,6 +52,7 @@ df.plot$run <- factor(df.plot$run, levels = c('Conditioned OM','Low US selectivi
 p1 <- ggplot(data = df.plot, aes(x = age, y = selectivity, color = country))+theme_classic()+geom_line(size = 1.2)+
   facet_wrap(~run)+scale_x_continuous(limit = c(0,df$age_maxage))+
   scale_color_manual(values = c('darkred','blue4'))
+p1
 
 
 png('results/Selectivity/Selectivity_difference.png',width = 16, height =8, res = 400, unit = 'cm')
