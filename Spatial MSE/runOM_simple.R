@@ -15,12 +15,10 @@ mod <- SS_output(paste(getwd(),'/data/SS32018', sep =''), printstats=FALSE, verb
 plot.figures = FALSE # Set true for printing to file 
 
 
-<<<<<<< HEAD
-df <- load_data_seasons(nseason = 1, nspace = 1, bfuture = 0.5, movemaxinit = 0.5, movefiftyinit =8) # Prepare data for operating model
-=======
+
 df <- load_data_seasons(nseason = 4, nspace = 2, bfuture = 0.5, movemaxinit = 0.5, movefiftyinit =8) # Prepare data for operating model
 #df$move.init <- rep(1, df$nspace)
->>>>>>> 6594249901ede807af10a5fd6bfce4be257950d8
+
 
 simyears <- 25 # Project 30 years into the future (2048 that year)
 year.future <- c(df$years,(df$years[length(df$years)]+1):(df$years[length(df$years)]+simyears))
@@ -30,21 +28,6 @@ sim.data <- run.agebased.true.catch(df)
 
 
 # 
-<<<<<<< HEAD
-M <- exp(df$parms$logMinit)
-R0 <- exp(df$parms$logRinit)
-wtatage <- mod$wtatage
-
-
-N_at_age.beg <- rep(NA, df$nage)
-N_at_age.beg <- R0*exp(-M*df$age)
-# replace plus-group value with sum of geometric series
-N_at_age.beg[df$nage] <- R0*exp(-M*max(df$age))/(1 - exp(-M))
-mod$SBzero/sum(N_at_age.beg*wtatage[wtatage$Yr == 1966 & wtatage$Fleet == -2, paste(df$age)] )
-
-
-=======
->>>>>>> 6594249901ede807af10a5fd6bfce4be257950d8
 SSB.obs <- mod$derived_quants$Value[grep('SSB_1966',mod$derived_quants$Label):grep('SSB_2018',mod$derived_quants$Label)]
 SSB.OM <- rowSums(sim.data$SSB.weight)
 
@@ -53,31 +36,18 @@ df.plot <- data.frame(years = c(df$years,df$years),
                       SSB = c(rowSums(sim.data$SSB.weight),SSB.obs), source = c(rep('SSB OM', df$nyear),
                                                                                 rep('SSB assessment', df$nyear)))
 
-<<<<<<< HEAD
-p1 <- ggplot(data = df.plot, aes(x = years, y = SSB, color = source))+geom_line(size = 2)+theme_classic()
-p1
-
-=======
 p1 <- ggplot(data = df.plot, aes(x = years, y = SSB, color = source))+geom_line(size = 2)+theme_classic()+
   geom_point(data = df.plot[df.plot$source == 'SSB assessment',], size = 2)
 p1
 
 mean(df.plot$SSB[df.plot$source == 'SSB assessment']/df.plot$SSB[df.plot$source == 'SSB OM'])
 
->>>>>>> 6594249901ede807af10a5fd6bfce4be257950d8
 survey.ss <- data.frame(years = mod$cpue$Yr,
                         survey =mod$cpue$Exp,
                         source = 'SS',
                         survsd = NA,
                         kriegsd = NA)
 
-<<<<<<< HEAD
-df.plot <- data.frame(years = rep(df$years[df$survey > 1],2),
-                      survey = c(df$survey[df$survey > 1],sim.data$survey[sim.data$survey > 1]),
-                      source = rep(c('Survey data','OM output'), each = length(df$years[df$survey > 1])),
-                      survsd= c(df$survey_err[df$flag_survey ==1], rep(NA,length(df$years[df$survey > 1]))),
-                      kriegsd = c(rep(exp(df$parms$logSDsurv),length(df$years[df$survey > 1])), rep(NA,length(df$years[df$survey > 1])))
-=======
 if(df$nspace>1){
   survey.true <- colSums(sim.data$survey.true
                          )
@@ -91,7 +61,6 @@ df.plot <- data.frame(years = c(df$years[df$survey > 1], df$years),
                       survsd= c(df$survey_err[df$flag_survey ==1], rep(NA,df$nyear)),
                       kriegsd = c(rep(exp(df$parms$logSDsurv),length(df$years[df$survey > 1])), 
                                   rep(NA,df$nyear))
->>>>>>> 6594249901ede807af10a5fd6bfce4be257950d8
 )
 
 df.plot <- rbind(df.plot,survey.ss)
@@ -105,31 +74,12 @@ p2 <- ggplot(data = df.plot, aes(x = years, y = survey/1e6, color = source))+
   theme_classic()+
   geom_errorbar(aes(ymin=(survey-survsd)/1e6, ymax=(survey+survsd)/1e6))+
   scale_y_continuous(limit = c(0,5), name = 'survey biomass (million t)')+
-<<<<<<< HEAD
-  scale_x_continuous(name = 'year')
-
-p2
-
-
-
-surv.sel <- getSelec(df$age,df$parms$psel_surv, df$Smin_survey, df$Smax_survey) # Constant over time
-surv.obs <- melt(mod$ageselex[mod$ageselex$Factor == 'Asel2',],id.vars = 'Yr', measure.vars = paste(0:20),value.name = 'selectivity', 
-                 variable.name = 'age')
-
-ggplot(surv.obs[surv.obs$Yr %in% df$years[df$survey_x == 2],],aes(x = as.numeric(age), y=  as.numeric(selectivity)))+
-         geom_line()+facet_wrap(~Yr)+theme_classic()
-
-
-# Compare the fisheries selectivity 
-sel.obs <- melt(mod$ageselex[mod$ageselex$Factor == 'Asel',],id.vars = 'Yr', measure.vars = paste(0:20),value.name = 'selectivity', 
-=======
   scale_x_continuous(name = 'year', limit = c(1994,2019))
 
 p2
 
 # Compare the fisheries selectivity 
 sel.obs <- melt(mod$ageselex[mod$ageselex$Factor == 'Asel' & mod$ageselex$Fleet == 1,],id.vars = 'Yr', measure.vars = paste(0:20),value.name = 'selectivity', 
->>>>>>> 6594249901ede807af10a5fd6bfce4be257950d8
                  variable.name = 'age')
 
 ggplot(sel.obs,aes(x = as.numeric(age), y=  as.numeric(selectivity)))+
@@ -139,15 +89,6 @@ ggplot(sel.obs,aes(x = as.numeric(age), y=  as.numeric(selectivity)))+
 #Check selec params
 surv.idx <- grep('Acoustic_Survey',mod$parameters$Label)
 surv.idx <- surv.idx[-grep('Q_ex', mod$parameters$Label)]
-<<<<<<< HEAD
-psel_surv <- pars$Value[surv.idx]
-
-
-
-sel <- mod$parametersh
-
-
-=======
 psel_surv <- mod$parameters$Value[surv.idx]
 
 sel <- mod$parametersh
@@ -198,7 +139,3 @@ df.r <- data.frame(r = c(r.ss3,rowSums(sim.data$R.save)),
                               )
 
 ggplot(df.r, aes(x= year, y = r, color = source))+geom_line()
-  
-
-mean(df.r$r[df.r$source == 'SS3']/df.r$r[df.r$source == 'OM'])
->>>>>>> 6594249901ede807af10a5fd6bfce4be257950d8

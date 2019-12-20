@@ -34,11 +34,3 @@ results <- 'results/Selectivity/'
 plotnames <-  c('Conditioned \nmodel','US small \nselectivity','2018 selectivity')
 #plotnames <- c('1','2','3')
 plotMSE(results,plotnames = plotnames, plotexp = TRUE)
-
-results <- 'results/Move/'
-plotMSE(results, plotexp = TRUE, plotnames = c('Move 1','Move 2','Move 3'))
-
-#Plot HCRx1000
-results<- 'results/HCR1000/'
-plotMSE(results, plotexp=TRUE, plotnames=c('Floor 50','HCR','JMC','Real'))
-
