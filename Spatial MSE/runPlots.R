@@ -8,7 +8,7 @@ plotnames <- c('No change','medium increase','high increase')
 #plotnames <-  factor(plotnames, levels = c('No change','Medium increase', 'High increase'))
 
 #plotnames <- c('1','2','3')
-plotMSE(results,plotnames = plotnames, plotexp = TRUE)
+plotMSE(results,plotnames = plotnames, plotexp = FALSE)
 
 # Plot HCR stuff
 results <- 'results/HCR/'

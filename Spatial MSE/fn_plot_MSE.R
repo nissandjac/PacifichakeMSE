@@ -321,11 +321,11 @@ if(plotexp == FALSE){
 # Plot Fishing mortality 
 df.F0 <- data.frame(ls.data[[1]][[3]]$F0)
 
-  if(all(is.na(df$F0)) == 0){
-    for(i in 2:length(nms)){
-      df.F0 <- rbind(df.F0, ls.data[[i]][[3]]$F0)
-    }
-    
+  # if(all(is.na(df.F0))) == 0){
+  #   for(i in 2:length(nms)){
+  #     df.F0 <- rbind(df.F0, ls.data[[i]][[3]]$F0)
+  #   }
+  #   
     
     ### SSB in the middle of the year 
     
@@ -343,7 +343,7 @@ df.F0 <- data.frame(ls.data[[1]][[3]]$F0)
       print(p10)
       dev.off()
     }  
-  }
+ # }
 # Plot realized catch
 df.catchq<- data.frame(ls.data[[1]][[3]]$Catch.q)
 
