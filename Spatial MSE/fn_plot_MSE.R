@@ -29,15 +29,24 @@ indicators <- unique(df.obj$indicator)
 
 df.obj2 <- df.obj %>%
   filter(indicator %in% indicators[1:6])  
-df.obj2$indicator=factor(df.obj2$indicator, 
-                         levels=c('SSB <0.10 SSB0','S>0.10<0.4S0','S>0.4S0','AAV','short term catch','long term catch'))
+# df.obj2$indicator=factor(df.obj2$indicator, 
+#                          levels=c('SSB <0.10 SSB0',
+#                                   'S>0.10<0.4S0',
+#                                   'S>0.4S0',
+#                                   'AAV',
+#                                   'short term catch',
+#                                   'long term catch'))
 
 df.sp <- df.obj %>%
   filter(indicator %in% indicators[7:12])
 
-df.sp$indicator=factor(df.sp$indicator,
-                       levels=c('Canada TAC/V spr', 'Canada TAC/V sum', 'Canada TAC/V fall',
-                                'US TAC/V spr', 'US TAC/V sum', 'US TAC/V fall'))
+# df.sp$indicator=factor(df.sp$indicator,
+#                        levels=c('Canada TAC/V spr', 
+#                                 'Canada TAC/V sum', 
+#                                 'Canada TAC/V fall',
+#                                 'US TAC/V spr', 
+#                                 'US TAC/V sum', 
+#                                 'US TAC/V fall'))
 
 df.sp$country=c(rep('Canada',3), rep('US',3))
 df.sp$season=c(rep(c('Apr-Jun','July-Sept','Oct-Dec')))
