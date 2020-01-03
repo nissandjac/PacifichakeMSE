@@ -1,4 +1,4 @@
-hake_objectives <- function(ls.MSE, SSB0, move = NA){
+hake_violin <- function(ls.MSE, SSB0, move = NA){
   #'   
   #' @ls.mse # A list of individual MSE runs. Should contain Biomass, Catch, and df with parameters    
   # sim.data # Initial years of the operating model   
@@ -111,7 +111,7 @@ hake_objectives <- function(ls.MSE, SSB0, move = NA){
   
   
   ## Probability of S < S10
-  SSB.future <- SSB.plot[SSB.plot$year > 2017,]
+  SSB.future <- SSB.plot[SSB.plot$year > 2018,]
   
  
   ### 
@@ -144,7 +144,59 @@ hake_objectives <- function(ls.MSE, SSB0, move = NA){
 
   # Calculate the number of years the quota was met 
   
+  SSB <- SSB.plot[SSB.plot$year > 2018,] %>%  # median SSB/SSB0
+    group_by(run) %>% 
+    summarise(value = sum(length(which(SSB > 0.1 & SSB <= 0.4))/simyears)
+    )
+  SSB$variable <- 'S > 0.1 < 0.4S0'
+
   
-  return()
+  SSB.40 <- SSB.plot[SSB.plot$year > 2018,] %>%  # median SSB/SSB0
+    group_by(run) %>% 
+    summarise(value = sum(length(which(SSB > 0.4))/simyears)
+    )
+  SSB.40$variable <- 'S > 0.4S0'
+  
+  
+  SSB.10 <- SSB.plot[SSB.plot$year > 2018,] %>%  # median SSB/SSB0
+    group_by(run) %>% 
+    summarise(value = sum(length(which(SSB < 0.1))/simyears)
+    )
+  SSB.10$variable <- 'S < 0.1S0'
+  
+  
+  Catch.short  <- Catch.plot[Catch.plot$year > 2018 & Catch.plot$year < 2029,] %>%  # median SSB/SSB0
+    group_by(run) %>% 
+    summarise(value = median(Catch)*1e-6
+    )
+  Catch.short$variable <- 'Short term catch'
+  
+  
+  Catch.long  <- Catch.plot[Catch.plot$year >= 2029,] %>%  # median SSB/SSB0
+    group_by(run) %>% 
+    summarise(value = median(Catch)*1e-6
+    )
+  Catch.long$variable <- 'Long term catch'
+  
+  AAV <- AAV.plot[AAV.plot$year > 2018,] %>%  # median SSB/SSB0
+    group_by(run) %>% 
+    summarise(value = median(AAV)
+    )
+  AAV$variable <- 'AAV'
+  
+  df <- rbind(SSB,SSB.10,SSB.40,Catch.short,Catch.long,AAV)
+  
+  
+  
+  # df.obj2$indicator=factor(df.obj2$indicator, 
+  #                          levels=c('SSB <0.10 SSB0',
+  #                                   'S>0.10<0.4S0',
+  #                                   'S>0.4S0',
+  #                                   'AAV',
+  #                                   'short term catch',
+  #                                   'long term catch'))
+  
+  
+  return(df)
   
 }

@@ -419,9 +419,6 @@ Type ans_SDR = 0.0;
  }
 
 
-for(int time=0;time<(nage-1);time++){ // Start time loop
-  ans_SDR += -dnorm(initN(time), Type(0.0),SDR, TRUE);
-}
 
 
 
@@ -437,12 +434,17 @@ for(int time=0;time<year_sel;time++){ // Start time loop
 // Priors on h and M
 Type ans_priors = 0.0;
 
+for(int time=0;time<(nage-1);time++){ // Start time loop
+  //ans_SDR += -dnorm(initN(time), Type(0.0),SDR, TRUE);
+  ans_priors += Type(0.5)*(initN(time)*initN(time))/(SDR*SDR);
+}
+
 // ans_priors += -dnorm(logh,log(Type(0.777)),Type(0.113),TRUE);
 
 // Prior on h
 ans_priors += -dbeta(h,Bprior,Aprior,TRUE);
 
-
+ans_priors += ((Type(0)-sum(logR))*(Type(0)-sum(logR)))/Type(0.01);
 // ans_priors += -dnorm(logMinit, log(Type(0.2)), Type(0.1), TRUE);
 ans_priors += 0.5*pow(((logMinit)-log(Type(0.2))/Type(0.1)),2);
 

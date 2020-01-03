@@ -22,7 +22,7 @@ load_data_ss <- function(mod){
   wage_survey <- wage_ss[wage_ss$Fleet == 2 & wage_ss$Yr > (years[1]-1) & wage_ss$Yr < years[tEnd]+1, paste(age)]
   wage_mid <- wage_ss[wage_ss$Fleet == -1 & wage_ss$Yr > (years[1]-1) & wage_ss$Yr < years[tEnd]+1, paste(age)]
   
-  
+  mat <- wage_ssb[,1]
   catch <- mod$catch$ret_bio[mod$catch$Yr> (years[1]-1) & (mod$catch$Yr < years[tEnd]+1)]
   # Survey abundance
   survey <- rep(1, tEnd)

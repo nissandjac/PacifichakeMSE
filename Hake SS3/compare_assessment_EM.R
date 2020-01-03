@@ -29,6 +29,16 @@ upper <- obj$par+Inf
 upper[names(upper) == 'PSEL'] <- 9
 upper[names(upper) == 'logh'] <- log(0.999)
 upper[names(upper) == 'F0'] <- 2
+upper[names(upper) == 'psel_fish'] <- 3
+lower[names(lower) == 'psel_fish'] <- 0.0001
+lower[names(lower) == 'logMinit'] <- parms.ss$logMinit#log(0.15)
+upper[names(upper) == 'logMinit'] <- parms.ss$logMinit#log(0.3)
+# 
+lower[names(lower) == 'initN'] <- parms.ss$initN-0.01
+upper[names(upper) == 'initN'] <- parms.ss$initN+0.01
+# lower[names(lower) == 'logRinit'] <- parms.ss$logRinit
+# upper[names(upper) == 'logRinit'] <- parms.ss$logRinit
+
 
 system.time(opt<-nlminb(obj$par,obj$fn,obj$gr,lower=lower,upper=upper, 
                         control = list(iter.max = 2000,
@@ -45,17 +55,49 @@ source('getUncertainty.R')
 df$nyear <- length(years)
 df$year <- years
 
-SSB <- getUncertainty('SSB',df)
-F0 <- getUncertainty('Fyear',df)
-Catch <- getUncertainty('Catch',df)
-Surveyobs <- getUncertainty('Surveyobs',df)
-R <- getUncertainty('R',df)
-surveyselec.est <- getUncertainty('surveyselc', df)
-catchselec.est <- getUncertainty('catchselec', df)
-SSB0 <- getUncertainty('SSBzero', df)
-age_survey <- getUncertainty('age_survey_est', df)
+SSB <- getUncertainty('SSB',df, sdrep)
+F0 <- getUncertainty('Fyear',df, sdrep)
+Catch <- getUncertainty('Catch',df, sdrep)
+Surveyobs <- getUncertainty('Surveyobs',df, sdrep)
+R <- getUncertainty('R',df, sdrep)
+surveyselec.est <- getUncertainty('surveyselc', df, sdrep)
+catchselec.est <- getUncertainty('catchselec', df, sdrep)
+SSB0 <- getUncertainty('SSBzero', df, sdrep)
+age_survey <- getUncertainty('age_survey_est', df, sdrep)
+age_catch <- getUncertainty('age_catch_est', df, sdrep)
+
+initN <- getUncertainty('initN', df, sdrep)
+
+
+# Compare the estimated parameters 
+df.p <- as.data.frame(rep$par.fixed)
+df.p$name <- names(rep$par.fixed)
+df.p$idx <- 1:nrow(df.p)
+df.p$model <- 'TMB'
+names(df.p)[1] <- 'parameter'
+df.p2 <- as.data.frame(unlist(parms.ss))
+df.p2$name <- names(rep$par.fixed)
+
+df.p2$idx <- 1:nrow(df.p2)
+names(df.p2)[1] <- 'parameter'
+df.p2$model <- 'SS3'
+df.plot <- rbind(df.p,df.p2)
+
+# Fix the log values 
+idx <- grep('log', df.plot$name)
+df.plot$parameter[idx] <- exp(df.plot$parameter[idx])
+
+ggplot(df.plot, aes(x=  idx, y = parameter, color = model))+geom_point()+
+  facet_wrap(~name,scales = 'free')+theme_classic()
+
+# What's the sum of the recruitment deviations 
+sum(df.plot$parameter[df.plot$name == 'Rin'])
+
 
 # Compare the different things that go into the likelihood functions 
+
+
+
 
 # Survey biomass 
 s.obs <- df$survey
@@ -64,7 +106,7 @@ ss.exp <- rep(NA, df$nyear)
 ss.exp[df$year %in%mod$cpue$Yr] <- mod$cpue$Exp
 
 df.ss <- data.frame(year = rep(df$year,4), 
-                    survey = c(Surveyobs$name,
+                    survey = c(Surveyobs$value,
                                s.obs,
                                vars$Surveyobs,
                                ss.exp
@@ -81,7 +123,7 @@ ss.exp <- rep(NA, df$nyear)
 ss.exp[df$year %in%mod$catch$Yr] <- mod$catch$Exp[mod$catch$Yr %in% df$year]
 
 df.ss <- data.frame(year = rep(df$year,4), 
-                    survey = c(Catch$name,
+                    survey = c(Catch$value,
                                df$Catchobs,
                                vars$Catch,
                                ss.exp
@@ -101,7 +143,7 @@ SSB.ss3 <- mod$derived_quants$Value[grep('SSB_1966', mod$derived_quants$Label):g
 
 
 df.ss <- data.frame(year = rep(df$year,3), 
-                    survey = c(SSB$name,
+                    survey = c(SSB$value,
                                vars$SSB,
                                SSB.ss3
                     ),
@@ -135,12 +177,108 @@ for(i in 1:length(syears)){
   
 }
 
+age_survey <- age_survey %>% rename(Yr = year)
 
-ggplot(TMB, aes(x = Bin, y = N))+geom_line()+geom_line(data = age.ss[age.ss$model =='Exp',], color = 'blue')+
+p.surv <- ggplot(TMB, aes(x = Bin, y = N))+geom_line()+
+  geom_point(data = age.ss[age.ss$model =='Exp',], color = 'blue')+
   geom_point(data = age.ss[age.ss$model =='Obs',], color = alpha(alpha = 0.2,'red'))+
   facet_wrap(~Yr)+
+  geom_line(data = age_survey[age_survey$Yr %in% df$years[df$flag_survey == 1],], 
+            aes(x = age, y = value), col = 'green')+
   theme_classic()
+p.surv
+
+# Age comps in catch
+age.ss <- melt(mod$agedbase[mod$agedbase$Fleet == 1,],id.vars = c('Yr','Bin'), 
+               measure.vars = c('Exp','Obs'),
+               variable.name = 'model',
+               value.name = 'N')
+
+TMB <- data.frame(
+  Yr = rep(df$year[df$flag_catch == 1], each = length(df$age[2:(df$age_maxage+1)])),
+  Bin = rep(df$age[2:(df$age_maxage+1)], length(df$year[df$flag_catch ==1])),
+  model = 'TMB',
+  N = NA
+)
+
+age.tmb <- vars$age_catch_est[,df$flag_catch ==1]
+syears <- df$year[df$flag_catch ==1]
+
+for(i in 1:length(syears)){
+  
+  TMB[TMB$Yr == syears[i],]$N <- age.tmb[,i]
+  
+}
+age_catch <- age_catch %>% rename(Yr = year)
 
 
+p.catch <- ggplot(TMB, aes(x = Bin, y = N))+geom_line()+
+  geom_point(data = age.ss[age.ss$model =='Exp',], color = 'blue')+
+  geom_point(data = age.ss[age.ss$model =='Obs',], color = alpha(alpha = 0.2,'red'))+
+  geom_line(data = age_catch[age_catch$Yr %in% df$years[df$flag_catch == 1],], 
+            aes(x = age, y = value), col = 'green')+
+  facet_wrap(~Yr)+  
+  theme_classic()
+p.catch
 
+# # Check the numbers at age in 1998 
+# yr <- 1998
+# N.tmb <- as.data.frame(t(vars$N_beg))
+# names(N.tmb) <- df$age
+# N.tmb$Yr <- c(df$years,2019)
+# N.tmb <- melt(N.tmb, id.vars = 'Yr', measure.vars = 0:21,
+#               variable.name = 'age',
+#               value.name = 'N')
+# N.tmb$model <- 'TMB'
+# 
+# N.ss <- mod$natage[,c(8,11,13:33)]
+# n.ss <- melt(N.ss[N.ss$`Beg/Mid` == 'B',],id.vars = c('Yr'), 
+#                measure.vars = paste(0:20),
+#                variable.name = 'age',
+#                value.name = 'N')
+# n.ss$model <- 'SS3'
+# 
+# n.plot <- rbind(N.tmb,n.ss)
+# 
+# 
+# p.n <- ggplot(n.plot[n.plot$model == 'SS3',], aes(x = as.numeric(age), y = N/sum(N)))+
+# theme_classic()+geom_point()+facet_wrap(~Yr)+
+#   geom_line(data = n.plot[n.plot$model == 'TMB',])
+# p.n  
+# 
+# # Redo 2001 and see what is happening 
+
+
+df.c <- data.frame(C.w = NA, C.N = NA, 
+                   year = rep(df$years, each = df$nage), 
+                   age = rep(df$age, df$tEnd))
+Ctot <- rep(NA, df$tEnd)
+# And the Catch is 
+for(i in 1:df$tEnd){
+  
+  df.tmp <- n.plot[n.plot$Yr == df$years[i] & n.plot$model == 'TMB',]
+  
+  Ftmp <- vars$Fyear[i]*vars$selectivity_save[,i]
+  Z <- vars$Zsave[,i]
+  
+  df.c[df.c$year == df$years[i],]$C.N <- (Ftmp/(Z))*(1-exp(-(Z)))*df.tmp$N
+  df.c[df.c$year == df$years[i],]$C.w <- (Ftmp/(Z))*(1-exp(-(Z)))*df.tmp$N*df$wage_catch[,i]
+  
+  Ctot[i] <- sum((Ftmp/(Z))*(1-exp(-(Z)))*df.tmp$N*df$wage_catch[,i])
+  
+}
+df.c$model <- 'TMB'
+
+# Get the age comps from SS3 
+
+df.ss3 <- melt(mod$catage, id.vars = 'Yr', measure.vars = paste(0:20),variable.name = 'age',
+               value.name = 'C.N')
+names(df.ss3)[1] <- 'year'
+df.ss3$C.w <- NA
+df.ss3$model <- 'SS3'
+df.plot <- rbind(df.c,df.ss3)
+
+ggplot(df.plot[df.plot$model == 'TMB',], aes(x = as.numeric(age), y = C.N/sum(C.N)))+geom_line()+
+  geom_point(data = df.plot[df.plot$model == 'SS3',])+
+  facet_wrap(~year, scales = 'free_y')
 
