@@ -77,7 +77,8 @@ p1 <- ggplot(df.obj2, aes(x = HCR,y = value))+geom_bar(stat = 'identity', aes(fi
 p1
 
 
-p1.sp<- ggplot(df.sp, aes(x = HCR,y = value, factor=season))+geom_bar(stat = 'identity', aes(fill = season), position="dodge2")+
+p1.sp<- ggplot(df.sp, aes(x = HCR,y = value, factor=season))+
+  geom_bar(stat = 'identity', aes(fill = season), position="dodge2")+
   scale_x_discrete(name = '')+  
   scale_y_continuous(name = '')+
   scale_fill_manual(values = cols[1:length(unique(df.obj$HCR))])+
@@ -97,6 +98,51 @@ png(paste(plotfolder,'sp_objective_bars.png'), width = 20, height =20, res = 400
 print(p1.sp)
 dev.off()
 }  
+
+# Do violin plots as well
+source('hake_violin.R')
+
+obj.plot.v <- hake_violin(ls[[1]],sim.data$SSB0, move = 1)
+obj.plot.v$HCR <- nms[1]
+
+for(i in 2:length(nms)){
+  df.tmp <- hake_violin(ls[[i]],sim.data$SSB0, move = 1)
+  df.tmp$HCR <- nms[i]
+  obj.plot.v <- rbind(obj.plot.v, df.tmp)
+}
+
+# Save the violin data to run in a seperate file 
+
+save(obj.plot.v,file = paste(results,'violindata.Rdata', sep =''))
+
+source('plotViolin.R')
+p.vio <- plotViolin(paste(results,'violindata.Rdata', sep = ''))
+# cols <- PNWColors::pnw_palette('Starfish',n = length(nms), type = 'discrete')
+# 
+# 
+# ## Do some adjustments to fix the scales 
+# 
+# p.v <- ggplot(obj.plot.v, aes(x = HCR, y = value, fill = HCR))+
+#   geom_violin()+
+#   geom_boxplot(width=0.15, col = 'black', outlier.shape = NA)+
+#   scale_fill_manual(values = cols)+
+#   facet_wrap(~variable, scales = 'free', ncol = 3, dir='v')+
+#   theme(legend.position = 'none',
+#         axis.text.x = element_text(angle = 60, vjust = 0.5))+
+#   scale_x_discrete(name = '')+  
+#   scale_y_continuous(name = '')#+
+#   #coord_cartesian(ylim = c(0,1))
+
+if(plotexp == TRUE){
+  png(paste(plotfolder,'objective_violin.png'), width = 15, height =12, res = 400, unit = 'cm')
+  print(p.vio)
+  dev.off()
+
+}
+
+# Redo this plot without facet wrap
+
+
 
 ls.data <- list()
 

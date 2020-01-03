@@ -19,6 +19,7 @@ fls <- dir(results)
 ls.plots <- list()
 
 fls <- fls[grep('.Rdata', x = fls)]
+fls <- fls[grep('MSE', x = fls)]
 
 print(paste('order = ', fls))
 
