@@ -24,6 +24,7 @@ Type objective_function<Type>::operator() ()
 // //
 // // // Age
   DATA_INTEGER(nage); // Plus group
+  DATA_INTEGER(sum_zero); // should rec dev's sum so zero?
   DATA_VECTOR(age); // ages
   DATA_INTEGER(tEnd);
   DATA_INTEGER(year_sel);
@@ -402,7 +403,7 @@ for(int time=1;time<tEnd;time++){ // Loop over available years
   if(Catch(time)>0){
 
         if(flag_catch(time) == 1){ // Flag if  there was a measurement that year
-        for(int i=1;i<age_maxage;i++){ // Loop over other ages (first one is empty for survey)
+        for(int i=0;i<age_maxage;i++){ // Loop over other ages (first one is empty for survey)
           sum3(time) += lgamma(ss_catch(time)*age_catch(i,time)+1);
           sum4(time) += lgamma(ss_catch(time)*age_catch(i,time) + phi_catch*ss_catch(time)*age_catch_est(i,time)) - lgamma(phi_catch*ss_catch(time)*age_catch_est(i,time));
         }
@@ -444,9 +445,12 @@ for(int time=0;time<(nage-1);time++){ // Start time loop
 // Prior on h
 ans_priors += -dbeta(h,Bprior,Aprior,TRUE);
 
-ans_priors += ((Type(0)-sum(logR))*(Type(0)-sum(logR)))/Type(0.01);
+if(sum_zero == 1){
+  ans_priors += ((Type(0.0)-sum(logR))*(Type(0.0)-sum(logR)))/Type(0.01);
+}
+
 // ans_priors += -dnorm(logMinit, log(Type(0.2)), Type(0.1), TRUE);
-ans_priors += 0.5*pow(((logMinit)-log(Type(0.2))/Type(0.1)),2);
+ans_priors += 0.5*pow(logMinit-log(Type(0.2)),2)/Type(0.01);
 
 
 vector<Type>ans_tot(7);

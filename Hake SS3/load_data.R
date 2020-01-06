@@ -195,6 +195,7 @@ df <-list(      #### Parameters #####
                 logphi_survey = log(10),
                 Bprior= tau*mu,
                 Aprior = tau*(1-mu),
+                sum_zero = 0,
                 b = b[Yr >= years[1]]#,
             #    ageerr = as.matrix(age_err[,2:22])
 )
