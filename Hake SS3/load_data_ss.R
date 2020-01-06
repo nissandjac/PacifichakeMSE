@@ -1,7 +1,10 @@
 ## Load the hake data
 # year and age input 
-load_data_ss <- function(mod){
+load_data_ss <- function(mod,
+                         sum_zero = 0){
   
+  #' @mod SS3 file 
+  #' @sum_zero flag on whether 'main' recruitment deviations should sum to zero
   
   years <- mod$startyr:mod$endyr
   tEnd <- length(years)
@@ -185,6 +188,7 @@ load_data_ss <- function(mod){
                   #logphi_survey = log(0.91),
                   sigma_psel = mod$parameters$Value[mod$parameters$Label == "AgeSel_P3_Fishery(1)_dev_se"],
                   smul = 0.5,
+                  sum_zero = sum_zero,
                   years = years,
                   logphi_survey = log(mod$parameters$Value[mod$parameters$Label == "ln(EffN_mult)_2"]),
                   Bprior= tau*mu,

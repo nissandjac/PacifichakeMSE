@@ -5,37 +5,37 @@ source('load_data_ss.R')
 library(r4ss)
 library(dplyr)
 library(reshape2)
+library(scales)
 # Read the assessment data 
 mod <- SS_output(paste(getwd(),'/data/SS32018/', sep =''), printstats=FALSE, verbose = FALSE)
 
-df <- load_data_ss(mod)
-df$smul <- 0.5
+df <- load_data_ss(mod, sum_zero = 0)
 
 years <- df$years
 
 #U[2,] <- 0.01
 parms.ss <- getParameters_ss(TRUE, mod)
-
+parms.ss.true <- getParameters_ss(TRUE,mod)
 
 compile("runHakeassessment.cpp")
 dyn.load(dynlib("runHakeassessment"))
 obj <-MakeADFun(df,parms.ss,DLL="runHakeassessment")#, )
-vars <- obj$report() # 
+obj.true <- MakeADFun(df,parms.ss.true, DLL='runHakeassessment')
+vars <- obj.true$report() # 
 
 lower <- obj$par-Inf
 lower[names(lower) == 'F0'] <- 0.001
 upper <- obj$par+Inf
-#upper[names(upper) == 'psel_fish' ] <- 5
 upper[names(upper) == 'PSEL'] <- 9
 upper[names(upper) == 'logh'] <- log(0.999)
 upper[names(upper) == 'F0'] <- 2
 upper[names(upper) == 'psel_fish'] <- 3
 lower[names(lower) == 'psel_fish'] <- 0.0001
-lower[names(lower) == 'logMinit'] <- parms.ss$logMinit#log(0.15)
-upper[names(upper) == 'logMinit'] <- parms.ss$logMinit#log(0.3)
+# lower[names(lower) == 'logMinit'] <- parms.ss$logMinit#log(0.15)
+# upper[names(upper) == 'logMinit'] <- parms.ss$logMinit#log(0.3)
 # 
-lower[names(lower) == 'initN'] <- parms.ss$initN-0.01
-upper[names(upper) == 'initN'] <- parms.ss$initN+0.01
+# lower[names(lower) == 'initN'] <- parms.ss$initN-0.01
+# upper[names(upper) == 'initN'] <- parms.ss$initN+0.01
 # lower[names(lower) == 'logRinit'] <- parms.ss$logRinit
 # upper[names(upper) == 'logRinit'] <- parms.ss$logRinit
 
@@ -75,7 +75,7 @@ df.p$name <- names(rep$par.fixed)
 df.p$idx <- 1:nrow(df.p)
 df.p$model <- 'TMB'
 names(df.p)[1] <- 'parameter'
-df.p2 <- as.data.frame(unlist(parms.ss))
+df.p2 <- as.data.frame(unlist(parms.ss.true))
 df.p2$name <- names(rep$par.fixed)
 
 df.p2$idx <- 1:nrow(df.p2)
@@ -114,8 +114,17 @@ df.ss <- data.frame(year = rep(df$year,4),
                     model = rep(c('TMB est','Obs','TMB SS3 parms','SS3'), each = df$tEnd)
                     )
 
-ggplot(df.ss[df.ss$model != 'Obs' & df.ss$model != 'SS3',], aes(x = year, y = survey*1e-6, color = model))+geom_line()+
-  geom_point(data = df.ss[df.ss$model %in% c('SS3','Obs'),])+theme_classic()
+cols <- PNWColors::pnw_palette('Starfish', n = 5)
+
+ggplot(df.ss[df.ss$model != 'Obs' & df.ss$model != 'SS3',], aes(x = year, y = survey*1e-6, color = model))+
+  geom_line()+
+  geom_point(data = df.ss[df.ss$model %in% c('SS3','Obs'),], show.legend = FALSE)+theme_classic()+
+  scale_color_manual(values = cols)+
+  scale_y_continuous('survey biomass \n(million tonnes)')+
+  theme(legend.position = c(0.8,0.8),
+        legend.title = element_blank())+
+  geom_ribbon(data = Surveyobs, aes(ymin = min*1e-6, ymax = max*1e-6, x = year,
+                                    y= value*1e-6, color = NA),fill = alpha('gray', alpha = 0.3), color = NA)
 
 # Total catch
 
@@ -131,10 +140,14 @@ df.ss <- data.frame(year = rep(df$year,4),
                     model = rep(c('TMB est','Obs','TMB SS3 parms','SS3'), each = df$tEnd)
 )
 
-ggplot(df.ss[df.ss$model != 'Obs' & df.ss$model != 'SS3',], aes(x = year, y = survey*1e-6, color = model))+geom_line()+
+
+
+p.ssb <- ggplot(df.ss[df.ss$model != 'Obs' & df.ss$model != 'SS3',], aes(x = year, y = survey*1e-6, color = model))+
+  geom_line()+
+  scale_color_manual(values = cols)+
   geom_point(data = df.ss[df.ss$model %in% c('SS3','Obs'),])+theme_classic()
 
-
+p.ssb
 # Total SSB
 
 
@@ -143,16 +156,31 @@ SSB.ss3 <- mod$derived_quants$Value[grep('SSB_1966', mod$derived_quants$Label):g
 
 
 df.ss <- data.frame(year = rep(df$year,3), 
-                    survey = c(SSB$value,
+                    SSB = c(SSB$value,
                                vars$SSB,
                                SSB.ss3
                     ),
                     model = rep(c('TMB est','TMB SS3 parms','SS3'), each = df$tEnd)
 )
 
-ggplot(df.ss[df.ss$model != 'Obs' & df.ss$model != 'SS3',], aes(x = year, y = survey*1e-6, color = model))+geom_line()+
-  geom_point(data = df.ss[df.ss$model %in% c('SS3','Obs'),])+theme_classic()
+cols <- PNWColors::pnw_palette('Starfish', n = length(unique(df.ss$model)))
 
+p.ssb <- ggplot(df.ss[df.ss$model != 'Obs' & df.ss$model != 'SS3',], aes(x = year, y = SSB*1e-6, color = model))+
+  geom_line()+
+  geom_point(data = df.ss[df.ss$model %in% c('SS3','Obs'),])+
+  theme_classic()+scale_y_continuous('Spawning biomass\n (million tonnes)')+
+  scale_color_manual(values = cols)+
+  theme(legend.position = c(0.8,0.8),
+        legend.title = element_blank())+
+  geom_ribbon(data = SSB, aes(ymin = min*1e-6, ymax = max*1e-6, x = year,
+                                    y= value*1e-6, color = NA),fill = alpha('gray', alpha = 0.3), color = NA)
+
+p.ssb
+
+
+png('Figures/SSB.png', width = 16, height =16, res = 400, unit = 'cm')
+p.ssb
+dev.off()
 # Age comps in survey 
 library(reshape2)
 
@@ -222,23 +250,22 @@ p.catch <- ggplot(TMB, aes(x = Bin, y = N))+geom_line()+
 p.catch
 
 # # Check the numbers at age in 1998 
-# yr <- 1998
-# N.tmb <- as.data.frame(t(vars$N_beg))
-# names(N.tmb) <- df$age
-# N.tmb$Yr <- c(df$years,2019)
-# N.tmb <- melt(N.tmb, id.vars = 'Yr', measure.vars = 0:21,
-#               variable.name = 'age',
-#               value.name = 'N')
-# N.tmb$model <- 'TMB'
-# 
-# N.ss <- mod$natage[,c(8,11,13:33)]
-# n.ss <- melt(N.ss[N.ss$`Beg/Mid` == 'B',],id.vars = c('Yr'), 
-#                measure.vars = paste(0:20),
-#                variable.name = 'age',
-#                value.name = 'N')
-# n.ss$model <- 'SS3'
-# 
-# n.plot <- rbind(N.tmb,n.ss)
+N.tmb <- as.data.frame(t(vars$N_beg))
+names(N.tmb) <- df$age
+N.tmb$Yr <- c(df$years,2019)
+N.tmb <- melt(N.tmb, id.vars = 'Yr', measure.vars = 0:21,
+              variable.name = 'age',
+              value.name = 'N')
+N.tmb$model <- 'TMB'
+
+N.ss <- mod$natage[,c(8,11,13:33)]
+n.ss <- melt(N.ss[N.ss$`Beg/Mid` == 'B',],id.vars = c('Yr'),
+               measure.vars = paste(0:20),
+               variable.name = 'age',
+               value.name = 'N')
+n.ss$model <- 'SS3'
+
+n.plot <- rbind(N.tmb,n.ss)
 # 
 # 
 # p.n <- ggplot(n.plot[n.plot$model == 'SS3',], aes(x = as.numeric(age), y = N/sum(N)))+
@@ -278,7 +305,11 @@ df.ss3$C.w <- NA
 df.ss3$model <- 'SS3'
 df.plot <- rbind(df.c,df.ss3)
 
-ggplot(df.plot[df.plot$model == 'TMB',], aes(x = as.numeric(age), y = C.N/sum(C.N)))+geom_line()+
+ggplot(df.plot[df.plot$model == 'TMB',], aes(x = as.numeric(age), y = C.N))+geom_line()+
   geom_point(data = df.plot[df.plot$model == 'SS3',])+
   facet_wrap(~year, scales = 'free_y')
+# Compare likelihoods 
+
+mod$likelihoods_by_fleet
+mod$likelihoods_used
 
