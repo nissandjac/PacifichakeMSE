@@ -1,4 +1,5 @@
-create_TMB_data <- function(sim.data, df){
+create_TMB_data <- function(sim.data, df,
+                             history = FALSE){
   # Organize a dataframe to run 'runhakeasssement.tmb'
   
   years <- df$years
@@ -75,7 +76,7 @@ create_TMB_data <- function(sim.data, df){
                   Smax_survey = df$Smax_survey,
                   b = b,
                   # survey
-                  survey = df.survey, # Make sure the survey has the same length as the catch time series
+                  survey = sim.data$survey,#df.survey, # Make sure the survey has the same length as the catch time series
                   survey_x = df$survey_x, # Is there a survey in that year?
                   ss_survey = df$ss_survey,
                   flag_survey =df$flag_survey,
@@ -92,6 +93,7 @@ create_TMB_data <- function(sim.data, df){
                   logSDR = df$logSDR, # Fixed in stock assessment ,
                   logphi_survey = df$logphi_survey,
                   sigma_psel = 1.4,
+                  sum_zero = df$sum_zero,
                   smul = df$smul,
                   Bprior= tau*mu,
                   Aprior = tau*(1-mu),
@@ -100,7 +102,22 @@ create_TMB_data <- function(sim.data, df){
   )
   
   
+  # Add historical data if needed
   
+  if(history == TRUE){
+    df.new$survey <- df$survey[,1]
+    
+    if(length(df$survey[,1]) != length(df.new$survey)){
+      stop('data not available')
+    }
+
+        df.new$age_catch <- as.matrix(df$age_catch)
+        df.new$age_survey <- as.matrix(df$age_survey)
+        df.new$Catchobs <- df$Catch
+
+  }
+
+
   
   
   return(df.new)

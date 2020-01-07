@@ -15,8 +15,8 @@ getUncertainty <- function(name,data,sdrep){
   
   if(dim(df)[1] == (data$tEnd*data$age_maxage)){
     
-    df$age <- rep(1:data$age_maxage, each = data$tEnd)
-    df$year <- rep(data$year, length(1:data$age_maxage))
+    df$age <- rep(1:data$age_maxage, data$tEnd)
+    df$year <- rep(data$year, each =length(1:data$age_maxage))
     
   }
   

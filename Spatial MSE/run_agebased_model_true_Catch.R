@@ -73,7 +73,7 @@ run.agebased.true.catch <- function(df, seeds = 100){
   
   for(i in 1:nspace){
     #SSB_0[i] <- sum(df$Matsel*N0*move.init[i])
-    SSB_0[i] <- sum(N0*move.init[i]*df$wage_ssb[,1])
+    SSB_0[i] <- sum(N0*move.init[i]*df$wage_ssb[,1])*0.5
   }
   names(SSB_0) <- paste(rep('space',each = df$nspace),1:nspace)
   
@@ -253,10 +253,10 @@ run.agebased.true.catch <- function(df, seeds = 100){
     
     # fix Ssb and recruitment in all areas 
     for(space in 1:nspace){
-      SSB.weight[yr,space] <- sum(N.save.age[,yr,space,1]*as.numeric(w_ssb), na.rm = TRUE)
+      SSB.weight[yr,space] <- sum(N.save.age[,yr,space,1]*as.numeric(w_ssb), na.rm = TRUE)*0.5
       SSB[yr,space] <- SSB.weight[yr,space] #sum(N.save.age[,yr,space,1]*Mat.sel, na.rm = TRUE)
       
-      SSB.all[1,space,1]<- sum(N.save.age[,1,space,1]*Mat.sel, na.rm = TRUE)
+      SSB.all[1,space,1]<- sum(N.save.age[,1,space,1]*Mat.sel, na.rm = TRUE)*0.5
       
     # Recruitment only in season 1  
       R <- (4*h*R_0[space]*SSB[yr,space]/
@@ -585,6 +585,7 @@ run.agebased.true.catch <- function(df, seeds = 100){
                      age_comps_OM = age_comps_OM,
                      age_catch = age_comps_catch,
                      SSB_0 = SSB_0, 
+                     N0 = N0,
                      SSB.weight = SSB.weight,
                      survey.true = survey.true,
                      Z = Z.save,

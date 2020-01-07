@@ -24,6 +24,7 @@ Type objective_function<Type>::operator() ()
 // //
 // // // Age
   DATA_INTEGER(nage); // Plus group
+  DATA_INTEGER(sum_zero); // should rec dev's sum so zero?
   DATA_VECTOR(age); // ages
   DATA_INTEGER(tEnd);
   DATA_INTEGER(year_sel);
@@ -72,7 +73,7 @@ Type objective_function<Type>::operator() ()
   //PARAMETER(logSDR);
 
   PARAMETER(logphi_catch);
-  //PARAMETER(logphi_survey);
+  // PARAMETER(logphi_survey);
   DATA_SCALAR(logphi_survey);
   PARAMETER_VECTOR(psel_fish);
   PARAMETER_VECTOR(psel_surv);
@@ -176,7 +177,7 @@ Type SSBzero = 0;
 vector<Type> Zzero = M;
 
 for(int i=0;i<nage;i++){ // Loop over ages
-    SSBzero += Matsel(i)*Nzero(i);
+    SSBzero += Matsel(i)*Nzero(i)*0.5;
   }
 // Run the initial distribution
  REPORT(SSBzero);
@@ -281,7 +282,9 @@ for(int time=0;time<(tEnd);time++){ // Start time loop
     }
 
     for(int i=0;i<nage;i++){ // Loop over other ages
-         SSB(time) += N_beg(i,time)*Matsel(i); // hat
+         SSB(time) += N_beg(i,time)*wage_ssb(i,time)*0.5; // hat
+         //SSB(time) += N_beg(i,time)*Matsel(i); // hat
+
       }
 
     for(int i=0;i<(nage);i++){ // Loop over other ages
@@ -417,9 +420,7 @@ Type ans_SDR = 0.0;
  }
 
 
- for(int time=0;time<(nage-1);time++){ // Start time loop
-   ans_priors += Type(0.5)*(initN(time)*initN(time))/(SDR*SDR);
- }
+
 
 
 // Error for Selectivity
@@ -434,14 +435,21 @@ for(int time=0;time<year_sel;time++){ // Start time loop
 // Priors on h and M
 Type ans_priors = 0.0;
 
+for(int time=0;time<(nage-1);time++){ // Start time loop
+  ans_priors += Type(0.5)*(initN(time)*initN(time))/(SDR*SDR);
+}
+
 // ans_priors += -dnorm(logh,log(Type(0.777)),Type(0.113),TRUE);
 
 // Prior on h
 ans_priors += -dbeta(h,Bprior,Aprior,TRUE);
 
+if(sum_zero == 1){
+  ans_priors += ((Type(0.0)-sum(logR))*(Type(0.0)-sum(logR)))/Type(0.01);
+}
 
 // ans_priors += -dnorm(logMinit, log(Type(0.2)), Type(0.1), TRUE);
-ans_priors += 0.5*pow(logMinit-log(Type(0.2)),2)/Type(0.1);
+ans_priors += 0.5*pow(logMinit-log(Type(0.2)),2)/Type(0.01);
 
 
 vector<Type>ans_tot(7);
@@ -490,8 +498,7 @@ REPORT(selectivity_save)
 REPORT(surveyselc)
 REPORT(N_beg)
 REPORT(N_mid)
-REPORT(pmax_catch_save)
-REPORT(sigma_psel)
+REPORT(Surveyobs)
 
   return ans;
 }
