@@ -116,16 +116,18 @@ df.ss <- data.frame(year = rep(df$year,4),
 
 cols <- PNWColors::pnw_palette('Starfish', n = 5)
 
-ggplot(df.ss[df.ss$model != 'Obs' & df.ss$model != 'SS3',], aes(x = year, y = survey*1e-6, color = model))+
+p.surv <- ggplot(df.ss, aes(x = year, y = survey*1e-6, group = model, color = model))+
   geom_line()+
-  geom_point(data = df.ss[df.ss$model %in% c('SS3','Obs'),], show.legend = FALSE)+theme_classic()+
-  scale_color_manual(values = cols)+
+  geom_point(data = df.ss)+theme_classic()+
+  scale_color_manual(values = cols)+#, linetype = c(1,1,NA), shape = c(NA,NA,1))+
+  scale_shape_manual(shape = 1)+
   scale_y_continuous('survey biomass \n(million tonnes)')+
   theme(legend.position = c(0.8,0.8),
         legend.title = element_blank())+
   geom_ribbon(data = Surveyobs, aes(ymin = min*1e-6, ymax = max*1e-6, x = year,
-                                    y= value*1e-6, color = NA),fill = alpha('gray', alpha = 0.3), color = NA)
-
+                                    y= value*1e-6, color = NA),fill = alpha('gray', alpha = 0.3), group = NA)#+
+  
+p.surv
 # Total catch
 
 ss.exp <- rep(NA, df$nyear)
@@ -173,7 +175,8 @@ p.ssb <- ggplot(df.ss[df.ss$model != 'Obs' & df.ss$model != 'SS3',], aes(x = yea
   theme(legend.position = c(0.8,0.8),
         legend.title = element_blank())+
   geom_ribbon(data = SSB, aes(ymin = min*1e-6, ymax = max*1e-6, x = year,
-                                    y= value*1e-6, color = NA),fill = alpha('gray', alpha = 0.3), color = NA)
+                                    y= value*1e-6, color = NA, group = NA),
+              fill = alpha('gray', alpha = 0.3), color = NA)
 
 p.ssb
 

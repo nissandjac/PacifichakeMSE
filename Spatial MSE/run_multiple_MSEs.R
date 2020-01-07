@@ -62,7 +62,7 @@ run_multiple_MSEs <- function(simyears = NULL,seeds = 12345, TAC = 1, df = NA,
   SSB.test.om <- list() # Test if SSB is the same in the OM
   start.time <- Sys.time()
   df0 <- df # For debugging
-  mconverge <- rep(NA, simyears)
+  #mconverge <- rep(NA, simyears)
   df0 <- df
   
   for (time in 1:simyears){
@@ -277,25 +277,25 @@ run_multiple_MSEs <- function(simyears = NULL,seeds = 12345, TAC = 1, df = NA,
                                            eval.max = 1e6))) # If error one of the random effects is unused
     
     
-    if(opt$convergence != 0){
-      print(paste('year',df$years[length(df$years)], 'has convergence issues, double checking parameters'))
-      
-      xx<- Check_Identifiable_vs2(obj)
-      
-      # if(xx[[1]] == 'model not converging'){
-      #   mconverge[time] <- 1
-      #   
-      #   if(sum(mconverge, na.rm = TRUE)>1){
-      #     print('Convergence is bad. Stopping simulation')
-      #     return(df.ret= NA)
-      #   }
-      #   
-      # }else{
-      #   mconverge[time] <- 0
-      # }
-    }else{
-      mconverge[time] <- 0
-    }
+    # if(opt$convergence != 0){
+    #   print(paste('year',df$years[length(df$years)], 'has convergence issues, double checking parameters'))
+    #   
+    #   xx<- Check_Identifiable_vs2(obj)
+    #   
+    #   # if(xx[[1]] == 'model not converging'){
+    #   #   mconverge[time] <- 1
+    #   #   
+    #   #   if(sum(mconverge, na.rm = TRUE)>1){
+    #   #     print('Convergence is bad. Stopping simulation')
+    #   #     return(df.ret= NA)
+    #   #   }
+    #   #   
+    #   # }else{
+    #   #   mconverge[time] <- 0
+    #   # }
+    # }else{
+    #   mconverge[time] <- 0
+    # }
     
     reps <- obj$report()
     
@@ -308,7 +308,8 @@ run_multiple_MSEs <- function(simyears = NULL,seeds = 12345, TAC = 1, df = NA,
     # plot(sim.data$Catch)
     # lines(df$Catch)
     
-    # # lines(rowSums(sim.data$SSB), col = 'red')
+    plot(reps$SSB)
+    lines(rowSums(sim.data$SSB), col = 'red')
     # # #Uncertainty
     
     
@@ -317,6 +318,17 @@ run_multiple_MSEs <- function(simyears = NULL,seeds = 12345, TAC = 1, df = NA,
       sdrep <- summary(rep)
       rep.values<-rownames(sdrep)
       nyear <- df$tEnd
+      
+      # Check convergence in last year 
+      source('Check_Identifiable_vs2.R')
+      conv <- Check_Identifiable_vs2(obj)
+      
+      if(length(conv$WhichBad) == 0){
+        mconverge <- 1
+      }else{
+        mconverge <- 0
+      }
+      
       
       R <- data.frame(name = sdrep[rep.values == 'R',1])
       
@@ -410,7 +422,7 @@ run_multiple_MSEs <- function(simyears = NULL,seeds = 12345, TAC = 1, df = NA,
                  F0 = apply(sim.data$Fout,c(1,3),sum),
                  parms = parms.save,
                  N = sim.data$N.save.age,
-                 
+                 converge = mconverge,
                  ams = ams,
                  amc = amc,
                  V = sim.data$V.save

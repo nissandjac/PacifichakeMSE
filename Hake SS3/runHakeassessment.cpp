@@ -436,7 +436,6 @@ for(int time=0;time<year_sel;time++){ // Start time loop
 Type ans_priors = 0.0;
 
 for(int time=0;time<(nage-1);time++){ // Start time loop
-  //ans_SDR += -dnorm(initN(time), Type(0.0),SDR, TRUE);
   ans_priors += Type(0.5)*(initN(time)*initN(time))/(SDR*SDR);
 }
 

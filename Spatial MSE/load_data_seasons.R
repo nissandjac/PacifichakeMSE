@@ -140,7 +140,7 @@ load_data_seasons <- function(nseason = 4,
   df.survey <- read.csv('data/acoustic survey.csv')
   # Maturity
   mat <- read.csv('data/maturity.csv')
-  
+  mat <- wage_ssb[1,]
   
   
   # Age comps
@@ -326,7 +326,7 @@ load_data_seasons <- function(nseason = 4,
                   year_sel = length(1991:max(years)), # Years to model time varying sel
                   
                   Msel = msel,
-                  Matsel= mat$mat,
+                  Matsel= as.numeric(mat),
                   nage = nage,
                   age = age,
                   nseason = nseason,
@@ -357,7 +357,7 @@ load_data_seasons <- function(nseason = 4,
                   # variance parameters
                   logSDcatch = log(0.01),
                   logSDR = log(logSDR), # Fixed in stock assessment ,
-                  logphi_survey = log(10),
+                  logphi_survey = log(11.46),
                   years = years,
                   b = b,
                   bfuture = bfuture,
@@ -365,6 +365,7 @@ load_data_seasons <- function(nseason = 4,
                   # Space parameters 
                   smul = 0.5, # Annual survey timing 
                   sigma_psel = 1.4,
+                  sum_zero = 0,
                   nspace = nspace,
                   #TAC = TAC,
                   movemat = movemat,
