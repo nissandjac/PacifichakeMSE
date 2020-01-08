@@ -10,18 +10,18 @@ plotViolin <-function(data){
   
   cols <- PNWColors::pnw_palette('Starfish',n = length(unique(df$HCR)), type = 'discrete')
   
-  # Remove the 5th and 5th percentiles from df 
+  # Remove the 5th and 5th percentiles from df
   vars <- unique(df$variable)
-  
+
   for(i in 1:length(vars)){
     idxtmp <- which(df$variable == vars[i])
-    valstmp <- quantile(df$value[idxtmp], probs = c(0.05,0.95))
-    
+    valstmp <- quantile(df$value[idxtmp], probs = c(0.01,0.99))
+
     rmtmp <- which(df$value[idxtmp] < valstmp[1] | df$value[idxtmp] > valstmp[2])
-    
-    df$value[idxtmp][rmtmp] <- NA 
-  } 
-    
+
+    df$value[idxtmp][rmtmp] <- NA
+  }
+
   
   ## Do some adjustments to fix the scales 
   
