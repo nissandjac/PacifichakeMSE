@@ -1,12 +1,20 @@
 
-fn_plot_MSE <- function(ls, sim.data, plotfolder = '/Figs/newplots/', plotexp = TRUE){
+fn_plot_MSE <- function(ls, sim.data, plotfolder = '/Figs/newplots/', plotexp = TRUE, pidx = NA){
 
   
 # Do some calculations for survey and catch age comps 
 
+  
+  
 nms <- names(ls)  
+
+if(is.na(pidx)){
+  pidx <- 1:length(nms)
+}
+
 obj.plot <- list()
-cols <- brewer.pal(6, 'Dark2')
+#cols <- brewer.pal(6, 'Dark2')
+cols <- PNWColors::pnw_palette('Starfish',n = length(nms), type = 'discrete')
 
 
 for(i in 1:length(nms)){
@@ -63,7 +71,7 @@ dummy <- data.frame(indicator = 'long term catch', value = c(0.2,0.3), HCR = 'ym
 # }
 
 #df.obj2$value[df.obj2$HCR == 'move_0'] <- 0
-df.obj2$HCR <- factor(df.obj2$HCR, levels = names(ls))
+df.obj2$HCR <- factor(df.obj2$HCR, levels = names(ls)[pidx])
 
 #df.obj2$ind2=factor(df.obj2$indicator, as.character(df.obj2$indicator))
 
@@ -112,6 +120,7 @@ for(i in 2:length(nms)){
 }
 
 # Save the violin data to run in a seperate file 
+obj.plot.v$HCR <- factor(obj.plot.v$HCR, levels = nms)
 
 save(obj.plot.v,file = paste(results,'violindata.Rdata', sep =''))
 
@@ -161,7 +170,8 @@ for(i in 2:length(nms)){
 }
 
 
-df.all$run <- as.factor(df.all$run)
+df.all$run <- factor(df.all$run, levels = nms[pidx])
+df.catch$run <- factor(df.catch$run, levels = nms[pidx])
 
 p2 <- ggplot(df.all, aes(x = year, y = med.can*1e-6))+geom_line(color = 'darkred', size = 1.5)+
   geom_line(aes(y = med.US*1e-6), color = 'darkblue', size = 1.5)+theme_classic()+scale_y_continuous(name ='SSB (million tonnes)')+facet_wrap(~run)+  
@@ -204,6 +214,8 @@ for(i in 2:length(nms)){
   df.amc <- rbind(df.amc, ls.data[[i]][[3]]$amcplot)
 }
 
+df.ams$run <- factor(df.ams$run, levels = nms[pidx])
+df.amc$run <- factor(df.amc$run, levels = nms[pidx])
 
 rm.idx <- which(is.na(df.ams$med)) # remove years with no measurement
 
@@ -267,7 +279,7 @@ for(i in 2:length(nms)){
 
 
 ### SSB in the middle of the year 
-df.SSB$run <- factor(df.SSB$run, levels = names(ls))
+df.SSB$run <- factor(df.SSB$run, levels = nms[pidx])
 
 
 
@@ -293,12 +305,14 @@ for(i in 2:length(nms)){
   df.ams.space <- rbind(df.ams.space, ls.data[[i]][[3]]$ams.space)
 }
 
-cols <- c('darkred', 'blue4')
+df.ams.space$run <- factor(df.ams.space$run, levels = nms[pidx])
 
-p7 <- ggplot(df.ams.space,aes(x = year, y = med.can))+geom_line(size = 2, color = cols[1])+
-  geom_ribbon(aes(ymin = p5.can, ymax = p95.can), linetype = 0, fill = alpha(cols[1], alpha = 0.2), color = cols[1])+
-  geom_line(aes(y = med.us), size = 2, color = cols[2])+
-  geom_ribbon(aes(ymin = p5.us, ymax = p95.us), linetype = 0, fill = alpha(cols[2], alpha = 0.2), color = cols[2])+
+cols_c <- c('darkred', 'blue4')
+
+p7 <- ggplot(df.ams.space,aes(x = year, y = med.can))+geom_line(size = 2, color = cols_c[1])+
+  geom_ribbon(aes(ymin = p5.can, ymax = p95.can), linetype = 0, fill = alpha(cols_c[1], alpha = 0.2), color = cols_c[1])+
+  geom_line(aes(y = med.us), size = 2, color = cols_c[2])+
+  geom_ribbon(aes(ymin = p5.us, ymax = p95.us), linetype = 0, fill = alpha(cols_c[2], alpha = 0.2), color = cols_c[2])+
   scale_y_continuous(name = 'Average age in survey')+
   facet_wrap(~run)+theme(legend.position = 'n')+
   theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
@@ -316,10 +330,13 @@ df.amc.space <- data.frame(ls.data[[1]][[3]]$amc.space)
 for(i in 2:length(nms)){
   df.amc.space <- rbind(df.amc.space, ls.data[[i]][[3]]$amc.space)
 }
-p8 <- ggplot(df.amc.space[df.amc.space$year > 2014,],aes(x = year, y = med.can))+geom_line(size = 2, color = cols[1])+
-  geom_ribbon(aes(ymin = p5.can, ymax = p95.can), linetype = 0, fill = alpha(cols[1], alpha = 0.2), color = cols[1])+
-  geom_line(aes(y = med.us), size = 2, color = cols[2])+
-  geom_ribbon(aes(ymin = p5.us, ymax = p95.us), linetype = 0, fill = alpha(cols[2], alpha = 0.2), color = cols[2])+
+
+df.amc.space$run <- factor(df.amc.space$run, levels = nms[pidx])
+
+p8 <- ggplot(df.amc.space[df.amc.space$year > 2014,],aes(x = year, y = med.can))+geom_line(size = 2, color = cols_c[1])+
+  geom_ribbon(aes(ymin = p5.can, ymax = p95.can), linetype = 0, fill = alpha(cols_c[1], alpha = 0.2), color = cols_c[1])+
+  geom_line(aes(y = med.us), size = 2, color = cols_c[2])+
+  geom_ribbon(aes(ymin = p5.us, ymax = p95.us), linetype = 0, fill = alpha(cols_c[2], alpha = 0.2), color = cols_c[2])+
   scale_y_continuous(name = 'Average age in catch')+
   facet_wrap(~run)+theme(legend.position = 'n')+
   theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5),
@@ -383,7 +400,8 @@ df.F0 <- data.frame(ls.data[[1]][[3]]$F0)
   #   
     
     ### SSB in the middle of the year 
-    
+df.F0$run <- factor(df.F0$run, levels = nms[pidx])    
+
     p10 <- ggplot(df.F0, aes(x = year, y = med.can))+geom_line(color = 'red')+
       geom_line(aes(y = med.us), color = 'blue')+coord_cartesian(ylim = c(0,1))+
       theme_classic()+scale_y_continuous(name ='Exploitation rate')+facet_wrap(~run)+  
@@ -406,7 +424,7 @@ df.catchq<- data.frame(ls.data[[1]][[3]]$Catch.q)
 for(i in 2:length(nms)){
   df.catchq <- rbind(df.catchq, ls.data[[i]][[3]]$Catch.q)
 }
-
+df.catchq$run <- factor(df.catchq$run, levels = nms[pidx])
 
 p11 <- ggplot(df.catchq, aes(x = year, y = med.can))+geom_line(color = 'red')+
   geom_line(aes(y = med.us), color = 'blue')+
@@ -434,13 +452,12 @@ for(i in 2:length(nms)){
   df.SSB <- rbind(df.SSB, ls.data[[i]][[3]]$SSBtot)
 }
 
-cols <- brewer.pal(6, 'Dark2')
 
 ### SSB in the middle of the year 
 df.SSB$med <- df.SSB$med/sum(sim.data$SSB0)
 df.SSB$p5 <- df.SSB$p5/sum(sim.data$SSB0)
 df.SSB$p95 <- df.SSB$p95/sum(sim.data$SSB0)
-
+df.SSB$run <-  factor(df.SSB$run, levels = nms[pidx])
 
 p12<- ggplot(df.SSB, aes(x = year, y = med, color = run, fill = run))+
   geom_line(size = 1.5)+

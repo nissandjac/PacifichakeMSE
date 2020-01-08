@@ -201,7 +201,7 @@ run.agebased.true.catch <- function(df, seeds = 100){
   
   
   
-  Fspace <- c(0.24,0.76) # Contribution of Total catch (add to one)    #Z <- (Fyear+Myear)
+  Fspace <- c(0.2612,0.7388) # Contribution of Total catch (add to one)    #Z <- (Fyear+Myear)
   Fnseason <- df$Fnseason
   pope.mul <- nseason/1*0.5
   pope.mul <- 0.50

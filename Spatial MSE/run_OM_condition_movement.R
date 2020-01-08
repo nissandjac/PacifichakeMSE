@@ -23,8 +23,10 @@ plot.figures = TRUE# Set true for printing to file
 source('load_files_OM.R')
 source('load_files.R')
 source('runfuture_OM.R')
-source('load_data_seasons_future.R')
+source('load_data_seasons.R')
 source('run_agebased_model_true_catch.R')
+source('getSelec.R')
+source('getF.R')
 assessment <- read.csv('data/assessment_MLE.csv')
 
 #assessment <- assessment[assessment$year > 1965 &assessment$year < 2018 ,]
@@ -39,8 +41,7 @@ nruns <- nparms^2
 
 yr.future <- 2
 
-df <- load_data_seasons(movemaxinit = 0.7, movefiftyinit = 3, yr_future = yr.future)
-df$surveyseason <- 2
+df <- load_data_seasons(movemaxinit = 0.4, yr_future = yr.future)
 
 Catch.future <- c(df$Catch, rep(206507.8, yr.future)) # Project MSY
 df$Catch <- Catch.future
@@ -52,6 +53,7 @@ survey.ml <- array(NA,dim = c(df$nyear,df$nspace,length(movemax.parms)*length(mo
 #catch.ac.obs <- read.csv('data/age_in_catch_obs.csv')
 catch.ac.obs <- read.csv('data/ac_catch_new.csv')
 standard.move <- runfuture_OM(df,nruns = 1)
+sim.data <- run.agebased.true.catch(df)
 
 ac.survey.tot <- survey.ac %>% 
   group_by(year, country) %>% 
@@ -138,7 +140,7 @@ df.tot <- rbind(df.plot,df.ass) %>%
 df.survey <- data.frame(years = df$years[df$flag_survey == 1],
                         source = 'Survey data',
                         survey = df$survey$x[df$flag_survey == 1],
-                        survsd=  sqrt(df$survey[df$flag_survey == 1]^2*exp(df$survey_err[df$flag_survey == 1]+
+                        survsd=  sqrt(df$survey$x[df$flag_survey == 1]^2*exp(df$survey_err[df$flag_survey == 1]+
                                                                             exp(df$parms$logSDsurv)-1))
 )
 df.tot$survsd <- NA
