@@ -14,7 +14,7 @@ df <- load_data_ss(mod, sum_zero = 0)
 years <- df$years
 
 #U[2,] <- 0.01
-parms.ss <- getParameters_ss(TRUE, mod)
+parms.ss <- getParameters_ss(FALSE, mod)
 parms.ss.true <- getParameters_ss(TRUE,mod)
 
 compile("runHakeassessment.cpp")
@@ -105,7 +105,7 @@ s.obs[s.obs == 1] <- NA
 ss.exp <- rep(NA, df$nyear)
 ss.exp[df$year %in%mod$cpue$Yr] <- mod$cpue$Exp
 
-df.ss <- data.frame(year = rep(df$year,4), 
+df.surv <- data.frame(year = rep(df$year,4), 
                     survey = c(Surveyobs$value,
                                s.obs,
                                vars$Surveyobs,
@@ -114,20 +114,34 @@ df.ss <- data.frame(year = rep(df$year,4),
                     model = rep(c('TMB est','Obs','TMB SS3 parms','SS3'), each = df$tEnd)
                     )
 
-cols <- PNWColors::pnw_palette('Starfish', n = 5)
+cols <- LaCroixColoR::lacroix_palette('Berry', n = 5)
 
-p.surv <- ggplot(df.ss, aes(x = year, y = survey*1e-6, group = model, color = model))+
-  geom_line()+
-  geom_point(data = df.ss)+theme_classic()+
-  scale_color_manual(values = cols)+#, linetype = c(1,1,NA), shape = c(NA,NA,1))+
-  scale_shape_manual(shape = 1)+
+p.surv <- ggplot(df.surv, aes(x = year, y = survey*1e-6))+
+  scale_color_manual(values = cols)+
+  geom_line(aes(color = model, linetype  = model), size = 1.3)+
+  scale_linetype_manual(values = c('blank','blank','solid', 'twodash'))+
+  geom_point(aes(color = model, shape = model), size = 1.2)+
+  scale_shape_manual(values = c(16,3,NA,NA))+
+  theme_classic()+
+  geom_ribbon(data = Surveyobs, aes(ymin = min*1e-6, ymax = max*1e-6, x = year,
+                                     y= value*1e-6, color = NA),fill = alpha('gray', alpha = 0.3), linetype = 'blank')+
   scale_y_continuous('survey biomass \n(million tonnes)')+
   theme(legend.position = c(0.8,0.8),
         legend.title = element_blank())+
-  geom_ribbon(data = Surveyobs, aes(ymin = min*1e-6, ymax = max*1e-6, x = year,
-                                    y= value*1e-6, color = NA),fill = alpha('gray', alpha = 0.3), group = NA)#+
-  
+  coord_cartesian(xlim = c(1994,2019), ylim = c(0.5,4))+ guides(color=guide_legend(override.aes=list(fill=NA)))
 p.surv
+
+  # 
+  # scale_color_manual(values = cols,
+  #                    guide = guide_legend(
+  #                      override.aes = list(
+  #                      linetype = c('blank','blank',"solid", "solid"),
+  #                      
+  #                      shape = c(NA,NA, NA, NA) 
+  #                      ))
+  #                     )+#, linetype = c(1,1,NA), shape = c(NA,NA,1))+
+  
+  
 # Total catch
 
 ss.exp <- rep(NA, df$nyear)
@@ -144,12 +158,12 @@ df.ss <- data.frame(year = rep(df$year,4),
 
 
 
-p.ssb <- ggplot(df.ss[df.ss$model != 'Obs' & df.ss$model != 'SS3',], aes(x = year, y = survey*1e-6, color = model))+
+p.catch <- ggplot(df.ss[df.ss$model != 'Obs' & df.ss$model != 'SS3',], aes(x = year, y = survey*1e-6, color = model))+
   geom_line()+
   scale_color_manual(values = cols)+
   geom_point(data = df.ss[df.ss$model %in% c('SS3','Obs'),])+theme_classic()
 
-p.ssb
+p.catch
 # Total SSB
 
 
@@ -165,24 +179,30 @@ df.ss <- data.frame(year = rep(df$year,3),
                     model = rep(c('TMB est','TMB SS3 parms','SS3'), each = df$tEnd)
 )
 
-cols <- PNWColors::pnw_palette('Starfish', n = length(unique(df.ss$model)))
+#cols <- LaCroixColoR::lacroix_palette('Berry', n = length(unique(df.ss$model)))
 
-p.ssb <- ggplot(df.ss[df.ss$model != 'Obs' & df.ss$model != 'SS3',], aes(x = year, y = SSB*1e-6, color = model))+
-  geom_line()+
-  geom_point(data = df.ss[df.ss$model %in% c('SS3','Obs'),])+
-  theme_classic()+scale_y_continuous('Spawning biomass\n (million tonnes)')+
-  scale_color_manual(values = cols)+
+p.SSB <- ggplot(df.ss, aes(x = year, y = SSB*1e-6))+
+  #geom_line(data = df.ss[df.ss$model == 'TMB est' | df.ss$model == 'TMB SS3 parms',], aes(color = model))+
+  #geom_point(data = df.ss[df.ss$model == 'SS3' | df.ss$model == 'Obs',], aes(shape = model, color = model), show.legend = FALSE)+
+  scale_color_manual(values = cols[2:4])+
+  geom_line(aes(color = model, linetype  = model), size = 1.3)+
+  scale_linetype_manual(values = c('blank','solid', 'twodash'))+
+  geom_point(aes(color = model, shape = model), size = 2)+
+  scale_shape_manual(values = c(16,NA,NA))+
+  theme_classic()+
+  geom_ribbon(data = SSB, aes(ymin = min*1e-6, ymax = max*1e-6, x = year,
+                                    y= value*1e-6, color = NA),fill = alpha('gray', alpha = 0.3), linetype = 'blank')+
+  scale_y_continuous('Spawning biomass\n (million tonnes)')+
   theme(legend.position = c(0.8,0.8),
         legend.title = element_blank())+
-  geom_ribbon(data = SSB, aes(ymin = min*1e-6, ymax = max*1e-6, x = year,
-                                    y= value*1e-6, color = NA, group = NA),
-              fill = alpha('gray', alpha = 0.3), color = NA)
+  coord_cartesian(xlim = c(1965,2019), ylim = c(0.5,6))+ guides(color=guide_legend(override.aes=list(fill=NA)))
+p.SSB
 
-p.ssb
+# Plot Survey and SSB 
+cowplot::plot_grid(plotlist = list(p.surv,p.SSB), nrow = 2)
 
-
-png('Figures/SSB.png', width = 16, height =16, res = 400, unit = 'cm')
-p.ssb
+png('Figures/EM_assessment_comparison.png', width = 12, height =12, res = 400, unit = 'cm')
+cowplot::plot_grid(plotlist = list(p.surv,p.SSB), nrow = 2, labels = c('a','b'))
 dev.off()
 # Age comps in survey 
 library(reshape2)

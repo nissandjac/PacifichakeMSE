@@ -2,7 +2,7 @@
 source('getParameters.R')
 source('getParameters_OM.R')
 source('Check_Identifiable_vs2.R')
-source('getParms_noAge.R')
+#source('getParms_noAge.R')
 source('load_data_seasons.R')
 source('run_agebased_model_true_Catch.R')
 source('plotUncertainty.R')
