@@ -307,10 +307,10 @@ run_multiple_MSEs <- function(simyears = NULL,seeds = 12345, TAC = 1, df = NA,
     
     # plot(sim.data$Catch)
     # lines(df$Catch)
-    
-    plot(reps$SSB)
-    lines(rowSums(sim.data$SSB), col = 'red')
-    # # #Uncertainty
+    # 
+    # plot(reps$SSB)
+    # lines(rowSums(sim.data$SSB), col = 'red')
+    # # # #Uncertainty
     
     
     if(time == simyears){
