@@ -8,11 +8,11 @@ plotnames <- c('base scenario','medium increase','high increase')
 #plotnames <-  factor(plotnames, levels = c('No change','Medium increase', 'High increase'))
 
 #plotnames <- c('1','2','3')
-plotMSE(results,plotnames = plotnames, plotexp = TRUE, pidx = c(2,1,3))
+plotMSE(results,plotnames = plotnames, plotexp = TRUE, pidx = c(1,2,3))
 
 # Plot HCR stuff
 results <- 'results/HCR/'
-plotMSE(results, plotexp = TRUE, plotnames = c('Floor 50','base scenario','Historical TAC','Realized'), pidx = c(2,3,4,1) )
+plotMSE(results, plotexp = TRUE, plotnames = c('base scenario','Historical TAC','Realized','Floor 50'))
 
 results <- 'results/survey/JMC/'
 plotMSE(results, plotexp = TRUE, plotnames = c('survey1','base scenario','survey3'), pidx = c(2,1,3))

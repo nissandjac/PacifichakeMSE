@@ -23,7 +23,7 @@ cols <- cols[1:(length(nms))]
 for(i in 1:length(nms)){
   
 
-  obj.plot[[i]] <- hake_objectives(ls[[i]],sim.data$SSB0, move = 1)
+  obj.plot[[i]] <- hake_objectives(ls[[i]],sim.data$SSB0*2, move = 1)
   obj.plot[[i]][[2]]$HCR <- nms[i]
 
 }
@@ -150,11 +150,11 @@ dev.off()
 # Do violin plots as well
 source('hake_violin.R')
 
-obj.plot.v <- hake_violin(ls[[1]],sim.data$SSB0, move = 1)
+obj.plot.v <- hake_violin(ls[[1]],sim.data$SSB0*2, move = 1)
 obj.plot.v$HCR <- nms[1]
 
 for(i in 2:length(nms)){
-  df.tmp <- hake_violin(ls[[i]],sim.data$SSB0, move = 1)
+  df.tmp <- hake_violin(ls[[i]],sim.data$SSB0*2, move = 1)
   df.tmp$HCR <- nms[i]
   obj.plot.v <- rbind(obj.plot.v, df.tmp)
 }
@@ -496,9 +496,9 @@ for(i in 2:length(nms)){
 
 
 ### SSB in the middle of the year 
-df.SSB$med <- df.SSB$med/sum(sim.data$SSB0)
-df.SSB$p5 <- df.SSB$p5/sum(sim.data$SSB0)
-df.SSB$p95 <- df.SSB$p95/sum(sim.data$SSB0)
+df.SSB$med <- df.SSB$med/(sum(sim.data$SSB0)*2)
+df.SSB$p5 <- df.SSB$p5/(sum(sim.data$SSB0)*2)
+df.SSB$p95 <- df.SSB$p95/(sum(sim.data$SSB0)*2)
 df.SSB$run <-  factor(df.SSB$run, levels = nms[pidx])
 
 p12<- ggplot(df.SSB, aes(x = year, y = med, color = run, fill = run))+
