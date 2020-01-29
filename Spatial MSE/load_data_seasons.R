@@ -109,7 +109,7 @@ load_data_seasons <- function(nseason = 4,
   # weight at age 
   wage_ss <- read.csv('data/wage_ss.csv')
   wage_ss <- wage_ss[wage_ss$Yr %in% years,]
-  wage_unfished <- read.csv('data/unfished_waa.csv')
+  wage_unfished <- read.csv(('data/unfished_waa.csv'))
 
   
   wage_ssb <- wage_ss[wage_ss$Fleet == -2,paste('X',age, sep = '')]
@@ -139,7 +139,7 @@ load_data_seasons <- function(nseason = 4,
   # Survey abundance
   df.survey <- read.csv('data/acoustic survey.csv')
   # Maturity
-  mat <- read.csv('data/maturity.csv')
+  # mat <- read.csv('data/maturity.csv')
   mat <- wage_ssb[1,]
   
   

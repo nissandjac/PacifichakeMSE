@@ -23,6 +23,7 @@ library(dplyr)
 library(reshape2)
 library(ggplot2)
 library(r4ss)
+library(here)
 ```
 Source the functions required to run the MSE (put into package later)
 ```{r}
@@ -30,7 +31,7 @@ source('load_files_OM.R')
 ```
 Load the assessment data
 ```{r}
-mod <- SS_output(paste(getwd(),'/data/SS32018', sep =''), 
+mod <- SS_output(here::here('Spatial MSE/data/SS32018'), 
                  printstats=FALSE, 
                  verbose = FALSE, 
                  hidewarn = TRUE, 

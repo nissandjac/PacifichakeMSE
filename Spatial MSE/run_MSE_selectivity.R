@@ -43,10 +43,10 @@ df.plot <- data.frame(selectivity = c(sim.data_1$Fsel[,58,1],sim.data_2$Fsel[,58
                                       sim.data_1$Fsel[,58,2],sim.data_2$Fsel[,58,2],sim.data_3$Fsel[,58,2]),
                       country = rep(c('CAN','USA'), each = 3*df$nage),
                       age = rep(df$age, 6),
-                      run = rep(rep(c('Conditioned OM','Low US selectivity','2018 selectivity'),each =df$nage),2)
+                      run = rep(rep(c('Base scenario','Low US selectivity','2018 selectivity'),each =df$nage),2)
                       )
 
-df.plot$run <- factor(df.plot$run, levels = c('Conditioned OM','Low US selectivity','2018 selectivity'))
+df.plot$run <- factor(df.plot$run, levels = c('Base scenario','Low US selectivity','2018 selectivity'))
 
 
 p1 <- ggplot(data = df.plot, aes(x = age, y = selectivity, color = country))+theme_classic()+geom_line(size = 1.2)+
