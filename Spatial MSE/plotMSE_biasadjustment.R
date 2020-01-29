@@ -61,22 +61,24 @@ plotMSE_biasadjustment <- function(results, plotnames = NA, plotexp = FALSE){
   
   df.country$run <- as.factor(df.country$run)
   
-  p1 <- ggplot(df.country, aes(x = year, y = med.can*1e-6))+geom_line(color = 'darkred', size = 1.5)+
-    geom_line(aes(y = med.US*1e-6), color = 'darkblue', size = 1.5)+theme_classic()+scale_y_continuous(name ='SSB (million tonnes)')+facet_wrap(~run)+  
+  p1 <- ggplot(df.country, aes(x = year, y = med.can*1e-6/2))+geom_line(color = 'darkred', size = 1.5)+
+    geom_line(aes(y = med.US*1e-6/2), color = 'darkblue', size = 1.5)+theme_classic()+scale_y_continuous(name ='Spawning biomass \n(million tonnes)')+facet_wrap(~run)+  
     theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))+
-    geom_ribbon(aes(ymin = p5.can*1e-6, ymax = p95.can*1e-6), fill = alpha('red', alpha = 0.2), linetype = 0)+
-    geom_ribbon(aes(ymin = p5.US*1e-6, ymax = p95.US*1e-6), fill = alpha('blue', alpha = 0.2), linetype = 0)
+    geom_ribbon(aes(ymin = p5.can*1e-6/2, ymax = p95.can*1e-6/2), fill = alpha('red', alpha = 0.2), linetype = 0)+
+    geom_ribbon(aes(ymin = p5.US*1e-6/2, ymax = p95.US*1e-6/2), fill = alpha('blue', alpha = 0.2), linetype = 0)
   
   p1
   
   df <- load_data_seasons()
   sim.data <- run.agebased.true.catch(df)
   
-  p2 <- ggplot(df.all[df.all$year>2005,], aes(x = year, y = med*1e-6, color = run, fill = run))+geom_line(size = 1.5)+
-    theme_classic()+scale_y_continuous(name ='SSB (million tonnes)')+
-    theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))+
+  p2 <- ggplot(df.all[df.all$year>2005,], aes(x = year, y = med*1e-6/2, color = run, fill = run))+geom_line(size = 1.5)+
+    theme_classic()+scale_y_continuous(name ='Spawning biomass \n(million tonnes)')+
+    theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5),
+          legend.position = c(0.1,0.9), 
+          legend.title = element_text('bias adjustment'))+
     scale_color_manual(values = cols[1:length(plotnames)])+
-    geom_ribbon(aes(ymin = p5*1e-6, ymax = p95*1e-6), 
+    geom_ribbon(aes(ymin = p5*1e-6/2, ymax = p95*1e-6/2), 
                 linetype = 0)+
     scale_fill_manual(values = alpha(cols[1:length(plotnames)], alpha = 0.2))+
     geom_hline(aes(yintercept = sum(sim.data$SSB0*1e-6)), color = 'black', linetype = 2)

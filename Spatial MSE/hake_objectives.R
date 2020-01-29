@@ -343,6 +343,7 @@ hake_objectives <- function(ls.MSE, SSB0, move = NA){
               p75 = quantile(avg, 0.75), 
               p5 = quantile(avg,0.05))
   
+  
   vtac.ca.stat<- vtac.can %>% 
     group_by(run) %>% 
     summarise(prop = length(which(V.TAC>(1/0.3)))/length(V.TAC)) %>%
@@ -464,7 +465,7 @@ hake_objectives <- function(ls.MSE, SSB0, move = NA){
   #    '3 consec yrs S<S40',
    #   'years closed fishery',
       'AAV',
-   #   'Mean SSB/SSB0',
+      'Mean SSB/SSB0',
    #   'median catch',
       'short term catch',
       'long term catch',
@@ -493,7 +494,7 @@ hake_objectives <- function(ls.MSE, SSB0, move = NA){
                           # round(mean(p.vals), digits = 2), 
                         #   mean(nclosed),
                            round(median(AAV.plotquant$med), digits = 2),
-               #            median(SSB.plotquant$med[SSB.plotquant$year > 2017]),
+                           median(SSB.plotquant$med[SSB.plotquant$year > 2018]),
                         #   median(1e6*Catch.plotquant$med[Catch.plotquant$year >2017])*1e-6,
                            median(1e6*Catch.plotquant$med[Catch.plotquant$year > 2018 & Catch.plotquant$year <2028])*1e-6,
                            median(1e6*Catch.plotquant$med[Catch.plotquant$year > 2025])*1e-6,
@@ -525,6 +526,12 @@ hake_objectives <- function(ls.MSE, SSB0, move = NA){
   print(t.export)
   
   p.export = NA
-  return(list(p.export,t.export))
+  
+  
+  # Add the seasonal stuff 
+  ls.season <- rbind(vtac.us.seas,  vtac.can.seas)
+  ls.season$country <- c(rep('USA',nrow(vtac.us.seas)),rep('CAN',nrow(vtac.can.seas)))
+  
+  return(list(p.export,t.export,ls.season))
   
 }

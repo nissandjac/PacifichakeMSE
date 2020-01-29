@@ -37,11 +37,11 @@ for(j in 1:length(cincrease)){
   }
 }
 
-cols <- brewer.pal(length(cincrease),'Dark2')
+cols <- PNWColors::pnw_palette('Starfish',n = 4, type = 'discrete')[1:3]
 
 df.tmp <- as.data.frame(t(movemax))
-names(df.tmp) <- c('reference', 'small increase ','high increase')
-df.tmp$year <- year.future[year.future > 2017]
+names(df.tmp) <- c('base scenario', 'moderate increase ','high increase')
+df.tmp$year <- year.future[year.future > 2018]
 
 df.plot <- melt(df.tmp, id.vars = 'year', measure.vars = 1:length(cincrease), value.name = 'movemax', variable.name = 'Scenario')
 
@@ -56,8 +56,8 @@ p1
 
 
 df.tmp <- as.data.frame(t(moveout))
-names(df.tmp) <- c('reference', 'small increase','high increase')
-df.tmp$year <- year.future[year.future > 2017]
+names(df.tmp) <- c('base scenario', 'moderate increase','high increase')
+df.tmp$year <- year.future[year.future > 2018]
 
 df.plot <- melt(df.tmp, id.vars = 'year', measure.vars = 1:length(cincrease), value.name = 'moveout', variable.name = 'Scenario')
 p2 <- ggplot(df.plot, aes(x = year, y = moveout, color = Scenario))+theme_classic()+geom_line(size = 1.4)+coord_cartesian(ylim = c(0.3,0.9))+

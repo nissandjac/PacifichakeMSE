@@ -8,13 +8,16 @@ fn_plot_MSE <- function(ls, sim.data, plotfolder = '/Figs/newplots/', plotexp = 
   
 nms <- names(ls)  
 
-if(is.na(pidx)){
+if(all(is.na(pidx))){
   pidx <- 1:length(nms)
 }
 
 obj.plot <- list()
 #cols <- brewer.pal(6, 'Dark2')
-cols <- PNWColors::pnw_palette('Starfish',n = length(nms), type = 'discrete')
+cols <- PNWColors::pnw_palette('Starfish',n = 4, type = 'discrete')
+#cols <- LaCroixColoR::lacroix_palette('PassionFruit', n = 4, type = 'discrete')
+
+cols <- cols[1:(length(nms))]
 
 
 for(i in 1:length(nms)){
@@ -27,10 +30,18 @@ for(i in 1:length(nms)){
 
 
 df.obj <- data.frame(obj.plot[[1]][[2]])
+df.sp.vio <- data.frame(obj.plot[[1]][[3]])
+df.sp.vio$HCR <- nms[1]
 
 
 for(i in 2:length(nms)){
   df.obj <- rbind(df.obj, obj.plot[[i]][[2]])
+  
+  tmp <- obj.plot[[i]][[3]]
+  tmp$HCR <- nms[i]
+  
+  df.sp.vio <- rbind(df.sp.vio, tmp)
+  
 }
  
 indicators <- unique(df.obj$indicator)
@@ -97,6 +108,30 @@ p1.sp<- ggplot(df.sp, aes(x = HCR,y = value, factor=season))+
 p1.sp
 
 
+sp.vio.plot <- reshape2::melt(df.sp.vio[df.sp.vio$year >2018,],id.vars = c('run','HCR','country','year'), measure.vars = 1:3,
+                   variable.name = 'season', value.name = 'exploitation')
+
+levels(sp.vio.plot$season) <- c('Apr-Jun','July-Sept','Oct-Dec')
+
+sp.vio.plot$exploitation <- 1/sp.vio.plot$exploitation # Inverted in the calculation for some reason 
+sp.vio.plot$exploitation[sp.vio.plot$exploitation > 1] <- NA
+sp.vio.plot$HCR <- factor(sp.vio.plot$HCR, levels = names(ls)[pidx])
+
+dodge <- position_dodge(width = 0.5)
+
+
+p.v <- ggplot(sp.vio.plot, aes(x = HCR, y = exploitation, factor = season, fill = HCR))+
+  geom_violin(position = dodge)+
+  geom_boxplot(width=0.15, col = 'black', outlier.shape = NA, position = dodge)+
+  scale_fill_manual(values = cols)+
+  facet_wrap(~country, dir='v', ncol = 2)+
+  theme(legend.position = 'none',
+        axis.text.x = element_text(angle = 90, vjust = 0.5))+
+  scale_x_discrete(name = '')+  
+  scale_y_continuous(name = '')+
+  coord_cartesian(ylim = c(0,0.6))
+
+
 if(plotexp == TRUE){
 png(paste(plotfolder,'objective_bars.png', sep = ''), width = 20, height =20, res = 400, unit = 'cm')
 print(p1)
@@ -105,6 +140,11 @@ dev.off()
 png(paste(plotfolder,'sp_objective_bars.png'), width = 20, height =20, res = 400, unit = 'cm')
 print(p1.sp)
 dev.off()
+
+png(paste(plotfolder,'sp_violin.png'), width = 20, height =10, res = 400, unit = 'cm')
+print(p.v)
+dev.off()
+
 }  
 
 # Do violin plots as well
@@ -120,12 +160,12 @@ for(i in 2:length(nms)){
 }
 
 # Save the violin data to run in a seperate file 
-obj.plot.v$HCR <- factor(obj.plot.v$HCR, levels = nms)
+obj.plot.v$HCR <- factor(obj.plot.v$HCR, levels = nms[pidx])
 
 save(obj.plot.v,file = paste(results,'violindata.Rdata', sep =''))
 
 source('plotViolin.R')
-p.vio <- plotViolin(paste(results,'violindata.Rdata', sep = ''))
+p.vio <- plotViolin(paste(results,'violindata.Rdata', sep = ''), cols)
 # cols <- PNWColors::pnw_palette('Starfish',n = length(nms), type = 'discrete')
 # 
 # 
@@ -195,7 +235,8 @@ p3 <- ggplot(df.catch, aes(x = year, y = med*1e-6, color = run))+geom_line(size 
 #  geom_ribbon(aes(ymin = p5*1e-6, ymax = p95*1e-6), linetype = 2, fill = alpha(alpha =0.2, colour = cols))+
   scale_color_manual(values=cols[1:length(unique(df.catch$run))])+scale_y_continuous(name = 'Catch (million tonnes)')+
   geom_line(aes(y = p5*1e-6, color = run), linetype = 2)+geom_line(aes(y = p95*1e-6, color = run), linetype = 2)+
-  coord_cartesian(ylim = c(0,1.5))
+  coord_cartesian(ylim = c(0,1.5))+
+  theme(legend.position = c(0.1,0.8), legend.title = element_blank())
 
 p3
 
@@ -223,7 +264,8 @@ p4 <- ggplot(df.ams[-rm.idx,], aes(x = year, y = med, color = run))+geom_line(si
   #  geom_ribbon(aes(ymin = p5, ymax = p95, color = run), linetype = 2, fill = NA)+
   scale_color_manual(values=cols)+scale_y_continuous(name = 'Average age in survey')+
   geom_line(aes(y = p5, color = run), linetype = 2)+geom_line(aes(y = p95, color = run), linetype = 2)+
-  theme(legend.title = element_blank())
+  theme(legend.title = element_blank(),
+        legend.position = c(0.1,0.9))
 
 if(plotexp == TRUE){
   png(paste(plotfolder,'total_average_age_surv.png'), width = 12, height =8, res = 400, unit = 'cm')
@@ -285,7 +327,7 @@ df.SSB$run <- factor(df.SSB$run, levels = nms[pidx])
 
 p6 <- ggplot(df.SSB, aes(x = year, y = med.can*1e-6))+geom_line(color = 'red', size = 1.2)+
   geom_line(aes(y = med.US*1e-6), color = 'blue', size = 1.2)+
-  theme_classic()+scale_y_continuous(name ='SSB (m tonnes)\nmidyear')+facet_wrap(~run, scale = 'free')+  
+  theme_classic()+scale_y_continuous(name ='SSB (m tonnes)\nmidyear')+facet_wrap(~run)+  
   theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))+
   geom_ribbon(aes(ymin = p5.can*1e-6, ymax = p95.can*1e-6), fill = alpha('red', alpha = 0.2), linetype = 0)+
   geom_ribbon(aes(ymin = p5.US*1e-6, ymax = p95.US*1e-6), fill = alpha('blue', alpha = 0.2), linetype = 0)
@@ -465,8 +507,10 @@ p12<- ggplot(df.SSB, aes(x = year, y = med, color = run, fill = run))+
   geom_line(aes(y = p5), linetype =2, size = 1.2)+
   scale_color_manual(values= cols[1:length(nms)])+
   theme_classic()+scale_y_continuous(name ='Total SSB/SSB0')+
-  coord_cartesian(ylim  = c(0,2.5))+
-  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))+
+  coord_cartesian(ylim  = c(0,4))+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5),
+        legend.position = c(0.2,.8),
+        legend.title = element_blank())+
   #geom_ribbon(aes(ymin = p5, ymax = p95), linetype = 0)+
   scale_fill_manual(values= alpha(cols[1:length(nms)], alpha = 0.2))+
   geom_hline(aes(yintercept = 1), color = 'black', linetype = 2)

@@ -31,109 +31,6 @@ SSBass <- vars$SSB
 SSB.ss3 <- mod$derived_quants$Value[grep('SSB_1966', mod$derived_quants$Label):grep('SSB_2018', mod$derived_quants$Label)]
 R.ss <- mod$derived_quants$Value[grep('Recr_1966', mod$derived_quants$Label):grep('Recr_2018', mod$derived_quants$Label)]
 
-plot(df$years,SSBass)
-lines(df$years,SSB.ss3)
-
-plot(df$years, R.ss, log = 'y')
-lines(df$years,vars$R)
-
-# Compare selectivity in year 1993
-selyear <- 2010
-plot(df$age,vars$selectivity_save[,which(df$years == selyear)])
-idx <- which(mod$ageselex$Yr == selyear & mod$ageselex$Factor == 'Asel')
-lines(df$age,as.numeric(mod$ageselex[idx,8:28]), col = 'red')
-
-
-plot(df$years,df$Catchobs/obj$report()$Catch)
-
-
-
-# Compare surveys 
-plot(df$years,vars$Surveyobs, xlim = c(1990, 2020))
-lines(mod$cpue$Yr,mod$cpue$Exp, type = 'l')
-points(mod$cpue$Yr, mod$cpue$Obs, col = 'red')
-
-# See N at age 
-Ninit <- mod$natage[mod$natage$Era == 'INIT' & mod$natage$`Beg/Mid` == 'B',]
-N.ss <- mod$natage[mod$natage$Era == 'TIME' & mod$natage$`Beg/Mid` == 'B',]
-ix <- 13:33 # ages in the df above 
-# First year 
-yr <- 2010
-
-df.N <- data.frame(N = c(as.numeric(N.ss[N.ss$Yr == yr,ix]), vars$N_beg[,which(df$years == yr)]),
-                   model = c(rep('ss', df$nage),rep('tmb', df$nage)), age = rep(df$age,2))
-
-ggplot(df.N, aes(x= age, y = N, color = model))+geom_line()
-
-# Initial distribution 
-df.N <- data.frame(N = c(as.numeric(Ninit[,ix]), vars$Nzero),
-                   model = c(rep('ss', df$nage),rep('tmb', df$nage)), age = rep(df$age,2))
-
-ggplot(df.N, aes(x= age, y = N, color = model))+geom_line()
-
-# Compare age distribution in catch 
-ac.tmb <- as.data.frame(t(vars$age_catch_est))
-colnames(ac.tmb) <-paste(1:15)
-ac.tmb$year <- df$years
-ac.tmb.plot <- melt(ac.tmb, id.vars = 'year', variable.name = 'age')
-ac.tmb.plot <- ac.tmb.plot[ac.tmb.plot$year %in% df$years[df$flag_catch == 1],]
-
-
-age.ss <- mod$agedbase[mod$agedbase$Fleet == 1,]
-age.ss.plot <- data.frame(year = age.ss$Yr, value = age.ss$Exp, age = age.ss$Bin)
-
-ac.ss3 <- as.data.frame(t(df$age_catch))
-colnames(ac.ss3) <-paste(1:15)
-ac.ss3$year <- df$years
-ac.ss3.plot <- melt(ac.ss3, id.vars = 'year', variable.name = 'age')
-ac.ss3.plot <- ac.ss3.plot[ac.ss3.plot$year %in% df$years[df$flag_catch == 1],]
-
-yr <- 1970
-
-df.N <- data.frame(N = c(as.numeric(N.ss[N.ss$Yr == yr,ix]), vars$N_beg[,which(df$years == yr)]),
-                   model = c(rep('ss', df$nage),rep('tmb', df$nage)), age = rep(df$age,2))
-
-ggplot(df.N, aes(x= age, y = N, color = model))+geom_line()+scale_y_log10()
-
-
-ggplot(ac.tmb.plot[ac.tmb.plot$year == yr,],aes(x= as.numeric(age), y = value))+
-  geom_line(col = 'red')+
-  geom_point(data =age.ss.plot[age.ss.plot$year == yr,])#+
-  
-
-# Compare the total catch at age 
-caa <- mod$catage[mod$catage$Era == 'TIME',]
-yr <- 1966
-ix <- 11:31
-
-
-df.c<- data.frame(N = c(as.numeric(caa[caa$Yr == yr,ix]), vars$CatchNAge[,which(df$years == yr)]),
-                   model = c(rep('ss', df$nage),rep('tmb', df$nage)), age = rep(df$age,2))
-
-
-ggplot(df.c, aes(x= age, y = N, color = model))+geom_line()
-
-
-ggplot(ac.tmb.plot[ac.tmb.plot$year == yr,],aes(x= as.numeric(age), y = value))+
-  geom_line(col = 'red')+
-  geom_point(data =age.ss.plot[age.ss.plot$year == yr,])#+
-# Compare age distribution in survey
-ac.tmb <- as.data.frame(t(vars$age_survey_est))
-colnames(ac.tmb) <-paste(1:15)
-ac.tmb$year <- df$years
-ac.tmb.plot <- melt(ac.tmb, id.vars = 'year', variable.name = 'age')
-ac.tmb.plot <- ac.tmb.plot[ac.tmb.plot$year %in% df$years[df$flag_survey == 1],]
-
-
-age.sssurvey <- mod$agedbase[mod$agedbase$Fleet == 2 & mod$agedbase$Yr %in% df$years[df$flag_survey == 1],]
-age.ss_survey.plot <- data.frame(year = age.sssurvey$Yr, value = age.sssurvey$Exp, age = age.sssurvey$Bin)
-
-
-ggplot(ac.tmb.plot,aes(x= as.numeric(age), y = value))+geom_line(col = 'red')+geom_point(data =age.ss_survey.plot)+
-  facet_wrap(~year)
-
-ggplot(ac.tmb.plot[ac.tmb.plot$age == 1,], aes(x= year, y = value))
-
 
 lower <- obj$par-Inf
 
@@ -166,19 +63,14 @@ source('getUncertainty.R')
 df$nyear <- length(years)
 df$year <- years
 
-SSB <- getUncertainty('SSB',df)
-F0 <- getUncertainty('Fyear',df)
-Catch <- getUncertainty('Catch',df)
-Surveyobs <- getUncertainty('Surveyobs',df)
-R <- getUncertainty('R',df)
-surveyselec.est <- getUncertainty('surveyselc', df)
-catchselec.est <- getUncertainty('catchselec', df)
-SSB0 <- getUncertainty('SSBzero', df)
-
-
-SSB$name <- SSB$name
-SSB$min <- SSB$min
-SSB$max <- SSB$max
+SSB <- getUncertainty('SSB',df,sdrep)
+F0 <- getUncertainty('Fyear',df,sdrep)
+Catch <- getUncertainty('Catch',df,sdrep)
+Surveyobs <- getUncertainty('Surveyobs',df,sdrep)
+R <- getUncertainty('R',df,sdrep)
+surveyselec.est <- getUncertainty('surveyselc', df,sdrep)
+catchselec.est <- getUncertainty('catchselec', df,sdrep)
+SSB0 <- getUncertainty('SSBzero', df,sdrep)
 
 
 #png('Figures/SSB_survey_mid.png', width = 16, height = 12, unit = 'cm', res =400)

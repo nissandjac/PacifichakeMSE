@@ -1,9 +1,9 @@
 plotValues <- function(est, data, name){
   
 df.plot <- est 
-df.plot$value <- 'estimated'
+df.plot$model <- 'estimated'
 
-data.tmp <- data.frame(name = data$y, SE = NA, min = NA, max = NA, year = data$x, value = 'observed')
+data.tmp <- data.frame(value = data$y, SE = NA, min = NA, max = NA, year = data$x, model = 'observed')
   
 df.plot <- rbind(df.plot, data.tmp)
   

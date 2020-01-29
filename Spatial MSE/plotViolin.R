@@ -1,4 +1,4 @@
-plotViolin <-function(data){
+plotViolin <-function(data, cols){
   
   library(ggplot2)
   library(cowplot)
@@ -8,14 +8,14 @@ plotViolin <-function(data){
   df <- obj.plot.v # 
   
   
-  cols <- PNWColors::pnw_palette('Starfish',n = length(unique(df$HCR)), type = 'discrete')
+  #cols <- PNWColors::pnw_palette('Starfish',n = length(unique(df$HCR)), type = 'discrete')
   
   # Remove the 5th and 5th percentiles from df
   vars <- unique(df$variable)
 
   for(i in 1:length(vars)){
     idxtmp <- which(df$variable == vars[i])
-    valstmp <- quantile(df$value[idxtmp], probs = c(0.01,0.99))
+    valstmp <- quantile(df$value[idxtmp], probs = c(0.00,1))
 
     rmtmp <- which(df$value[idxtmp] < valstmp[1] | df$value[idxtmp] > valstmp[2])
 

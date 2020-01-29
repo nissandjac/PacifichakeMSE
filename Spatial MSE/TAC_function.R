@@ -1,6 +1,7 @@
 ### Calculate the estimated vs realized TAC 
 library(ggplot2)
 library(scales)
+library(reshape2)
 source('load_data_seasons.R')
 source('getSelec.R')
 source('load_files.R')
@@ -74,7 +75,7 @@ df.plot$TAC.HCR <- df.plot$TAC
 
 df.plot.w <- melt(df.plot[,-4], id.vars = 'TAC', value.name = 'Quota', variable.name = 'HCR')
 nhcr <- unique(df.plot.w$HCR)
-cols <- RColorBrewer::brewer.pal(length(unique(df.plot.w$HCR)),'Dark2')
+cols <- PNWColors::pnw_palette('Starfish',n = 4, type = 'discrete')
 
 
 df.plot.w$HCR <- factor(df.plot.w$HCR, levels = c("TAC.HCR", "TAC.historical", "TAC.realized",
@@ -84,7 +85,7 @@ df.plot.w$HCR <- factor(df.plot.w$HCR, levels = c("TAC.HCR", "TAC.historical", "
 
 p1 <- ggplot(df.plot.w, aes(x= TAC*1e-3, y = Quota*1e-3, color = HCR))+geom_line(linetype = 2, size = 0.8)+
   scale_y_continuous('Catch \n(thousand tonnes)')+scale_color_manual(values = c('black',cols[1:3]),
-                                                                     labels = c('HCR','historical','realized','floor'))+
+                                                                     labels = c('base scenario','historical','realized','floor'))+
   scale_x_continuous('Harvest control rule')+ coord_cartesian(ylim=c(0, 800), xlim = c(0,1000))+
   geom_point(data = df.tac,aes(x=AssessTac*1e-3, y = Realized*1e-3), color = alpha(cols[2],0.5))+
   geom_point(data = df.tac,aes(x=AssessTac*1e-3,y = TAC*1e-3), color = alpha(cols[1],0.5))+
