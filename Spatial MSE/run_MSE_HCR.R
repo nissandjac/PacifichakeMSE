@@ -22,7 +22,7 @@ parms.true <- getParameters_OM(TRUE,df) # Load parameters from assessment
 
 time <- 1
 yrinit <- df$nyear
-nruns <- 1000
+nruns <- 100
 seeds <- floor(runif(n = nruns, min = 1, max = 1e6))
 ### Run the OM and the EM for x number of years in the MSE 
 ### Set targets for harvesting etc 
@@ -57,7 +57,7 @@ for (i in 1:nruns){
   
 }
 # # # #
-save(ls.save,file = 'results/HCR/MSE_HCR.Rdata')
+save(ls.save,file = 'results/HCR/MSE_A_HCR.Rdata')
 
 # ### Loop MSE's with different errors in future survey and recruitment
 ls.save <- list()
@@ -79,7 +79,7 @@ for (i in 1:nruns){
   
 }
 # # # # 
-save(ls.save,file = 'results/HCR/MSE_JMC.Rdata')
+save(ls.save,file = 'results/HCR/MSE_B_JMC.Rdata')
 
 ls.save <- list()
 ls.converge <- matrix(0, nruns)
@@ -102,7 +102,7 @@ for (i in 1:nruns){
   
 }
 # # # # 
-save(ls.save,file = 'results/HCR/MSE_realized.Rdata')
+save(ls.save,file = 'results/HCR/MSE_C_realized.Rdata')
 
 
 ls.save <- list()
@@ -126,6 +126,6 @@ for (i in 1:nruns){
   
 }
 # # # # 
-save(ls.save,file = 'results/HCR/MSE_Floor50.Rdata')
+save(ls.save,file = 'results/HCR/MSE_D_Floor50.Rdata')
 
 
