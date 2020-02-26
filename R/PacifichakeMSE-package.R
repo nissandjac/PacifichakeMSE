@@ -9,7 +9,7 @@
 #' @docType package
 #' @author Nis S Jacobsen, Ian G. Taylor, Kristin Marshall, Aaron Berger 
 #' Package maintainer: Nis Jacobsen <nissandjac@@gmail.com>
-#' @references r4ss on GitHub: \url{https://github.com/PacifichakeMSE}
+#' @references PacifichakeMSE on GitHub: \url{https://github.com/PacifichakeMSE}
 #' @import dplyr
 #' 
 #' @examples
