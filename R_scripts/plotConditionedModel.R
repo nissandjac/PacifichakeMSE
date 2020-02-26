@@ -10,22 +10,22 @@ library(cowplot)
 library(r4ss)
 library(RColorBrewer)
 # Survey age distribution 
-source('calcMeanAge.R')
+source('R/calcMeanAge.R')
 # 2018 assessment
-mod <- SS_output(paste(getwd(),'/data/SS32018/', sep =''), printstats=FALSE, verbose = FALSE)
+mod <- SS_output('inst/extdata/SS32018/', printstats=FALSE, verbose = FALSE) # Read the true selectivity 
 
 
 plot.figures = TRUE# Set true for printing to file 
 # Run the simulation model
-source('load_files_OM.R')
-source('load_files.R')
-source('runfuture_OM.R')
-source('run_agebased_model_true_catch.R')
-assessment <- read.csv('data/assessment_MLE.csv')
+source('R/load_files_OM.R')
+source('R/load_files.R')
+source('R/runfuture_OM.R')
+source('R/run_agebased_model_true_catch.R')
+assessment <- read.csv('inst/extdata/assessment_MLE.csv')
 
 #assessment <- assessment[assessment$year > 1965 &assessment$year < 2018 ,]
-survey.obs <- read.csv('data/survey_country.csv')
-survey.ac <- read.csv('data/ac_survey_country.csv')
+survey.obs <- read.csv('inst/extdata/survey_country.csv')
+survey.ac <- read.csv('inst/extdata/ac_survey_country.csv')
 
 nparms <- 5
 movemax.parms <- seq(0.1,0.9, length.out = nparms)
@@ -53,7 +53,7 @@ AC.catch.tot <- AC.survey.tot <- array(NA, dim = c(df$age_maxage,df$nyear,
                                                    df$nspace,length(movemax.parms)*length(movefifty.parms)))
 survey.ml <- array(NA,dim = c(df$nyear,df$nspace,length(movemax.parms)*length(movefifty.parms)))
 
-catch.ac.obs <- read.csv('data/age_in_catch_obs.csv')
+catch.ac.obs <- read.csv('inst/extdata/age_in_catch_obs.csv')
 standard.move <- runfuture_OM(df, 1)
 standard.move_sel <- runfuture_OM(df.2, 1)
 
@@ -74,7 +74,7 @@ p.AC.survey
 
 
 if(plot.figures == TRUE){
-  png(filename = 'Figs/AC_survey.png', width = 16, height = 12, res = 400, units = 'cm')
+  png(filename = 'results/Figs/AC_survey.png', width = 16, height = 12, res = 400, units = 'cm')
   print(p.AC.survey)
   dev.off()
 }
@@ -105,7 +105,7 @@ p1 <- ggplot(df.plot.sim, aes( x=  years, y = survey*1e-6, color = country))+the
 p1
 
 if(plot.figures == TRUE){
-  png(filename = 'Figs/Biomass_survey.png', width = 16, height = 12, res = 400, units = 'cm')
+  png(filename = 'results/Figs/Biomass_survey.png', width = 16, height = 12, res = 400, units = 'cm')
   print(p1)
   dev.off()
 }
@@ -118,7 +118,7 @@ if(plot.figures == TRUE){
 #           labels = 'auto')
 # dev.off()
 if(plot.figures == TRUE){
-  png(filename = 'Figs/Biomass_survey.png', width = 16, height = 10, res = 400, units = 'cm')
+  png(filename = 'results/Figs/Biomass_survey.png', width = 16, height = 10, res = 400, units = 'cm')
   print(plot_grid(p1,p.AC.survey, nrow = 2, align = 'hv', 
                   label_x = c(0.95,0.95),
                   label_y = c(0.98,0.98),
@@ -157,13 +157,13 @@ p2
 
 if(plot.figures == TRUE){
   
-  png(file = 'Figs/survey_total.png', width = 8*2, height = 7, res =400, units = 'cm')
+  png(file = 'results/Figs/survey_total.png', width = 8*2, height = 7, res =400, units = 'cm')
   print(p2)
   dev.off()
   
 }
 
-catch.ac.obs <- read.csv('data/age_in_catch_obs.csv')
+catch.ac.obs <- read.csv('inst/extdata/age_in_catch_obs.csv') # This data is outdated (last year is wrong) 
 catch.model <- data.frame(year = rep(df$years,2),
                           Country = rep(c('US','Can'), each = df$nyear),
                           am = c(standard.move$catch.AC[,2],standard.move$catch.AC[,1]))
@@ -193,7 +193,7 @@ p.AC.catch
 
 
 if(plot.figures == TRUE){
-  png(filename = 'Figs/AC_catch.png', width = 16, height = 8, res = 400, units = 'cm')
+  png(filename = 'results/Figs/AC_catch.png', width = 16, height = 8, res = 400, units = 'cm')
   print(p.AC.catch)
   dev.off()
   
@@ -202,7 +202,7 @@ catch.model <- data.frame(year = rep(df$years,2),
                           Country = rep(c('USA','Can'), each = df$nyear),
                           am = c(standard.move$catch.AC[,2],standard.move$catch.AC[,1]))
 # Check the fleet age comps again 
-ac.data <- read.csv('data/FleetAgeComp_byNation.csv' )
+ac.data <- read.csv('inst/extdata/FleetAgeComp_byNation.csv' )
 names(ac.data)[names(ac.data) %in% paste('X',1:15, sep ='')] <- 1:15
 
 ac.tot <- melt(ac.data, id.vars = c('Year', 'Country','Nsamples'), measure.vars = paste(1:15),
@@ -215,11 +215,11 @@ ac.df <- ac.tot %>%
   
 p.AC.catch <- ggplot(ac.df, aes(x = Year, y = ac, color = Country))+geom_line(size =1.2, linetype = 2)+
   geom_line(data = catch.model, aes(x = year, y= am, color = Country))+
-  scale_color_manual(values = rep(c('darkred','blue4'), each = 1))+
+  scale_color_manual(values = rep(c('darkred','blue4'), each = 2))+
   scale_y_continuous('mean age in catch')
   
 if(plot.figures == TRUE){
-  png(filename = 'Figs/AC_catch.png', width = 16, height = 8, res = 400, units = 'cm')
+  png(filename = 'results/Figs/AC_catch.png', width = 16, height = 8, res = 400, units = 'cm')
   print(p.AC.catch)
   dev.off()
   
@@ -237,7 +237,7 @@ surv.tot <- survey.obs %>%
 # Fishing mortality per area 
 
 F.plot <- apply(sim.data$Fout, FUN = sum, MARGIN = c(1,3))
-F0.assessment <- read.csv('data/F0.csv')
+F0.assessment <- read.csv('inst/extdata/F0.csv')
 
 df.F <- data.frame(year = rep(df$years,2),
                    F0 = c(F.plot[,1],F.plot[,2]),
@@ -252,7 +252,7 @@ p2
 
 
 if(plot.figures == TRUE){
-  png(filename = 'Figs/F_country.png', width = 16, height = 12, res = 400, units = 'cm')
+  png(filename = 'results/Figs/F_country.png', width = 16, height = 12, res = 400, units = 'cm')
   print(p2)
   dev.off()
   
@@ -278,7 +278,7 @@ p.move <-ggplot(df.movement, aes(x = age, y = movement, color = country))+facet_
 p.move
 
 if(plot.figures == TRUE){
-  png(filename = 'Figs/Movement.png', width = 16, height = 12, res = 400, units = 'cm')
+  png(filename = 'results/Figs/Movement.png', width = 16, height = 12, res = 400, units = 'cm')
   print(p.move)
   dev.off()
   
