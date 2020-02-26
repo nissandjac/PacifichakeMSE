@@ -1,11 +1,12 @@
 
-fn_plot_MSE <- function(ls, sim.data, plotfolder = '/Figs/newplots/', plotexp = TRUE, pidx = NA){
-
-# 
-# ls <- ls.plots 
-# plotfolder <- results
-# Do some calculations for survey and catch age comps 
-
+fn_plot_MSE <- function(ls, sim.data, plotfolder = 'results/Figs/newplots/', plotexp = TRUE, pidx = NA){
+  
+  #' @ls List of different MSE runs to plot 
+  #' @sim.data Initial operating model
+  #' @plotfolder folder where the figures are saved 
+  #' @plotexp True or false whether the figures are being printed or saved to disc 
+  #' @pidx index indicating the order of the figures on the plots
+  
   
   
 nms <- names(ls)  
