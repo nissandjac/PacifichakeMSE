@@ -31,7 +31,7 @@ load_data_seasons <- function(nseason = 4,
   #' @moveslope Slope of the movement function
   #' @selectivity_change flag for selectivity changing in the future 0
   #' @yr_future Create dummy data for future years
-  
+  #' @sel_hist should historical selectivity changes be implemeneted 
   
   if(is.na(moveinit)){
     if(nspace == 2){
