@@ -1,8 +1,5 @@
 plotViolin <-function(data, cols){
   
-  library(ggplot2)
-  library(cowplot)
-  
   ### load the data 
   load(data)
   df <- obj.plot.v # 
@@ -25,7 +22,7 @@ plotViolin <-function(data, cols){
   
   ## Do some adjustments to fix the scales 
   
-  p.v <- ggplot(df, aes(x = HCR, y = value, fill = HCR))+
+  p.v <- ggplot2::ggplot(df, aes(x = HCR, y = value, fill = HCR))+
     geom_violin()+
     geom_boxplot(width=0.15, col = 'black', outlier.shape = NA)+
     scale_fill_manual(values = cols)+

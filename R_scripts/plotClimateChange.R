@@ -1,4 +1,4 @@
-source('load_data_seasons.R')
+source('R/load_data_seasons.R')
 library(reshape2)
 library(cowplot)
 library(RColorBrewer)
