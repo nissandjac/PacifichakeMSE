@@ -1,5 +1,6 @@
 getParameters_csv <- function(trueparms = TRUE){
-
+#' Export EM parameters for TMB based on csv files with parameters
+#' @trueparms Use csv or stochastic parameters 
   
 
   if (trueparms == TRUE){

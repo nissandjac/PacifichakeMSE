@@ -1,9 +1,8 @@
 ### Run the OM in X amount of years 
 
 ###### Initialize the operating model ###### 
-source('load_files_OM.R')
-source('load_data_seasons_future.R')
-assessment <- read.csv('data/asssessment_MLE.csv')
+source('R/load_files_OM.R')
+assessment <- read.csv('inst/extdata/asssessment_MLE.csv')
 plot.figures = FALSE # Set true for printing to file 
 # Run the simulation model
 
@@ -12,9 +11,9 @@ nruns <- 1000
 
 seedz <- floor(runif(n = nruns,min = 1, max = 1e6))  # Random of a random 
 yr.future <- 50
-df <- load_data_seasons_future(yr.future)
+df <- load_data_seasons(nseason = 1, nspace = 1, bfuture = 1, logSDR = 1,yr_future = yr.future)
 
-Catch.future <- c(df$Catch, rep(206507.8, yr.future))
+Catch.future <- c(df$Catch, rep(0, yr.future))
 df$Catch <- Catch.future
 
 sim.data <- run.agebased.true.catch(df,seed =  12345)

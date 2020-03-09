@@ -1,5 +1,7 @@
 df_lists <- function(ls.save, nms){
-
+#' Convert list of MSE data to plotable data frame 
+#' @ls.save List of MSE run 
+#' @nms name of run for plotting
 source('calcMeanAge.R')
   
   

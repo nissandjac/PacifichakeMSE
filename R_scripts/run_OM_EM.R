@@ -9,20 +9,20 @@ require(scales)
 require(RColorBrewer)
 library(r4ss)
 
-compile("runHakeassessment.cpp")
-dyn.load(dynlib("runHakeassessment"))
-source('load_files.R')
-source('load_files_OM.R')
-source('fnMSE.R')
-source('hake_objectives.R')
+compile("src/runHakeassessment.cpp")
+dyn.load(dynlib("src/runHakeassessment"))
+source('R/load_files.R')
+source('R/load_files_OM.R')
+source('R/fnMSE.R')
+source('R/hake_objectives.R')
 set.seed(12345)
-mod <- SS_output(paste(getwd(),'/data/SS32018/', sep =''), printstats=FALSE, verbose = FALSE)
+mod <- SS_output('inst/extdata/SS32018/', printstats=FALSE, verbose = FALSE)
 
 SSB.ss3 <- mod$derived_quants$Value[grep('SSB_1966', mod$derived_quants$Label):grep('SSB_2018', mod$derived_quants$Label)]
 R.ss <- mod$derived_quants$Value[grep('Recr_1966', mod$derived_quants$Label):grep('Recr_2018', mod$derived_quants$Label)]
 
 ###### Load the data to run the MSE ######
-df <- load_data_seasons(nseason = 1, nspace = 1,
+df <- load_data_seasons(nseason = 4, nspace = 2,
                         nsurvey= 2, movemax = 0.4) # Prepare data for operating model 
 #df$surveyseason <- 2
 
@@ -34,7 +34,7 @@ sim.data <- run.agebased.true.catch(df)
 
 # Plott stuff 
 
-parms <- getParameters_OM(trueparms = TRUE, df = df)
+parms <- getParameters_OM(trueparms = TRUE, mod = mod,df = df)
 
 ##  Create a data frame to send to runHakeassessment 
 
@@ -55,7 +55,7 @@ plot(df$years,rowSums(sim.data$SSB.weight))
 lines(df$years,SSB.ss3*0.5)
 lines(df$years,reps$SSB, col = 'red')
 # Survey 
-plot(df$years,sim.data$survey.true, type ='l')
+plot(df$years,colSums(sim.data$survey.true), type ='l')
 points(df$years[df$survey_x == 2],df$survey[df$survey_x == 2,])
 points(df$years[df$survey_x == 2],df.new$survey[df$survey_x == 2], col = 'red')
 points(df$years[df$survey_x == 2],reps$Surveyobs[df$survey_x == 2], col = 'green')
@@ -128,7 +128,7 @@ df.ss <- data.frame(year = rep(df$years,3),
                             reps$SSB,
                             SSB.ss3*0.5
                     ),
-                    model = rep(c('TMB est','TMB SS3 parms','SS3'), each = df$tEnd)
+                    model = rep(c('TMB est','TMB SS3 parms','SS3'), each = length(df$years))
 )
 
 cols <- PNWColors::pnw_palette('Starfish', n = length(unique(df.ss$model)))

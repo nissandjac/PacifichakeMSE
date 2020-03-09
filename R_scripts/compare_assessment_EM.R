@@ -15,11 +15,18 @@ years <- df$years
 
 #U[2,] <- 0.01
 parms.ss <- getParameters_ss(FALSE, mod)
+parms.ss$F0 <- parms.ss$F0*0
 parms.ss.true <- getParameters_ss(TRUE,mod)
 
 compile("src/runHakeassessment.cpp")
 dyn.load(dynlib("src/runHakeassessment"))
 obj <-MakeADFun(df,parms.ss,DLL="runHakeassessment")#, )
+
+reps <- obj$report()
+
+plot(reps$SSB, type ='l')
+
+
 obj.true <- MakeADFun(df,parms.ss.true, DLL='runHakeassessment')
 vars <- obj.true$report() # 
 

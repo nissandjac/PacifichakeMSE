@@ -1,11 +1,12 @@
 df_lists_OM <- function(ls.save, nms){
-  source('calcMeanAge.R')
+  #' Convert OM MSE data to plotable data frame 
+  #' @ls.save list of MSE results 
+  #' @nms name of run 
+  
   
   nruns <- length(ls.save)
   nfailed <- rep(1, nruns)
 
-  
-  source('calcMeanAge.R')
   
   if(dim(ls.save[[1]]$SSB)[2] == 1){
     

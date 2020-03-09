@@ -1,5 +1,7 @@
 getParameters_ss <- function(trueparms = TRUE, mod = NA){
-  
+  #' Export EM parameters for TMB based on csv files with parameters
+  #' @trueparms Use csv or stochastic parameters 
+  #' @mod r4ss object containing parameters 
   
   
   if (trueparms == TRUE){
