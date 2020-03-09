@@ -73,7 +73,6 @@ run_multiple_MSEs <- function(simyears = NULL,seeds = 12345, TAC = 1, df = NA,
 
   for (time in 1:simyears){
 
-
     year <- yrinit+(time-1)
     #print(year.future[year])
 
@@ -231,7 +230,7 @@ run_multiple_MSEs <- function(simyears = NULL,seeds = 12345, TAC = 1, df = NA,
 
     if(time == 1){
       F0 <- rowSums(sim.data$Fout)
-      Rdev <- parms$Rin
+      Rdev <- parms$Rin[1:(length(parms$Rin)-1)]
     }else{
       F0 <- c(F0,0.2)
       Rdev <- c(Rdev, 0)
