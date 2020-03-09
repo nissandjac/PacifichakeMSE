@@ -1,19 +1,21 @@
 #' Calculate the fishing mortality based on catch
 #'
-#' @param Etemp
-#' @param Btemp
-#' @param Mseason
-#' @param Fsel
-#' @param Ntemp
-#' @param w_catch
-#' @param method
+#' @param Etemp Catch
+#' @param Btemp Biomass
+#' @param Mseason natural mortality
+#' @param Fsel Fisheries selectivity
+#' @param Ntemp Numbers at age
+#' @param w_catch weight at age
+#' @param method 'Pope' or 'Hybrid' method?
 #'
 #' @return
 #' @export
 #'
 #' @examples
+#'
 getF <- function(Etemp,Btemp, Mseason, Fsel, Ntemp, w_catch = w_catch,method = 'Pope'){
 
+  # This function can be simplified significantly
 
 if(Etemp > 0){
 

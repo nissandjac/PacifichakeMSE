@@ -2,7 +2,7 @@
 % Please edit documentation in R/load_data_seasons.R
 \name{load_data_seasons}
 \alias{load_data_seasons}
-\title{Load data frame containing all the parameters from the hake operating model}
+\title{Title}
 \usage{
 load_data_seasons(
   nseason = 4,
@@ -22,6 +22,45 @@ load_data_seasons(
   sel_hist = 1
 )
 }
+\arguments{
+\item{nseason}{number of seasons}
+
+\item{nspace}{number of spatial areas}
+
+\item{myear}{last year of historical simulations}
+
+\item{movemaxinit}{max movement rate}
+
+\item{movefiftyinit}{age at 50percent max movement rate}
+
+\item{nsurvey}{survey frequency}
+
+\item{logSDR}{recruitment deviations}
+
+\item{bfuture}{bias adjustment in the future}
+
+\item{moveout}{fraction of individuals that travel south in the last season}
+
+\item{movesouth}{fraction of individuals that move south during the year}
+
+\item{moveinit}{Initial distribution of fish}
+
+\item{moveslope}{Slope of the movement function}
+
+\item{selectivity_change}{should selectivity change?}
+
+\item{yr_future}{how many years into the future should there be stochastic values}
+
+\item{sel_hist}{use historical selectivity?}
+}
+\value{
+
+}
 \description{
+Title
+}
+\examples{
+df <- load_data_seasons(nseason = 12, nspace = 2)
+
 Load data frame containing all the parameters from the hake operating model
 }

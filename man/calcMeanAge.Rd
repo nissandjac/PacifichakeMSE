@@ -2,10 +2,22 @@
 % Please edit documentation in R/calcMeanAge.R
 \name{calcMeanAge}
 \alias{calcMeanAge}
-\title{Calculate mean age in the population}
+\title{Title}
 \usage{
 calcMeanAge(agemat, maxage)
 }
+\arguments{
+\item{agemat}{matrix of ages}
+
+\item{maxage}{maximum age to include in the calculation}
+}
+\value{
+
+}
 \description{
+Title
+}
+\examples{
+p <- calcMeanAge(matrix(1,1), 5)
 Calculate mean age in the population
 }

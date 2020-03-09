@@ -1,61 +1,68 @@
+#' Title
+#'
+#' @param sim.data Operating model
+#' @param df input parameters
+#' @param history Use historical real data or OM data?
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
 create_TMB_data <- function(sim.data, df,
                              history = FALSE){
-  #' Prepare OM data in a data list suitabke for the TMB EM model
-  #' @sim.data Operating model object
-  #' @history Use historical real data (TRUE) or OM output (FALSE)
-  # Organize a dataframe to run 'runhakeasssement.tmb'
-  
+
   years <- df$years
   tEnd <- length(df$years)
   nyear <- tEnd
   age <- df$age
-  
-  
+
+
   nage <- length(age)
   msel <- rep(1,nage)
   # Maturity
   mat <- df$Matsel
-  
-  # weight at age 
+
+  # weight at age
   wage_catch <- df$wage_catch
   wage_survey <- df$wage_survey
   wage_ssb <- df$wage_ssb
   wage_mid <- df$wage_mid
-  
-  
+
+
   if (max(years) > 2018){
-  wage_catch <- cbind(wage_catch,wage_catch[,1])  
-  wage_survey <- cbind(wage_survey,wage_survey[,1])  
-  wage_mid <- cbind(wage_mid,wage_mid[,1])  
-  wage_ssb <- cbind(wage_ssb,wage_ssb[,1])  
-  
+  wage_catch <- cbind(wage_catch,wage_catch[,1])
+  wage_survey <- cbind(wage_survey,wage_survey[,1])
+  wage_mid <- cbind(wage_mid,wage_mid[,1])
+  wage_ssb <- cbind(wage_ssb,wage_ssb[,1])
+
   }
    # names(wage)[3:23] <- 0:20
   # wage <- melt(wage, id = c("year", "fleet"), value.name = 'growth', variable.name = 'age')
-  
+
   # Catch
   catch <- sim.data$Catch
-  
+
   # Survey abundance
   df.survey <- sim.data$survey
   Fnew <- sim.data$F0
-  
-  # Bias adjustment factor 
-  # Parameters 
+
+  # Bias adjustment factor
+  # Parameters
   b <- df$b
   #b <- matrix(1, tEnd)
-  
-  # Load parameters from the assessment 
+
+  # Load parameters from the assessment
   ### h prior distribution
   hmin <- 0.2
   hmax <- 1
   hprior <- 0.777
   hsd <- 0.117
-  
+
   mu <- (hprior-hmin)/(hmax-hmin)
   tau <- ((hprior-hmin)*(hmax-hprior))/hsd^2-1
 
-  
+
   df.new <-list(      #### Parameters #####
                   wage_catch = (wage_catch),
                   wage_survey = (wage_survey),
@@ -69,9 +76,9 @@ create_TMB_data <- function(sim.data, df,
                   age = age,
                   selYear = df$selidx,
                   years = years,
-                  tEnd = length(years), # The extra year is to initialize 
+                  tEnd = length(years), # The extra year is to initialize
                   logQ = df$logQ,   # Analytical solution
-                  # Selectivity 
+                  # Selectivity
                   flag_sel = df$flag_sel,
                   Smin = df$Smin,
                   Smin_survey = df$Smin_survey,
@@ -84,7 +91,7 @@ create_TMB_data <- function(sim.data, df,
                   ss_survey = df$ss_survey,
                   flag_survey =df$flag_survey,
                   age_survey = sim.data$age_comps_surv,
-                  age_maxage = df$age_maxage, # Max age for age comps 
+                  age_maxage = df$age_maxage, # Max age for age comps
                   # Catch
                   Catchobs = sim.data$Catch,
                   #                Catchobs = catch$Fishery, # Convert to kg
@@ -101,15 +108,15 @@ create_TMB_data <- function(sim.data, df,
                   Bprior= tau*mu,
                   Aprior = tau*(1-mu),
                   survey_err = df$survey_err
-                
+
   )
-  
-  
+
+
   # Add historical data if needed
-  
+
   if(history == TRUE){
     df.new$survey <- df$survey[,1]
-    
+
     if(length(df$survey[,1]) != length(df.new$survey)){
       stop('data not available')
     }
@@ -121,8 +128,8 @@ create_TMB_data <- function(sim.data, df,
   }
 
 
-  
-  
+
+
   return(df.new)
-  
+
 }

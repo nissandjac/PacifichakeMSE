@@ -234,7 +234,7 @@ run_multiple_MSEs <- function(simyears = NULL,seeds = 12345, TAC = 1, df = NA,
       Rdev <- parms$Rin
     }else{
       F0 <- c(F0,0.2)
-      Rdev <- Rdev#c(Rdev, 0)
+      Rdev <- c(Rdev, 0)
     }
 
 

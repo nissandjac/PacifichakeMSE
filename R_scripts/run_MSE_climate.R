@@ -1,5 +1,8 @@
 library(TMB)
 library(r4ss)
+library(devtools)
+
+
 mod <- SS_output('inst/extdata/SS32018', printstats=FALSE, verbose = FALSE) # Read the true selectivity
 compile("src/runHakeassessment.cpp")
 dyn.load(dynlib("src/runHakeassessment"))
@@ -7,18 +10,6 @@ dyn.load(dynlib("src/runHakeassessment"))
 seedz <- 12345
 set.seed(seedz)
 
-source('R/load_data_seasons.R')
-source('R/getParameters_OM.R')
-source('R/run_agebased_model_true_Catch.R')
-source('R/getSelec.R')
-source('R/getF.R')
-source('R/run_multiple_MSEs.R')
-source('R/create_TMB_data.R')
-source('R/plotValues.R')
-source('R/getRefpoint.R')
-source('R/Check_Identifiable_vs2.R')
-# source('load_files_OM.R')
-# source('run_multiple_MSEs.R')
 df <- load_data_seasons(nseason = 4, nspace = 2, bfuture = 0.5) # Prepare data for operating model
 
 parms.true <- getParameters_OM(TRUE,mod, df) # Load parameters from assessment

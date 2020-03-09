@@ -7,11 +7,26 @@
 getF(Etemp, Btemp, Mseason, Fsel, Ntemp, w_catch = w_catch, method = "Pope")
 }
 \arguments{
-\item{method}{}
+\item{Etemp}{Catch}
+
+\item{Btemp}{Biomass}
+
+\item{Mseason}{natural mortality}
+
+\item{Fsel}{Fisheries selectivity}
+
+\item{Ntemp}{Numbers at age}
+
+\item{w_catch}{weight at age}
+
+\item{method}{'Pope' or 'Hybrid' method?}
 }
 \value{
 
 }
 \description{
 Calculate the fishing mortality based on catch
+}
+\examples{
+
 }

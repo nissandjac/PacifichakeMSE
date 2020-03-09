@@ -1,12 +1,12 @@
 #' C
 #'
-#' @param par.fixed
-#' @param df
-#' @param SSBy
-#' @param Fin
-#' @param Nend
-#' @param TAC
-#' @param Vreal
+#' @param par.fixed estimated parameters
+#' @param df data frame of non-estimated parameters
+#' @param SSBy Spawning biomass
+#' @param Fin Fishing mortality
+#' @param Nend Numbers at age
+#' @param TAC which TAC function to use?
+#' @param Vreal Vulnerable biomass in OM
 #'
 #' @return
 #' @export

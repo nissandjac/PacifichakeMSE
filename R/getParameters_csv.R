@@ -1,19 +1,27 @@
+#' Title
+#'
+#' @param trueparms true of random parameter initialization
+#'
+#' @return
+#' @export
+#'
+#' @examples
 getParameters_csv <- function(trueparms = TRUE){
 #' Export EM parameters for TMB based on csv files with parameters
-#' @trueparms Use csv or stochastic parameters 
-  
+#
+
 
   if (trueparms == TRUE){
-    
+
     initN <- read.csv('inst/extdata/Ninit_MLE.csv')[,1]
     Rdev <- read.csv('inst/extdata/Rdev_MLE.csv')[,1]
     PSEL <- as.matrix(read.csv('inst/extdata/p_MLE.csv'))
     F0 <- assessment$F0
-    
+
     # assessment <- read.csv('data/asssessment_MLE.csv')
     # assessment <- assessment[assessment$year > 1965 &assessment$year < 2018 ,]
-    
-    parms <- list( # Just start all the simluations with the same initial conditions 
+
+    parms <- list( # Just start all the simluations with the same initial conditions
       logRinit = 14.5614,
       logh = log(0.861909),
       logMinit = log(0.213686),
@@ -22,28 +30,28 @@ getParameters_csv <- function(trueparms = TRUE){
       logphi_catch = log(0.8276),
       #logphi_survey = log(11.33),
       # logSDF = log(0.1),
-      # Selectivity parameters 
+      # Selectivity parameters
       psel_fish = c(2.486490, 0.928255,0.392144,0.214365,0.475473),
       psel_surv = c(0.568618,-0.216172,0.305286 ,0.373829),
       initN = rev(initN),
       Rin = Rdev[1:(length(Rdev)-1)],
       PSEL = PSEL,
       F0 = F0
-      
+
 )
 
 
 
 }else{
-  
+
   PSEL <- matrix(0,5, length(1991:years[length(years)]))
   initN <- rep(0,df$nage-1)
   F0 <- rep(0.01, df$tEnd)
   Rdev <- rep(0, df$tEnd-1)
   #Rdev <- read.csv('Rdev_MLE.csv')[,1]
-  
-   
-  parms <- list( # Just start all the simluations with the same initial conditions 
+
+
+  parms <- list( # Just start all the simluations with the same initial conditions
       logRinit = 16,
       logh = log(0.7),
       logMinit = log(0.3),
@@ -52,7 +60,7 @@ getParameters_csv <- function(trueparms = TRUE){
       logphi_catch = log(0.8276),
      # logphi_survey = log(11.33),
       # logSDF = log(0.1),
-      # Selectivity parameters 
+      # Selectivity parameters
       psel_fish = c(2.486490, 0.928255,0.392144,0.214365,0.475473),
       psel_surv = c(0.568618,-0.216172,0.305286 ,0.373829),
       initN = initN,
@@ -63,5 +71,5 @@ getParameters_csv <- function(trueparms = TRUE){
 
 
 }
- return(parms) 
+ return(parms)
 }

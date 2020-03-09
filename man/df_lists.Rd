@@ -2,10 +2,21 @@
 % Please edit documentation in R/df_lists.R
 \name{df_lists}
 \alias{df_lists}
-\title{Convert list of MSE data to plotable data frame}
+\title{Title}
 \usage{
 df_lists(ls.save, nms)
 }
+\arguments{
+\item{ls.save}{list of MSE data}
+
+\item{nms}{names of runs}
+}
+\value{
+
+}
 \description{
-Convert list of MSE data to plotable data frame
+Title
+}
+\examples{
+
 }

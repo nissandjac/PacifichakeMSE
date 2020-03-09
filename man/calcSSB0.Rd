@@ -2,10 +2,25 @@
 % Please edit documentation in R/calcSSB0.R
 \name{calcSSB0}
 \alias{calcSSB0}
-\title{Calculate the unfished spawning biomass}
+\title{Title}
 \usage{
 calcSSB0(R0, Z, nage, mat)
 }
+\arguments{
+\item{R0}{Unfished recruitment}
+
+\item{Z}{Total mortality}
+
+\item{nage}{number of ages}
+
+\item{mat}{maturity ogive}
+}
+\value{
+
+}
 \description{
-Calculate the unfished spawning biomass
+Title
+}
+\examples{
+
 }

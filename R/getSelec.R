@@ -1,10 +1,19 @@
+
+#' Title
+#'
+#' @param age vector of ages
+#' @param psel selectivity parameters
+#' @param Smin Minimum caught age
+#' @param Smax maximum age to model seperately
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
+
 getSelec <- function(age,psel, Smin, Smax){
-#' Calculate selectivity 
-#' @age ages 
-#' @psel selectivity parameters 
-#' @Smin minimum age for selectivity 
-#' @Smax maximum age for selectivty (constant after this age)
-  
+#
 #psel <- pseltmp
 psel<- c(0,psel)
 
@@ -21,7 +30,7 @@ for(j in 1:nage){ # Find the  selectivity
   }
   if (age[j] == Smin){
     ptmp = psel[j-Smin]
-    
+
 
     selectivity[j] = exp(ptmp-pmax)
 

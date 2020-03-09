@@ -7,7 +7,8 @@
 #' @export
 #'
 #' @examples
-#' plotViolin('data/fundata.Rdata', c('black','green)) # plots black and green data
+#' colors = c('black','green')
+#' plotViolin(folder, colors) # plots black and green data
 #'
 plotViolin <-function(data, cols){
   #

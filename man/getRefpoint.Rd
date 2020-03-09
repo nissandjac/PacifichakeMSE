@@ -7,7 +7,19 @@
 getRefpoint(par.fixed, df, SSBy, Fin = NA, Nend, TAC = 1, Vreal = NA)
 }
 \arguments{
-\item{Vreal}{}
+\item{par.fixed}{estimated parameters}
+
+\item{df}{data frame of non-estimated parameters}
+
+\item{SSBy}{Spawning biomass}
+
+\item{Fin}{Fishing mortality}
+
+\item{Nend}{Numbers at age}
+
+\item{TAC}{which TAC function to use?}
+
+\item{Vreal}{Vulnerable biomass in OM}
 }
 \value{
 

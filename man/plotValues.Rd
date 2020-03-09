@@ -19,3 +19,6 @@ plotValues(est, data, name)
 \description{
 Plot the estimated or derived value from a TMB model
 }
+\examples{
+
+}
