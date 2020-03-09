@@ -2,10 +2,19 @@
 % Please edit documentation in R/calcSE.R
 \name{calcSE}
 \alias{calcSE}
-\title{Return the standard error of spawning stock biomass from EM in regards to the OM}
+\title{Title}
 \usage{
 calcSE(ls.MSE)
 }
+\arguments{
+\item{ls.MSE}{list of MSE results}
+}
+\value{
+
+}
 \description{
+Title
+}
+\examples{
 Return the standard error of spawning stock biomass from EM in regards to the OM
 }

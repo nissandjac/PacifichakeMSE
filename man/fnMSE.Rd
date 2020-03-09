@@ -2,10 +2,29 @@
 % Please edit documentation in R/fnMSE.R
 \name{fnMSE}
 \alias{fnMSE}
-\title{Wrapper function to run MSE}
+\title{Title}
 \usage{
 fnMSE(df, simyears = 30, TAC = 1, seeds = NA, nruns = 100)
 }
+\arguments{
+\item{df}{parameters}
+
+\item{simyears}{number of years to simulate}
+
+\item{TAC}{which harvest control rule to use}
+
+\item{seeds}{seed}
+
+\item{nruns}{number of iterations}
+}
+\value{
+
+}
 \description{
-Wrapper function to run MSE
+Title
+}
+\examples{
+
+fnMSE(df, nruns = 15) # Run MSE with 15 iterations
+
 }

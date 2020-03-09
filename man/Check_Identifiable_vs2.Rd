@@ -2,10 +2,19 @@
 % Please edit documentation in R/Check_Identifiable_vs2.R
 \name{Check_Identifiable_vs2}
 \alias{Check_Identifiable_vs2}
-\title{Check parameter convergence in TMB model}
+\title{Title}
 \usage{
 Check_Identifiable_vs2(obj)
 }
+\arguments{
+\item{obj}{TMB object}
+}
+\value{
+Return estimated parameters and uncertainty
+}
 \description{
-Check parameter convergence in TMB model
+Title
+}
+\examples{
+
 }

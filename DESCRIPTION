@@ -12,7 +12,9 @@ Imports:
     gridExtra,
     cowplot,
     dplyr
-Description: What the package does (one paragraph).
+Depends: TMB, RcppEigen
+LinkingTo: TMB, RcppEigen
+Description: Management strategy evaluation framework with a spatial OM.
 License: What license it uses
 Encoding: UTF-8
 LazyData: true

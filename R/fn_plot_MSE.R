@@ -1,15 +1,20 @@
 
+#' Title
+#'
+#' @param ls list of MSE runs
+#' @param sim.data baseline operating model
+#' @param plotfolder folder to save figures
+#' @param plotexp print figures to disk?
+#' @param pidx order of runs in figures
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
 fn_plot_MSE <- function(ls, sim.data, plotfolder = 'results/Figs/newplots/', plotexp = TRUE, pidx = NA){
-  #' Produce several MSE plots  
-  #' @ls List of different MSE runs to plot 
-  #' @sim.data Initial operating model
-  #' @plotfolder folder where the figures are saved 
-  #' @plotexp True or false whether the figures are being printed or saved to disc 
-  #' @pidx index indicating the order of the figures on the plots
-  
-  
-  
-nms <- names(ls)  
+
+nms <- names(ls)
 
 if(all(is.na(pidx))){
   pidx <- 1:length(nms)
@@ -25,7 +30,7 @@ cols <- cols[1:(length(nms))]
 ptm <- proc.time()
 
 for(i in 1:length(nms)){
-  
+
 
   obj.plot[[i]] <- hake_objectives(ls[[i]],sim.data$SSB0, move = 1)
   obj.plot[[i]][[2]]$HCR <- nms[i]
@@ -43,19 +48,19 @@ df.sp.vio$HCR <- nms[1]
 
 for(i in 2:length(nms)){
   df.obj <- rbind(df.obj, obj.plot[[i]][[2]])
-  
+
   tmp <- obj.plot[[i]][[3]]
   tmp$HCR <- nms[i]
-  
+
   df.sp.vio <- rbind(df.sp.vio, tmp)
-  
+
 }
- 
+
 indicators <- unique(df.obj$indicator)
 
 df.obj2 <- df.obj %>%
-  filter(indicator %in% indicators[1:6])  
-# df.obj2$indicator=factor(df.obj2$indicator, 
+  filter(indicator %in% indicators[1:6])
+# df.obj2$indicator=factor(df.obj2$indicator,
 #                          levels=c('SSB <0.10 SSB0',
 #                                   'S>0.10<0.4S0',
 #                                   'S>0.4S0',
@@ -67,17 +72,17 @@ df.sp <- df.obj %>%
   filter(indicator %in% indicators[7:12])
 
 # df.sp$indicator=factor(df.sp$indicator,
-#                        levels=c('Canada TAC/V spr', 
-#                                 'Canada TAC/V sum', 
+#                        levels=c('Canada TAC/V spr',
+#                                 'Canada TAC/V sum',
 #                                 'Canada TAC/V fall',
-#                                 'US TAC/V spr', 
-#                                 'US TAC/V sum', 
+#                                 'US TAC/V spr',
+#                                 'US TAC/V sum',
 #                                 'US TAC/V fall'))
 
 df.sp$country=c(rep('Canada',3), rep('US',3))
 df.sp$season=c(rep(c('Apr-Jun','July-Sept','Oct-Dec')))
 
-# Fix the y scales 
+# Fix the y scales
 dummy <- data.frame(indicator = 'long term catch', value = c(0.2,0.3), HCR = 'ymin')
 
 
@@ -85,7 +90,7 @@ dummy <- data.frame(indicator = 'long term catch', value = c(0.2,0.3), HCR = 'ym
 #   df.obj2[df.obj2$HCR != 'move_0' & df.obj2$indicator == indicators[i],]$value <-
 #     df.obj2[df.obj2$HCR != 'move_0' & df.obj2$indicator == indicators[i],]$value/
 #     df.obj2[df.obj2$HCR == 'move_0' & df.obj2$indicator == indicators[i],]$value-1
-#   
+#
 # }
 
 #df.obj2$value[df.obj2$HCR == 'move_0'] <- 0
@@ -94,7 +99,7 @@ df.obj2$HCR <- factor(df.obj2$HCR, levels = names(ls)[pidx])
 #df.obj2$ind2=factor(df.obj2$indicator, as.character(df.obj2$indicator))
 
 p1 <- ggplot2::ggplot(df.obj2, aes(x = HCR,y = value))+geom_bar(stat = 'identity', aes(fill = HCR))+
-  scale_x_discrete(name = '')+  
+  scale_x_discrete(name = '')+
   scale_y_continuous(name = '')+
   scale_fill_manual(values = cols[1:length(unique(df.obj$HCR))])+
   facet_wrap(~indicator, scales = 'free_y', ncol = 3)+
@@ -105,7 +110,7 @@ p1
 
 p1.sp<- ggplot2::ggplot(df.sp, aes(x = HCR,y = value, factor=season))+
   geom_bar(stat = 'identity', aes(fill = season), position="dodge2")+
-  scale_x_discrete(name = '')+  
+  scale_x_discrete(name = '')+
   scale_y_continuous(name = '')+
   scale_fill_manual(values = cols[1:length(unique(df.obj$HCR))])+
   facet_wrap(~country, scales = 'fixed', ncol = 2, dir='v')+
@@ -119,8 +124,8 @@ sp.vio.plot <- reshape2::melt(df.sp.vio[df.sp.vio$year >2018,],id.vars = c('run'
                    variable.name = 'season', value.name = 'exploitation')
 
 levels(sp.vio.plot$season) <- c('Apr-Jun','July-Sept','Oct-Dec')
-# 
-# sp.vio.plot$exploitation <- 1/sp.vio.plot$exploitation # Inverted in the calculation for some reason 
+#
+# sp.vio.plot$exploitation <- 1/sp.vio.plot$exploitation # Inverted in the calculation for some reason
 sp.vio.plot$exploitation[sp.vio.plot$exploitation > 1] <- NA
 sp.vio.plot$HCR <- factor(sp.vio.plot$HCR, levels = names(ls)[pidx])
 
@@ -134,7 +139,7 @@ p.v <- ggplot2::ggplot(sp.vio.plot, aes(x = HCR, y = exploitation, factor = seas
   facet_wrap(~country, dir='v', ncol = 2)+
   theme(legend.position = 'none',
         axis.text.x = element_text(angle = 90, vjust = 0.5))+
-  scale_x_discrete(name = '')+  
+  scale_x_discrete(name = '')+
   scale_y_continuous(name = '', limit = c(0,0.5))
 p.v
 
@@ -151,7 +156,7 @@ png(paste(plotfolder,'sp_violin.png'), width = 20, height =15, res = 400, unit =
 print(p.v)
 dev.off()
 
-}  
+}
 
 # Do violin plots as well
 source('hake_violin.R')
@@ -165,7 +170,7 @@ for(i in 2:length(nms)){
   obj.plot.v <- rbind(obj.plot.v, df.tmp)
 }
 
-# Save the violin data to run in a seperate file 
+# Save the violin data to run in a seperate file
 obj.plot.v$HCR <- factor(obj.plot.v$HCR, levels = nms[pidx])
 
 save(obj.plot.v,file = paste(results,'violindata.Rdata', sep =''))
@@ -173,10 +178,10 @@ save(obj.plot.v,file = paste(results,'violindata.Rdata', sep =''))
 source('plotViolin.R')
 p.vio <- plotViolin(paste(results,'violindata.Rdata', sep = ''), cols)
 # cols <- PNWColors::pnw_palette('Starfish',n = length(nms), type = 'discrete')
-# 
-# 
-# ## Do some adjustments to fix the scales 
-# 
+#
+#
+# ## Do some adjustments to fix the scales
+#
 # p.v <- ggplot(obj.plot.v, aes(x = HCR, y = value, fill = HCR))+
 #   geom_violin()+
 #   geom_boxplot(width=0.15, col = 'black', outlier.shape = NA)+
@@ -203,7 +208,7 @@ ls.data <- list()
 
 
 for(i in 1:length(nms)){
- ls.data[[i]] <- df_lists(ls[[i]], nms[i]) 
+ ls.data[[i]] <- df_lists(ls[[i]], nms[i])
 
  }
 
@@ -220,7 +225,7 @@ df.all$run <- factor(df.all$run, levels = nms[pidx])
 df.catch$run <- factor(df.catch$run, levels = nms[pidx])
 
 p2 <- ggplot2::ggplot(df.all, aes(x = year, y = med.can*1e-6))+geom_line(color = 'darkred', size = 1.5)+
-  geom_line(aes(y = med.US*1e-6), color = 'darkblue', size = 1.5)+theme_classic()+scale_y_continuous(name ='SSB (million tonnes)')+facet_wrap(~run)+  
+  geom_line(aes(y = med.US*1e-6), color = 'darkblue', size = 1.5)+theme_classic()+scale_y_continuous(name ='SSB (million tonnes)')+facet_wrap(~run)+
   theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))+
   geom_ribbon(aes(ymin = p5.can*1e-6, ymax = p95.can*1e-6), fill = alpha('red', alpha = 0.2), linetype = 0)+
   geom_ribbon(aes(ymin = p5.US*1e-6, ymax = p95.US*1e-6), fill = alpha('blue', alpha = 0.2), linetype = 0)
@@ -231,10 +236,10 @@ if(plotexp == TRUE){
   png(paste(plotfolder,'SSB_country.png'), width = 16, height =18, res = 400, unit = 'cm')
   print(p2)
   dev.off()
-}  
+}
 
 
-#yl <- 
+#yl <-
 
 
 p3 <- ggplot2::ggplot(df.catch, aes(x = year, y = med*1e-6, color = run))+geom_line(size = 1.5)+
@@ -250,8 +255,8 @@ if(plotexp == TRUE){
   png(paste(plotfolder,'total_catch.png'), width = 16, height =12, res = 400, unit = 'cm')
   print(p3)
   dev.off()
-}  
-# 
+}
+#
 df.ams <- data.frame(ls.data[[1]][[3]]$amsplot)
 df.amc <- data.frame(ls.data[[1]][[3]]$amcplot)
 
@@ -293,7 +298,7 @@ if(plotexp == TRUE){
 }
 
 if(plotexp == TRUE){
-  
+
   p4 <- ggplot2::ggplot(df.ams[-rm.idx,], aes(x = year, y = med, color = run))+geom_line(size = 2)+
     #  geom_ribbon(aes(ymin = p5, ymax = p95, color = run), linetype = 2, fill = NA)+
     scale_color_manual(values=cols)+scale_y_continuous(name = 'Average age\n in survey')+
@@ -301,17 +306,17 @@ if(plotexp == TRUE){
     theme(legend.position = c(0.1,0.9),
           legend.title = element_blank())+
     coord_cartesian(ylim = c(2.5,10))
-  
-  
+
+
   p5 <- ggplot2::ggplot(df.amc, aes(x = year, y = med, color = run))+geom_line(size = 2)+
     #  geom_ribbon(aes(ymin = p5, ymax = p95, color = run), linetype = 2, fill = NA)+
     scale_color_manual(values=cols)+scale_y_continuous(name = 'Average age\n in catch')+
     geom_line(aes(y = p5, color = run), linetype = 2)+geom_line(aes(y = p95, color = run), linetype = 2)+
     theme(legend.position = 'none')+
     coord_cartesian(ylim = c(2.5,10))
-  
-  
-  
+
+
+
   png(paste(plotfolder,'total_average_ags.png'), width = 16, height =10, res = 400, unit = 'cm')
   print(cowplot::plot_grid(plotlist = list(p4,p5), ncol = 2, labels = c('a','b')))
   dev.off()
@@ -326,14 +331,14 @@ for(i in 2:length(nms)){
 }
 
 
-### SSB in the middle of the year 
+### SSB in the middle of the year
 df.SSB$run <- factor(df.SSB$run, levels = nms[pidx])
 
 
 
 p6 <- ggplot2::ggplot(df.SSB, aes(x = year, y = med.can*1e-6))+geom_line(color = 'red', size = 1.2)+
   geom_line(aes(y = med.US*1e-6), color = 'blue', size = 1.2)+
-  theme_classic()+scale_y_continuous(name ='SSB (m tonnes)\nmidyear')+facet_wrap(~run)+  
+  theme_classic()+scale_y_continuous(name ='SSB (m tonnes)\nmidyear')+facet_wrap(~run)+
   theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))+
   geom_ribbon(aes(ymin = p5.can*1e-6, ymax = p95.can*1e-6), fill = alpha('red', alpha = 0.2), linetype = 0)+
   geom_ribbon(aes(ymin = p5.US*1e-6, ymax = p95.US*1e-6), fill = alpha('blue', alpha = 0.2), linetype = 0)
@@ -345,8 +350,8 @@ if(plotexp == TRUE){
   png(paste(plotfolder,'SSB_mid_year.png'), width = 16, height =10, res = 400, unit = 'cm')
   print(p6)
   dev.off()
-}  
-# 
+}
+#
 df.ams.space <- data.frame(ls.data[[1]][[3]]$ams.space)
 
 for(i in 2:length(nms)){
@@ -371,8 +376,8 @@ if(plotexp == TRUE){
   print(p7)
   dev.off()
 }
-# 
-# # 
+#
+# #
 df.amc.space <- data.frame(ls.data[[1]][[3]]$amc.space)
 
 for(i in 2:length(nms)){
@@ -391,23 +396,23 @@ p8 <- ggplot2::ggplot(df.amc.space[df.amc.space$year > 2014,],aes(x = year, y = 
         strip.background =element_rect(fill="white"))
 
 p8
-# 
+#
 if(plotexp == TRUE){
   png(paste(plotfolder,'average_age_catch_country.png'), width = 12, height =8, res = 400, unit = 'cm')
   print(p8)
   dev.off()
 }
 
-# How accurate is the SSB estimation 
+# How accurate is the SSB estimation
 source('calcSE.R')
 
-# Rebuild into nice figs 
+# Rebuild into nice figs
 qfunc <- function(df, name){
-  
-  
-  df.quant <- df %>% 
-    group_by(year) %>% 
-    summarise(E5 = median(SE.SSB, na.rm = TRUE), 
+
+
+  df.quant <- df %>%
+    group_by(year) %>%
+    summarise(E5 = median(SE.SSB, na.rm = TRUE),
               E95 = quantile(SE.SSB,0.95, na.rm = TRUE),
               E05 = quantile(SE.SSB,0.05, na.rm = TRUE)
     )
@@ -430,7 +435,7 @@ if(plotexp == TRUE){
   png(paste(plotfolder,'SE_SSB.png'), width = 12, height =8, res = 400, unit = 'cm')
   print(p9)
   dev.off()
-}  
+}
 
 if(plotexp == FALSE){
   #grid.arrange(p3,p6,p7,p9)
@@ -438,32 +443,32 @@ if(plotexp == FALSE){
 }
 
 
-# Plot Fishing mortality 
+# Plot Fishing mortality
 df.F0 <- data.frame(ls.data[[1]][[3]]$F0)
 
   # if(all(is.na(df.F0))) == 0){
   #   for(i in 2:length(nms)){
   #     df.F0 <- rbind(df.F0, ls.data[[i]][[3]]$F0)
   #   }
-  #   
-    
-    ### SSB in the middle of the year 
-df.F0$run <- factor(df.F0$run, levels = nms[pidx])    
+  #
+
+    ### SSB in the middle of the year
+df.F0$run <- factor(df.F0$run, levels = nms[pidx])
 
     p10 <- ggplot2::ggplot(df.F0, aes(x = year, y = med.can))+geom_line(color = 'red')+
       geom_line(aes(y = med.us), color = 'blue')+coord_cartesian(ylim = c(0,1))+
-      theme_classic()+scale_y_continuous(name ='Exploitation rate')+facet_wrap(~run)+  
+      theme_classic()+scale_y_continuous(name ='Exploitation rate')+facet_wrap(~run)+
       theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))+
       geom_ribbon(aes(ymin = p5.can, ymax = p95.can), fill = alpha('red', alpha = 0.2), linetype = 0)+
       geom_ribbon(aes(ymin = p5.us, ymax = p95.us), fill = alpha('blue', alpha = 0.2), linetype = 0)
-    
+
     p10
-    
+
     if(plotexp == TRUE){
       png(paste(plotfolder,'F0.png'), width = 12, height =16, res = 400, unit = 'cm')
       print(p10)
       dev.off()
-    }  
+    }
  # }
 # Plot realized catch
 df.catchq<- data.frame(ls.data[[1]][[3]]$Catch.q)
@@ -476,7 +481,7 @@ df.catchq$run <- factor(df.catchq$run, levels = nms[pidx])
 
 p11 <- ggplot2::ggplot(df.catchq, aes(x = year, y = med.can))+geom_line(color = 'red')+
   geom_line(aes(y = med.us), color = 'blue')+
-  theme_classic()+scale_y_continuous(name ='Catch/quota')+facet_wrap(~run)+  
+  theme_classic()+scale_y_continuous(name ='Catch/quota')+facet_wrap(~run)+
   coord_cartesian(ylim = c(0.6,1.1))+
   theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))+
   geom_ribbon(aes(ymin = p5.can, ymax = p95.can), fill = alpha('red', alpha = 0.2), linetype = 0)+
@@ -489,7 +494,7 @@ if(plotexp == TRUE){
   png(paste(plotfolder,'Realized_catch.png'), width = 12, height =16, res = 400, unit = 'cm')
   print(p11)
   dev.off()
-}  
+}
 
 
 
@@ -501,7 +506,7 @@ for(i in 2:length(nms)){
 }
 
 
-### SSB in the middle of the year 
+### SSB in the middle of the year
 df.SSB$med <- df.SSB$med/(sum(sim.data$SSB0))
 df.SSB$p5 <- df.SSB$p5/(sum(sim.data$SSB0))
 df.SSB$p95 <- df.SSB$p95/(sum(sim.data$SSB0))
@@ -528,7 +533,7 @@ if(plotexp == TRUE){
   png(paste(plotfolder,'SSB_total.png'), width = 16, height =12, res = 400, unit = 'cm')
   print(p12)
   dev.off()
-}  
+}
 
 
 p13 <- ggplot2::ggplot(df.catchq, aes(x = year, y = med.tot, color = run))+geom_line(size = 1.4)+
@@ -546,7 +551,7 @@ if(plotexp == TRUE){
   png(paste(plotfolder,'Catch_quota_tot.png'), width = 16, height =8, res = 400, unit = 'cm')
   print(p13)
   dev.off()
-}  
+}
 print(p13)
 
 

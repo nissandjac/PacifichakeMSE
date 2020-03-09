@@ -6,6 +6,7 @@
 #' @export
 #'
 #' @examples
+#'
 Check_Identifiable_vs2 = function( obj ){
 
     # Finite-different hessian

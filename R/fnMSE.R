@@ -1,11 +1,20 @@
-###### Initialize the operating model ###### 
+###### Initialize the operating model ######
+#' Title
+#'
+#' @param df parameters
+#' @param simyears number of years to simulate
+#' @param TAC which harvest control rule to use
+#' @param seeds seed
+#' @param nruns number of iterations
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
+#' fnMSE(df, nruns = 15) # Run MSE with 15 iterations
+#'
 fnMSE <- function(df, simyears = 30, TAC = 1, seeds = NA, nruns = 100){
-#' Wrapper function to run MSE 
-#' @df data frame of input data 
-#' @simyears future number of years to simulate
-#' @TAC determines which TAC to use 1) HCR, 2) historical, 3) realized, 4) floor 
-#' @seeds seed to use 
-#' @nruns number of MSE iterations 
 
 # Set the seed
 if(is.na(seeds)){
@@ -17,15 +26,15 @@ if(is.na(seeds)){
 time <- 1
 yrinit <- df$nyear
 seeds <- floor(runif(n = nruns, min = 1, max = 1e6))
-### Run the OM and the EM for x number of years in the MSE 
-### Set targets for harvesting etc 
+### Run the OM and the EM for x number of years in the MSE
+### Set targets for harvesting etc
 #
 
 year.future <- c(df$years,(df$years[length(df$years)]+1):(df$years[length(df$years)]+simyears))
 N0 <- NA
 sim.data <- run.agebased.true.catch(df) # Run the operating model until 2018
 
-simdata0 <- sim.data # The other one is gonna get overwritten. 
+simdata0 <- sim.data # The other one is gonna get overwritten.
 
 
 # ### Loop MSE's with different errors in future survey and recruitment
@@ -39,7 +48,7 @@ for (i in 1:nruns){
                                df))
   #tmp <- run_multiple_MSEs(simyears = 30, seeds[i])
   print(i)
-  
+
   if(is.list(tmp)){
     ls.save[[i]] <-tmp
     ls.converge[i] <- 1
@@ -48,8 +57,8 @@ for (i in 1:nruns){
     ls.converge[i] <- 0
     print('model not converged')
   }
-  
-  
+
+
 }
 
 return(list(MSE = ls.save,OM = sim.data))

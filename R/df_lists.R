@@ -1,26 +1,31 @@
+#' Title
+#'
+#' @param ls.save list of MSE data
+#' @param nms names of runs
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
 df_lists <- function(ls.save, nms){
-#' Convert list of MSE data to plotable data frame 
-#' @ls.save List of MSE run 
-#' @nms name of run for plotting
-source('calcMeanAge.R')
-  
-  
+
 nyears <- dim(ls.save[[1]][1]$Catch)[2]
 
 if(dim(ls.save[[1]][1]$Catch)[2] == 1){
   nyears <- dim(ls.save[[1]][1]$Catch)[1]
 }
-  
+
 if(dim(ls.save[[1]]$Catch)[2] == 1){
-    
+
 simyears <- nyears-(length(1966:2018))+1
 }else{
   simyears <- nyears-(length(1966:2018))+1
-  
+
 }
 
 yr <- 1966:(2018+simyears-1)
-  
+
 nruns <- length(ls.save)
 nfailed <- rep(1, nruns)
 
@@ -35,41 +40,41 @@ if(all(is.na(ls.save[[1]]))){
 
 for(i in 1:nruns){
   if(length(ls.save[[i]]) > 1){
-    
+
   if(i == 1){
-    
+
     if(dim(ls.save[[1]]$Catch)[2] == 1){
       Catch.us <- ls.save[[i]]$Catch*0.76
       Catch.can <- ls.save[[i]]$Catch*0.24
       Catch = ls.save[[i]]$Catch
-      
+
       # Allocated catch
       Catch.q.us <- rowSums(ls.save[[i]]$Catch.quota[,2,])
       Catch.q.can <- rowSums(ls.save[[i]]$Catch.quota[,1,])
       Catch.q = rowSums(ls.save[[i]]$Catch.quota)
     }else{
-      
+
       catchtmp <- apply(ls.save[[i]]$Catch, MARGIN = c(2,3), FUN = sum)
-      
+
       Catch = rowSums(catchtmp)
       Catch.us = catchtmp[,2]
       Catch.can = catchtmp[,1]
-      
+
       Catch.q = rowSums(ls.save[[i]]$Catch.quota)
       Catch.q.us = rowSums(ls.save[[i]]$Catch.quota[,2,])
       Catch.q.can = rowSums(ls.save[[i]]$Catch.quota[,1,])
-      
+
     }
-    
+
     source('calcMeanAge.R')
-    
-    
+
+
     if(is.null(ls.save[[i]]$F0)){
       ls.save[[i]]$F0 <- matrix(NA, length(yr),2)
     }
-    
-    ls.df <- data.frame(year = yr, 
-                        SSB.can = ls.save[[i]]$SSB[,1], 
+
+    ls.df <- data.frame(year = yr,
+                        SSB.can = ls.save[[i]]$SSB[,1],
                         SSB.US = ls.save[[i]]$SSB[,2],
                         SSBtot =  ls.save[[i]]$SSB[,1]+ls.save[[i]]$SSB[,2],
                         F0.can = ls.save[[i]]$F0[,1],
@@ -91,33 +96,33 @@ for(i in 1:nruns){
                         Catch.can = Catch.can,
                         F0.us = Catch.us/ls.save[[i]]$SSB.mid[,2],
                         F0.can = Catch.can/ls.save[[i]]$SSB.mid[,1])
-                        
+
   }else{
-    
+
     if(dim(ls.save[[i]]$Catch)[2] == 1){
       Catch.q.us <- ls.save[[i]]$Catch*0.76
       Catch.q.can <- ls.save[[i]]$Catch*0.24
       Catch = ls.save[[i]]$Catch
-      
+
     }else{
-      
+
       catchtmp <- apply(ls.save[[i]]$Catch, MARGIN = c(2,3), FUN = sum)
-      
+
       Catch = rowSums(catchtmp)
       Catch.us = catchtmp[,2]
       Catch.can = catchtmp[,1]
-      
+
       Catch.q = rowSums(ls.save[[i]]$Catch.quota)
       Catch.q.us = rowSums(ls.save[[i]]$Catch.quota[,2,])
       Catch.q.can = rowSums(ls.save[[i]]$Catch.quota[,1,])
-      
-      
+
+
     }
-      
+
       if(is.null(ls.save[[i]]$F0)){
         ls.save[[i]]$F0 <- matrix(NA, length(yr),2)
       }
-      
+
       ls.tmp <- data.frame(year = yr, SSB.can = ls.save[[i]]$SSB[,1], SSB.US = ls.save[[i]]$SSB[,2],
                            SSBtot =  ls.save[[i]]$SSB[,1]+ls.save[[i]]$SSB[,2],
                            F0.can = ls.save[[i]]$F0[,1],
@@ -140,7 +145,7 @@ for(i in 1:nruns){
                            F0.us = Catch.us/ls.save[[i]]$SSB.mid[,2],
                            F0.can = Catch.can/ls.save[[i]]$SSB.mid[,1])
       ls.df <- rbind(ls.df, ls.tmp)}
-    
+
   }
   else{
     nfailed[i] <- 0
@@ -149,45 +154,45 @@ for(i in 1:nruns){
 
 ggplot(ls.df, aes(x = year, y = Catch, color = run))+geom_line()+theme(legend.position = 'none')
 
-SSB.plotquant <- ls.df[ls.df$year > 2010,] %>% 
-  group_by(year) %>% 
-  summarise(med.can = median(SSB.can), 
+SSB.plotquant <- ls.df[ls.df$year > 2010,] %>%
+  group_by(year) %>%
+  summarise(med.can = median(SSB.can),
             p95.can = quantile(SSB.can, 0.95),
             p5.can = quantile(SSB.can,0.05),
-            med.US = median(SSB.US), 
+            med.US = median(SSB.US),
             p95.US = quantile(SSB.US, 0.95),
-            p5.US = quantile(SSB.US,0.05)) 
+            p5.US = quantile(SSB.US,0.05))
 SSB.plotquant$run <- nms
 
-SSB.plottot <- ls.df[ls.df$year > 2010,] %>% 
-  group_by(year) %>% 
+SSB.plottot <- ls.df[ls.df$year > 2010,] %>%
+  group_by(year) %>%
   summarise(med = median(SSBtot),
             avg = mean(SSBtot),
             p95 = quantile(SSBtot, 0.95),
-            p5 = quantile(SSBtot,0.05)) 
+            p5 = quantile(SSBtot,0.05))
 SSB.plottot$run <- nms
 
 
 
-SSB.plotmid <- ls.df[ls.df$year > 2010,] %>% 
-  group_by(year) %>% 
-  summarise(med.can = median(SSB.mid.can), 
+SSB.plotmid <- ls.df[ls.df$year > 2010,] %>%
+  group_by(year) %>%
+  summarise(med.can = median(SSB.mid.can),
             p95.can = quantile(SSB.mid.can, 0.95),
             p5.can = quantile(SSB.mid.can,0.05),
-            med.US = median(SSB.mid.us), 
+            med.US = median(SSB.mid.us),
             p95.US = quantile(SSB.mid.us, 0.95),
-            p5.US = quantile(SSB.mid.us,0.05)) 
+            p5.US = quantile(SSB.mid.us,0.05))
 SSB.plotmid$run <- nms
 
 
-Catch.plotquant <- ls.df[ls.df$year > 2010,] %>% 
-  group_by(year) %>% 
-  summarise(med = median(Catch), 
+Catch.plotquant <- ls.df[ls.df$year > 2010,] %>%
+  group_by(year) %>%
+  summarise(med = median(Catch),
             p95 = quantile(Catch, 0.95),
             p5 = quantile(Catch,0.05)
-            ) 
+            )
 Catch.plotquant$run <- nms
-# 
+#
 ams.plotquant <- ls.df[ls.df$year > 2010,] %>%
   group_by(year) %>%
   summarise(med = median(ams,na.rm = TRUE),
@@ -251,7 +256,7 @@ Catch.q <- ls.df[ls.df$year > 2010,] %>%
             med.tot = mean(Catch/Catch.q),
             p5.tot = quantile(Catch/Catch.q,0.05,na.rm = TRUE),
             p95.tot = quantile(Catch/Catch.q,0.95,na.rm = TRUE)
-            
+
   )
 Catch.q$run <- nms
 
@@ -260,10 +265,10 @@ ggplot(Catch.q, aes(x = year, y = med.can))+geom_line()+coord_cartesian(ylim = c
   geom_line(aes(y = p5.us), col = 'blue')
 
 return(list(
-  ls.df, 
-  nfailed, 
+  ls.df,
+  nfailed,
   list(
-              SSBplot = SSB.plotquant, 
+              SSBplot = SSB.plotquant,
               SSBmid = SSB.plotmid,
               SSBtot = SSB.plottot,
               Catchplot = Catch.plotquant,
@@ -273,7 +278,7 @@ return(list(
               ams.space = ams.space,
               F0 =F0.space,
               Catch.q = Catch.q
-            
+
     )
   )
 )

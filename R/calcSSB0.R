@@ -10,6 +10,7 @@
 #' @export
 #'
 #' @examples
+#'
 calcSSB0 <- function(R0,Z,nage, mat){
 
 

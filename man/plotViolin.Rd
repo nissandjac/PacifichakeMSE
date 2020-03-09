@@ -17,3 +17,8 @@ plotViolin(data, cols)
 \description{
 Title
 }
+\examples{
+colors = c('black','green')
+plotViolin(folder, colors) # plots black and green data
+
+}

@@ -2,10 +2,21 @@
 % Please edit documentation in R/plotSelectivity.R
 \name{plotSelectivity}
 \alias{plotSelectivity}
-\title{Function for plotting age specific fisheries selectivity}
+\title{Title}
 \usage{
 plotSelectivity(df.new, parameters)
 }
+\arguments{
+\item{df.new}{parameters and life history values}
+
+\item{parameters}{estimates parameters}
+}
+\value{
+
+}
 \description{
-Function for plotting age specific fisheries selectivity
+Title
+}
+\examples{
+
 }

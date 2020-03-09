@@ -8,6 +8,7 @@
 #' @export
 #'
 #' @examples
+#'
 plotValues <- function(est, data, name){
 
 df.plot <- est
