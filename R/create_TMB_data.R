@@ -1,5 +1,8 @@
 create_TMB_data <- function(sim.data, df,
                              history = FALSE){
+  #' Prepare OM data in a data list suitabke for the TMB EM model
+  #' @sim.data Operating model object
+  #' @history Use historical real data (TRUE) or OM output (FALSE)
   # Organize a dataframe to run 'runhakeasssement.tmb'
   
   years <- df$years

@@ -1,5 +1,10 @@
 getSelec <- function(age,psel, Smin, Smax){
-
+#' Calculate selectivity 
+#' @age ages 
+#' @psel selectivity parameters 
+#' @Smin minimum age for selectivity 
+#' @Smax maximum age for selectivty (constant after this age)
+  
 #psel <- pseltmp
 psel<- c(0,psel)
 

@@ -1,16 +1,16 @@
 library(TMB)
 compile("src/runHakeassessment.cpp")
-dyn.load(dynlib("runHakeassessment"))
+dyn.load(dynlib("src/runHakeassessment"))
 library(r4ss)
-mod <- SS_output(paste(getwd(),'/data/SS32018', sep =''), printstats=FALSE, verbose = FALSE) # Read the true selectivity 
+mod <- SS_output('inst/extdata/SS32018/', printstats=FALSE, verbose = FALSE) # Read the true selectivity 
 
 # Set the seed
 seedz <- 12345
 set.seed(seedz)
 
-source('load_files.R')
-source('load_files_OM.R')
-source('run_multiple_OMs.R')
+source('R/load_files.R')
+source('R/load_files_OM.R')
+source('R/run_multiple_OMs.R')
 nruns <- 1000
 seeds <- floor(runif(n = nruns, min = 1, max = 1e6))
 

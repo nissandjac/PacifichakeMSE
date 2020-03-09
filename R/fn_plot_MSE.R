@@ -1,6 +1,6 @@
 
 fn_plot_MSE <- function(ls, sim.data, plotfolder = 'results/Figs/newplots/', plotexp = TRUE, pidx = NA){
-  
+  #' Produce several MSE plots  
   #' @ls List of different MSE runs to plot 
   #' @sim.data Initial operating model
   #' @plotfolder folder where the figures are saved 

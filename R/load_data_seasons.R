@@ -16,7 +16,7 @@ load_data_seasons <- function(nseason = 4,
                               yr_future  = 0,
                               sel_hist = 1
                               ){
-  
+  #' Load data frame containing all the parameters from the hake operating model  
   #' @nseason = number of seasons 
   #' @nspace = Spatial areas
   #' @myear = Final year that contains empirical data

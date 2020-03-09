@@ -1,6 +1,21 @@
+#' C
+#'
+#' @param par.fixed
+#' @param df
+#' @param SSBy
+#' @param Fin
+#' @param Nend
+#' @param TAC
+#' @param Vreal
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
 getRefpoint <- function(par.fixed, df, SSBy, Fin =NA, Nend,
                         TAC = 1, Vreal = NA){
-
+#
 R0 <- as.numeric(exp(par.fixed)['logRinit'])
 Mest <- as.numeric(exp(par.fixed)['logMinit'])
 h <- as.numeric(exp(par.fixed)['logh'])
@@ -32,8 +47,8 @@ SSB_0 <- sum(SSB.age)
 SSB_pr<- SSB_0/R0
 
 SBeq <- 4*h*R0*0.4*SSB_0-SSB_0*(1-h)/(5*h-1)
-# 
-# 
+#
+#
 # Z <- M+Fin*sel
 # Zage <- Z#cumsum(M)+cumsum(Fin*sel)
 # N1 <- NA
@@ -107,7 +122,7 @@ Fnew <- F40$par
 
 V <- sum(Nend*Cw*sel)
 
-Fx <- 1-exp(-Fnew) # Convert to harvest rate 
+Fx <- 1-exp(-Fnew) # Convert to harvest rate
 
 #print(Fx/0.18)
 #Fx <- 0.18
@@ -117,22 +132,22 @@ if((SSBy/SSB_0) < 0.1){
 }
 
 if((SSBy/SSB_0) > 0.4){
-  
+
  Cnew <- Fx*V
 
-  
+
 }
 
 if(((SSBy/SSB_0) <= 0.4) & ((SSBy/SSB_0) >= 0.1)){
- 
+
   Cnew <- Fx*V*((SSBy-0.1*SSB_0)*((0.4*SSB_0/SSBy)/(0.4*SSB_0-0.1*SSB_0)))
-  
+
 }
-# 
+#
 # if (Cnew > 500000){
 #   Cnew <- 500000
 # }
-# Adjust TAC by JMC/Utilization 
+# Adjust TAC by JMC/Utilization
 TAC.obs <- read.csv('inst/extdata/adjusted_tac_fn.csv')
 
 
@@ -144,17 +159,17 @@ if(TAC == 1){
   Cexp <- TAC.obs$incpt[2]+TAC.obs$slp[2]*Cnew
 }else if(TAC == 4){ # Half the treaty specified and with a lower floor
   Cexp <- Cnew*0.5
-  
+
   if(Cexp < 180000){
-    Cexp <- 180000 
+    Cexp <- 180000
   }
 }
 
-# Do a test run 
+# Do a test run
 # print(paste('JTC TAC = ', Cnew))
 # print(paste('JMC  TAC = ', Cexp))
 
-if(Cexp > Cnew){ # Never go over the JTC recommendation 
+if(Cexp > Cnew){ # Never go over the JTC recommendation
   Cexp <- Cnew
 }
 

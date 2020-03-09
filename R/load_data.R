@@ -1,7 +1,7 @@
 ## Load the hake data
 # year and age input 
 load_data <- function(){
-
+#' Load hake data for operating model
 
 years <- 1966:2017
 tEnd <- length(years)

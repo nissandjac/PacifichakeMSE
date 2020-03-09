@@ -1,7 +1,11 @@
 ### Plot selectivity for years 
 
 plotSelectivity <- function(df.new, parameters){
-  
+  #' Function for plotting age specific fisheries selectivity
+  #' @df.new list containing data
+  #' @parameters estimated selectivity parameters 
+  #' 
+  #' 
   yrs <- df.new$years[df.new$selYear]:df.new$years[length(df.new$years)]
   nyrs <- length(yrs)
   

@@ -1,12 +1,23 @@
+#' Title
+#'
+#' @param data name of data set to be loaded
+#' @param cols colors of the individual violins
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#' plotViolin('data/fundata.Rdata', c('black','green)) # plots black and green data
+#'
 plotViolin <-function(data, cols){
-  
-  ### load the data 
+  #
+  ### load the data
   load(data)
-  df <- obj.plot.v # 
-  
-  
+  df <- obj.plot.v #
+
+
   #cols <- PNWColors::pnw_palette('Starfish',n = length(unique(df$HCR)), type = 'discrete')
-  
+
   # Remove the 5th and 5th percentiles from df
   vars <- unique(df$variable)
 
@@ -19,9 +30,9 @@ plotViolin <-function(data, cols){
     df$value[idxtmp][rmtmp] <- NA
   }
 
-  
-  ## Do some adjustments to fix the scales 
-  
+
+  ## Do some adjustments to fix the scales
+
   p.v <- ggplot2::ggplot(df, aes(x = HCR, y = value, fill = HCR))+
     geom_violin()+
     geom_boxplot(width=0.15, col = 'black', outlier.shape = NA)+
@@ -29,10 +40,10 @@ plotViolin <-function(data, cols){
     facet_wrap(~variable, scales = 'free_y', ncol = 3, dir='v')+
     theme(legend.position = 'none',
           axis.text.x = element_text(angle = 90, vjust = 0.5))+
-    scale_x_discrete(name = '')+  
+    scale_x_discrete(name = '')+
     scale_y_continuous(name = '')#+
   #coord_cartesian(ylim = c(0,1))
   print(p.v)
-  
+
   return(p.v)
 }

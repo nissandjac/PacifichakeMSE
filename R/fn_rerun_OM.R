@@ -1,5 +1,8 @@
 fn_rerun_OM <- function(folders, df, climate = FALSE){
+#' Rerun an OM from an MSE by using catch as input
+#' Not functional, add correct seeds 
 
+  
 # Get the data from the MSE runs 
 ls <- dir(folders)[grep('.Rdata',dir(folders))]
 

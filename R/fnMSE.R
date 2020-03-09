@@ -1,6 +1,11 @@
 ###### Initialize the operating model ###### 
 fnMSE <- function(df, simyears = 30, TAC = 1, seeds = NA, nruns = 100){
-
+#' Wrapper function to run MSE 
+#' @df data frame of input data 
+#' @simyears future number of years to simulate
+#' @TAC determines which TAC to use 1) HCR, 2) historical, 3) realized, 4) floor 
+#' @seeds seed to use 
+#' @nruns number of MSE iterations 
 
 # Set the seed
 if(is.na(seeds)){

@@ -1,0 +1,19 @@
+Package: PacifichakeMSE
+Title: Management strategy evaluation of Pacific hake
+Version: 0.0.0.9000
+Authors@R:
+    person(given = "Nis",
+           family = "Sand Jacobsen",
+           role = c("aut", "cre"),
+           email = "nissandjac@gmail.com",
+           comment = c(ORCID = "YOUR-ORCID-ID"))
+Imports:
+    ggplot2,
+    gridExtra,
+    cowplot,
+    dplyr
+Description: What the package does (one paragraph).
+License: What license it uses
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.0.2
