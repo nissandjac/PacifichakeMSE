@@ -12,7 +12,7 @@ Imports:
     gridExtra,
     cowplot,
     dplyr
-Depends: TMB, RcppEigen
+Depends: TMB, RcppEigen, ggplot2
 LinkingTo: TMB, RcppEigen
 Description: Management strategy evaluation framework with a spatial OM.
 License: What license it uses

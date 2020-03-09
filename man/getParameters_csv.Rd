@@ -2,10 +2,19 @@
 % Please edit documentation in R/getParameters_csv.R
 \name{getParameters_csv}
 \alias{getParameters_csv}
-\title{Export EM parameters for TMB based on csv files with parameters}
+\title{Title}
 \usage{
 getParameters_csv(trueparms = TRUE)
 }
+\arguments{
+\item{trueparms}{true of random parameter initialization}
+}
+\value{
+
+}
 \description{
+Title
+}
+\examples{
 Export EM parameters for TMB based on csv files with parameters
 }
