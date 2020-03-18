@@ -239,7 +239,7 @@ run_multiple_MSEs <- function(simyears = NULL,seeds = 12345, TAC = 1, df = NA,
 
 
 
-    obj <-MakeADFun(df.new,parms.new,DLL="runHakeassessment", silent = TRUE) # Run the assessment
+    obj <-TMB::MakeADFun(df.new,parms.new,DLL="runHakeassessment", silent = TRUE) # Run the assessment
 
     reps <- obj$report()
 
