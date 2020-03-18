@@ -80,8 +80,8 @@ for (i in 1:nruns){
 save(ls.save,file = 'results/Climate/MSErun_move_JMC_climate_0_02_HYBR_TAC1.Rdata')
 
 # ### Loop ls.save <- list()
+ls.save <- list()
 ls.converge <- matrix(0, nruns)
-
 
 for (i in 1:nruns){
   tmp <- run_multiple_MSEs(simyears = simyears,
