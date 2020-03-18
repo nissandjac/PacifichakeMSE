@@ -4,8 +4,7 @@ library(devtools)
 library(PacifichakeMSE)
 
 mod <- SS_output('inst/extdata/SS32018', printstats=FALSE, verbose = FALSE) # Read the true selectivity
-compile("src/runHakeassessment.cpp")
-dyn.load(dynlib("src/runHakeassessment"))
+
 # Set the seed
 seedz <- 12345
 set.seed(seedz)
@@ -16,7 +15,7 @@ parms.true <- getParameters_OM(TRUE,mod, df) # Load parameters from assessment
 
 time <- 1
 yrinit <- df$nyear
-nruns <- 2
+nruns <- 100
 
 seeds <- floor(runif(n = nruns, min = 1, max = 1e6))
 ### Run the OM and the EM for x number of years in the MSE
@@ -33,7 +32,6 @@ simdata0 <- sim.data # The other one is gonna get overwritten.
 # ### Loop MSE's with different errors in future survey and recruitment
 ls.save <- list()
 ls.converge <- matrix(0, nruns)
-TAC <- 2
 
 
 for (i in 1:nruns){
@@ -81,8 +79,7 @@ for (i in 1:nruns){
 # # # #
 save(ls.save,file = 'results/Climate/MSErun_move_JMC_climate_0_02_HYBR_TAC1.Rdata')
 
-# ### Loop MSE's with different errors in future survey and recruitment
-ls.save <- list()
+# ### Loop ls.save <- list()
 ls.converge <- matrix(0, nruns)
 
 

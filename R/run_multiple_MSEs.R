@@ -24,18 +24,9 @@ run_multiple_MSEs <- function(simyears = NULL,seeds = 12345, TAC = 1, df = NA,
     print('Number of years to simulate not specified. Simulating 30 years into the future')
     simyears <- 30
   }
+  TMB::compile("src/runHakeassessment.cpp")
+  dyn.load(dynlib("src/runHakeassessment"))
 
-
-  #   if(is.na(moveparms[1])){
-  # df <- load_data_seasons(move = TRUE,
-  #                         nseason = 4, nspace = 2)
-  #   }else{
-  #     if(length(moveparms) != 2){
-  #       stop('Wrong number of movement parameters')
-  #     }
-  #     df <- load_data_seasons(move =TRUE,
-  #                             nseason = 4, nspace = 2,movemaxinit = moveparms[1],movefiftyinit = moveparms[2])
-  #   }
 
   time <- 1
   yrinit <- df$nyear

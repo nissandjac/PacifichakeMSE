@@ -94,7 +94,7 @@ load_data_seasons <- function(nseason = 4,
     if(nseason == 4){ # For the standard model
 
       movemat[1,3:nage,2:3,] <- movesouth # Don't move south during the year
-      movemat[1,3:nage,1,] <- moveout*0.5 # continuing south movement at spawning time
+      movemat[1,3:nage,1,] <- movesouth # continuing south movement at spawning time
 
       movemat[1,3:nage,nseason,] <- moveout
       movemat[2,3:nage,nseason,] <- movesouth
