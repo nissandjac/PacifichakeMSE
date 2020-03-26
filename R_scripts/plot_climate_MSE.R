@@ -1,8 +1,11 @@
-# Plot the climate MSE climate results 
+# Plot the climate MSE climate results
 library(TMB)
 library(r4ss)
 library(devtools)
 library(PacifichakeMSE)
+library(purrr)
+library(dplyr)
+library(reshape2)
 
 mod <- SS_output('inst/extdata/SS32018', printstats=FALSE, verbose = FALSE) # Read the true selectivity
 
@@ -33,9 +36,170 @@ simdata0 <- sim.data # The other one is gonna get overwritten.
 
 
 
+folder <- 'results/Climate/'
+
+
+files <- dir(folder)[grep(dir(folder),pattern = '.Rdata')]
+
+# Recreate the violin pltos
+
+fnsum <- function(x, idx){
+  apply(x, MARGIN = idx, sum)
+}
+
+yrs <- 1966:2047
+
+perc <- c(0.1,0.9) # Percentiles for plotting
 
 
 
+for(i in 1:length(files)){
+  load(paste(folder,files[i], sep = ''))
+
+
+  df.MSE <- flatten(ls.save)
+
+
+  catchtmp <- map(df.MSE[names(df.MSE) == 'Catch'],.f = fnsum, idx = 2)
+  names(catchtmp) <- paste('run',1:100, sep = '')
+
+  AAVtmp <- map(catchtmp, .f = AAV, nyear = length(yrs))
+  AAVtmp <-  reshape2::melt(as.data.frame(AAVtmp), measure.vars = 1:100)
+  AAVtmp$years <- yrs[2:(length(yrs))]
+
+
+  catchtmp <- reshape2::melt(as.data.frame(catchtmp), measure.vars = 1:100)
+  catchtmp$years <- yrs
+
+  # Spawning biomass
+  SSBtmp  <- map(df.MSE[names(df.MSE) == 'SSB'],.f = fnsum, idx = 1)
+
+  SSBtmp <- reshape2::melt(as.data.frame(SSBtmp), measure.vars = 1:100)
+  SSBtmp$years <- yrs
+
+
+
+  catch.tot.tmp <- catchtmp %>%
+    group_by(years) %>%
+    summarise(catchmean = median(value),
+              quants95 = quantile(value, probs =perc[2]),
+              quants5 = quantile(value, probs= perc[1]))
+
+
+  SSB.tot.tmp <- SSBtmp  %>%
+    group_by(years) %>%
+    summarise(SSBmean = median(value),
+              quants95 = quantile(value, probs = perc[2]),
+              quants5 = quantile(value, probs= perc[1]))
+
+
+  AAV.tot.tmp <- AAVtmp %>%
+    group_by(years) %>%
+    summarise(AAVmean = median(value),
+              quants95 = quantile(value, probs = perc[2]),
+              quants5 = quantile(value, probs= perc[1]))
+
+
+  strs <- strsplit(files[i], split = '_')[[1]]
+
+  runname <- paste(strs[4],strs[6],strsplit(strs[8], split = '.Rdata')[[1]], sep = '_')
+
+  catchtmp$run <- runname
+  catch.tot.tmp$run <- runname
+
+  SSBtmp$run <- runname
+  SSB.tot.tmp$run <- runname
+
+  AAVtmp$run <- runname
+  AAV.tot.tmp$run <- runname
+
+  HCRname <- strsplit(strs[8], split = '.Rdata')[[1]]
+
+  catchtmp$HCR <- HCRname
+  catch.tot.tmp$HCR <- HCRname
+
+  SSBtmp$HCR <- HCRname
+  SSB.tot.tmp$HCR <- HCRname
+
+  AAVtmp$HCR <- HCRname
+  AAV.tot.tmp$HCR <- HCRname
+
+  catchtmp$climate <- strs[6]
+  catch.tot.tmp$climate <- strs[6]
+
+  SSBtmp$climate <- strs[6]
+  catch.tot.tmp$climate <- strs[6]
+  AAVtmp$climate <- strs[6]
+
+    if(i == 1){
+    catchdf <- catchtmp
+    catch.tot <- catch.tot.tmp
+    SSBdf <- SSBtmp
+    SSB.tot <- SSB.tot.tmp
+    AAVdf <- AAVtmp
+    AAV.tot <- AAV.tot.tmp
+
+    }else{
+    catchdf <- rbind(catchdf,catchtmp)
+    catch.tot <- rbind(catch.tot,catch.tot.tmp)
+
+    SSBdf <- rbind(SSBdf, SSBtmp)
+    SSB.tot <- rbind(SSB.tot, SSB.tot.tmp)
+
+    AAVdf <- rbind(AAVdf, AAVtmp)
+    AAV.tot <- rbind(AAV.tot, AAV.tot.tmp)
+  }
+
+
+
+  }
+
+
+cols <- PNWColors::pnw_palette('Starfish',n = 3, type = 'discrete')
+
+
+cplot <- ggplot(catch.tot, aes(x = years, y = catchmean*1e-6, color = run))+geom_line()+theme_bw()+theme(legend.position = 'none')+
+  geom_line(aes(y = quants5*1e-6), linetype = 2)+scale_color_manual(values = rep(cols, each = 3))+
+  geom_line(aes(y = quants95*1e-6), linetype = 2)+facet_wrap(~HCR)+scale_y_continuous( 'Catch')+
+  geom_line(data = catch.tot[catch.tot$years< 2019,] ,aes(x = years, y= catchmean*1e-6), color = 'black', size = 1.2)
+
+ssbplot <- ggplot(SSB.tot, aes(x = years, y = SSBmean*1e-6, color = run))+geom_line()+theme_bw()+theme(legend.position = 'none')+
+  geom_line(aes(y = quants5*1e-6), linetype = 2)+scale_color_manual(values = rep(cols, each = 3))+
+  geom_line(aes(y = quants95*1e-6), linetype = 2)+facet_wrap(~HCR)+scale_y_continuous('SSB')+
+  geom_line(data = SSB.tot[SSB.tot$years< 2019,] ,aes(x = years, y= SSBmean*1e-6), color = 'black', size = 1.2)
+
+AAVplot <- ggplot(AAV.tot, aes(x = years, y = AAVmean, color = run))+geom_line()+theme_bw()+theme(legend.position = 'none')+
+  geom_line(aes(y = quants5), linetype = 2)+scale_color_manual(values = rep(cols, each = 3))+
+  geom_line(aes(y = quants95), linetype = 2)+facet_wrap(~HCR)+scale_y_continuous('AAV')+coord_cartesian(ylim = c(0,2))+
+  geom_line(data = AAV.tot[AAV.tot$years< 2019,] ,aes(x = years, y= AAVmean), color = 'black', size = 1.2)
+
+
+cplot/ssbplot/AAVplot
+
+dodge <- position_dodge(width = 0.5)
+
+rmout <- quantile(catchdf$value[catchdf$years>2019]*1e-6, probs = perc)
+
+vplot1 <- ggplot(catchdf[catchdf$years>2019,], aes(x = HCR,y = value*1e-6, group = run, fill = climate))+
+  geom_violin(position = dodge)+scale_y_continuous(name = 'Catch (million tonnes)', limit = rmout)+geom_line()+theme_bw()+
+  geom_boxplot(width=0.2, col = 'black', outlier.shape = NA, position = dodge)+scale_fill_manual(values= cols)
+
+rmout <- quantile(SSBdf$value[SSBdf$years>2019]*1e-6, probs = perc)
+
+vplot2 <- ggplot(SSBdf[SSBdf$years>2019,], aes(x = HCR,y = value*1e-6, group = run, fill = climate))+
+  geom_violin(position = dodge)+scale_y_continuous(name = 'SSB(million tonnes)', limit = rmout)+geom_line()+theme_bw()+
+  geom_boxplot(width=0.2, col = 'black', outlier.shape = NA, position = dodge)+scale_fill_manual(values= cols)
+
+# Remove stupid outliers
+rmout <- quantile(AAVdf$value[AAVdf$years>2019], probs = perc)
+
+vplot3 <- ggplot(AAVdf[AAVdf$years>2019,], aes(x = HCR,y = value, group = run, fill = climate))+
+  geom_violin(position = dodge)+scale_y_continuous(name = 'AAV', limit = rmout)+geom_line()+theme_bw()+
+  geom_boxplot(width=0.2, col = 'black', outlier.shape = NA, position = dodge)+scale_fill_manual(values= cols)
+
+
+
+vplot1/vplot2/vplot3
 
 
 
