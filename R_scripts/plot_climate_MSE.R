@@ -6,6 +6,7 @@ library(PacifichakeMSE)
 library(purrr)
 library(dplyr)
 library(reshape2)
+library(patchwork)
 
 mod <- SS_output('inst/extdata/SS32018', printstats=FALSE, verbose = FALSE) # Read the true selectivity
 
@@ -43,39 +44,17 @@ files <- dir(folder)[grep(dir(folder),pattern = '.Rdata')]
 
 # Recreate the violin pltos
 
-fnsum <- function(x, idx){
-  apply(x, MARGIN = idx, sum)
-}
+
 
 yrs <- 1966:2047
 
 perc <- c(0.1,0.9) # Percentiles for plotting
 
-
+load_all()
 
 for(i in 1:length(files)){
-  load(paste(folder,files[i], sep = ''))
-
-
-  df.MSE <- flatten(ls.save)
-
-
-  catchtmp <- map(df.MSE[names(df.MSE) == 'Catch'],.f = fnsum, idx = 2)
-  names(catchtmp) <- paste('run',1:100, sep = '')
-
-  AAVtmp <- map(catchtmp, .f = AAV, nyear = length(yrs))
-  AAVtmp <-  reshape2::melt(as.data.frame(AAVtmp), measure.vars = 1:100)
-  AAVtmp$years <- yrs[2:(length(yrs))]
-
-
-  catchtmp <- reshape2::melt(as.data.frame(catchtmp), measure.vars = 1:100)
-  catchtmp$years <- yrs
-
-  # Spawning biomass
-  SSBtmp  <- map(df.MSE[names(df.MSE) == 'SSB'],.f = fnsum, idx = 1)
-
-  SSBtmp <- reshape2::melt(as.data.frame(SSBtmp), measure.vars = 1:100)
-  SSBtmp$years <- yrs
+  load(paste(folder,files[i], sep = '')) # Prints as 'ls.save'
+  df.MSE <- flatten(ls.save) # Change the list a little bit
 
 
 
@@ -174,32 +153,41 @@ AAVplot <- ggplot(AAV.tot, aes(x = years, y = AAVmean, color = run))+geom_line()
   geom_line(data = AAV.tot[AAV.tot$years< 2019,] ,aes(x = years, y= AAVmean), color = 'black', size = 1.2)
 
 
+
+png(paste('results/Climate/','objectives_publication.png', sep = ''), width = 20, height =20, res = 400, unit = 'cm')
+
 cplot/ssbplot/AAVplot
+
+dev.off()
 
 dodge <- position_dodge(width = 0.5)
 
 rmout <- quantile(catchdf$value[catchdf$years>2019]*1e-6, probs = perc)
 
 vplot1 <- ggplot(catchdf[catchdf$years>2019,], aes(x = HCR,y = value*1e-6, group = run, fill = climate))+
-  geom_violin(position = dodge)+scale_y_continuous(name = 'Catch (million tonnes)', limit = rmout)+geom_line()+theme_bw()+
+  geom_violin(position = dodge)+scale_y_continuous(name = 'Catch \n(million tonnes)', limit = rmout)+geom_line()+theme_bw()+theme(legend.position = 'none')+
   geom_boxplot(width=0.2, col = 'black', outlier.shape = NA, position = dodge)+scale_fill_manual(values= cols)
 
 rmout <- quantile(SSBdf$value[SSBdf$years>2019]*1e-6, probs = perc)
 
 vplot2 <- ggplot(SSBdf[SSBdf$years>2019,], aes(x = HCR,y = value*1e-6, group = run, fill = climate))+
-  geom_violin(position = dodge)+scale_y_continuous(name = 'SSB(million tonnes)', limit = rmout)+geom_line()+theme_bw()+
+  geom_violin(position = dodge)+scale_y_continuous(name = 'SSB \n(million tonnes)', limit = rmout)+geom_line()+theme_bw()+
   geom_boxplot(width=0.2, col = 'black', outlier.shape = NA, position = dodge)+scale_fill_manual(values= cols)
 
 # Remove stupid outliers
 rmout <- quantile(AAVdf$value[AAVdf$years>2019], probs = perc)
 
 vplot3 <- ggplot(AAVdf[AAVdf$years>2019,], aes(x = HCR,y = value, group = run, fill = climate))+
-  geom_violin(position = dodge)+scale_y_continuous(name = 'AAV', limit = rmout)+geom_line()+theme_bw()+
+  geom_violin(position = dodge)+scale_y_continuous(name = 'AAV', limit = rmout)+geom_line()+theme_bw()+theme(legend.position = 'none')+
   geom_boxplot(width=0.2, col = 'black', outlier.shape = NA, position = dodge)+scale_fill_manual(values= cols)
 
 
+png(paste('results/Climate/','violin_publication.png', sep = ''), width = 20, height =20, res = 400, unit = 'cm')
 
 vplot1/vplot2/vplot3
+
+dev.off()
+
 
 
 
