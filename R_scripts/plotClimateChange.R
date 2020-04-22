@@ -38,7 +38,7 @@ for(j in 1:length(cincrease)){
   }
 }
 
-cols <- PNWColors::pnw_palette('Starfish',n = 4, type = 'discrete')[1:3]
+cols <- PNWColors::pnw_palette('Starfish',n = 4, type = 'discrete')[2:4]
 
 df.tmp <- as.data.frame(t(movemax))
 names(df.tmp) <- c('base \nscenario', 'moderate \nincrease ','high \nincrease')

@@ -14,7 +14,7 @@ library(patchwork)
 mod <- SS_output('inst/extdata/SS32018/', printstats=FALSE, verbose = FALSE) # Read the true selectivity
 
 
-plot.figures = TRUE# Set true for printing to file
+plot.figures = FALSE# Set true for printing to file
 # Run the simulation model
 # source('R/load_files_OM.R')
 # source('R/load_files.R')
@@ -111,6 +111,18 @@ p1 <- ggplot(df.plot.sim, aes( x=  years, y = survey*1e-6, color = country))+the
 
 p1
 
+# Calculate the median predictive error
+df.calc <- df.plot.sim[df.plot.sim$years %in% df.obs$years,]
+
+df.EE <- data.frame(EE = (df.obs$survey-df.calc$survey)/df.obs$survey,  country = df.calc$country,
+                    year = df.calc$years)
+
+p.EE <- ggplot(df.EE, aes(x = year, y = EE, color = country))+geom_line()+theme_classic()+geom_hline(aes(yintercept = 0))+geom_point()+
+  coord_cartesian(ylim = c(-3,1))
+print(median(df.EE$EE[df.EE$country == 'CAN']))
+print(median(df.EE$EE[df.EE$country == 'USA']))
+
+p1/p.EE
 # if(plot.figures == TRUE){
 #   png(filename = 'results/Figs/Biomass_survey.png', width = 16, height = 12, res = 400, units = 'cm')
 #   print(p1)
