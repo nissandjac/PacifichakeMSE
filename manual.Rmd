@@ -1,0 +1,46 @@
+---
+title: "PacifichakeMSE"
+author: "Nis S Jacobsen"
+date: "April 30, 2020"
+email: "nsja@aqua.dtu.dk"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
+```
+# Introduction
+
+This is a description of the 'PacifichakeMSE' package to run management strategy evaluation of Pacific hake. The package sets up a set of parameters, and runs an operating model in R, and fits an estimation in TMB.  
+The package runs on a range of dependencies, most notably TMB, which require a developer version of R. For more information on TMB see https://github.com/kaskr/adcomp
+
+To install the 'PacifichakeMSE' package run 
+```{r, eval = FALSE}
+devtools::install_github('https://github.com/nissandjac/PacifichakeMSE')
+```
+
+Load the dependencies 
+```{r message=FALSE}
+library(TMB)
+library(r4ss)
+library(devtools)
+library(PacifichakeMSE)
+library(dplyr)
+library(ggplot2)
+```
+
+# Operating model 
+
+First we can initialize the parameters of the operating model using the function 'load_data_seasons'
+```{r , echo = TRUE}
+
+df <- load_data_seasons(nseason = 4, # Specifies the number of seasons
+                        nspace = 2, # Specifies the number of areas 
+                        logSDR = 1.4) # Recruitment deviation 
+
+# See 
+help("load_data_seasons")
+
+```
+
+

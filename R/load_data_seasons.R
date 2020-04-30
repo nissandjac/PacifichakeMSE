@@ -1,6 +1,4 @@
-## Load the hake data
-# year and age input
-#' Title
+#' Load the hake data
 #'
 #' @param nseason number of seasons
 #' @param nspace number of spatial areas

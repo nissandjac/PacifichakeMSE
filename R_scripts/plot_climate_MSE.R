@@ -191,7 +191,7 @@ ssbplot <- ggplot(SSB.tot[SSB.tot$year>pyear,], aes(x = year, y = SSBmean*1e-6, 
   geom_line(aes(y = quants95*1e-6), linetype = 2, size = usize)+facet_wrap(~HCR, ncol = 3)+scale_y_continuous('SSB')+
   geom_line(data = SSB.tot[SSB.tot$year< 2019 & SSB.tot$year>pyear,] ,aes(x = year, y= SSBmean*1e-6), color = 'black', size = lsize)
 
-AAVplot <- ggplot(AAV.tot[AAV.tot$year>pyear,], aes(x = year, y = AAVmean, color = climate))+geom_line(size = lsize)+theme_bw()+
+AAVplot <- ggplot(AAV.tot[AAV.tot$year>1990,], aes(x = year, y = AAVmean, color = climate))+geom_line(size = lsize)+theme_bw()+
   theme(legend.position = 'none',
         strip.text = element_text(size=5),
         text = element_text(size = 8),
@@ -204,9 +204,9 @@ AAVplot <- ggplot(AAV.tot[AAV.tot$year>pyear,], aes(x = year, y = AAVmean, color
 
 
 
-png(paste('results/Climate/','objectives_publication.png', sep = ''), width = 8, height =10, res = 400, unit = 'cm')
+png(paste('results/Climate/','objectives_presentation.png', sep = ''), width = 16, height =20, res = 400, unit = 'cm')
 
-cplot/ssbplot/AAVplot
+cplot/ssbplot
 
 dev.off()
 
@@ -265,5 +265,74 @@ vplot1+vplot2+vplot3
 dev.off()
 
 
+# Minor calculations for manuscript
+
+cmean <- median(catch.tot[catch.tot$year>2040 & catch.tot$HCR == 'HCR0' & catch.tot$climate ==0,]$catchmean)
+cc <- median(catch.tot[catch.tot$year>2040 & catch.tot$HCR == 'HCR0' & catch.tot$climate =='04',]$catchmean)
+cc2 <- median(catch.tot[catch.tot$year>2040 & catch.tot$HCR == 'Realized' & catch.tot$climate =='0',]$catchmean)
+
+ccc <- median(SSB.tot$SSBmean[catch.tot$year>2020 & catch.tot$HCR == 'Realized' & catch.tot$climate =='0'])
+cccpp
+pp <- median(SSB.tot$SSBmean[SSB.tot$year>2020 & SSB.tot$HCR == 'HCR0' & catch.tot$climate =='04'])
 
 
+median(AAVdfexp$AAV[AAVdfexp$year>2019 & AAVdfexp$HCR == 'Realized' & AAVdfexp$climate =='00'])
+
+# Country catch
+HCRtest <- 'Realized'
+
+p <- median(catchcdfexp[catchcdfexp$year>2019 & catchcdfexp$space == 'CAN' & catchcdfexp$climate == '0' & catchcdfexp$HCR == HCRtest,]$value)/
+  median(catchcdfexp[catchcdfexp$year>2019 & catchcdfexp$space == 'CAN' & catchcdfexp$climate == '04' & catchcdfexp$HCR == HCRtest,]$value)
+p <- median(catchcdfexp[catchcdfexp$year>2019 & catchcdfexp$space == 'USA' & catchcdfexp$climate == '0'& catchcdfexp$HCR == HCRtest,]$value)/
+  median(catchcdfexp[catchcdfexp$year>2019 & catchcdfexp$space == 'USA' & catchcdfexp$climate == '04' & catchcdfexp$HCR == HCRtest,]$value)
+
+
+
+
+# Presentation plots
+
+cplot <- ggplot(catch.tot[catch.tot$year>pyear,], aes(x = year, y = catchmean*1e-6, color = climate))+
+  geom_line(size = lsize)+theme_bw()+facet_wrap(~HCR, ncol = 3)+
+  theme(legend.position = 'top',
+        text = element_text(size = 12),
+        legend.title = element_blank(),
+        strip.text = element_text(size=10),
+        axis.text.x = element_text(size = 10, angle = 90),
+        plot.margin = unit(c(1,1,0,1), 'pt'),
+        legend.margin = margin(c(0,0,0,0)))+
+  scale_color_manual(values = cols, labels = c('no change', 'medium', 'high'))+
+  geom_line(aes(y = quants5*1e-6), linetype = 2, size = usize)+
+  geom_line(aes(y = quants95*1e-6), linetype = 2, size = usize)+scale_y_continuous( 'Catch')+
+  scale_x_continuous('')+
+  geom_line(data = catch.tot[catch.tot$year< 2019 & catch.tot$year> pyear,] ,aes(x = year, y= catchmean*1e-6), color = 'black', size = lsize)
+
+
+ssbplot <- ggplot(SSB.tot[SSB.tot$year>pyear,], aes(x = year, y = SSBmean*1e-6, color = climate))+geom_line(size = lsize)+theme_bw()+
+  theme(legend.position = 'none',
+        text = element_text(size = 12),
+        strip.text = element_text(size=10),
+        axis.text.x = element_text(size = 10, angle = 90),
+        plot.margin = unit(c(1,1,0,1), 'pt'))+
+  geom_line(aes(y = quants5*1e-6), linetype = 2, size = usize)+scale_color_manual(values = cols)+
+  scale_x_continuous('')+
+  geom_line(aes(y = quants95*1e-6), linetype = 2, size = usize)+facet_wrap(~HCR, ncol = 3)+scale_y_continuous('SSB')+
+  geom_line(data = SSB.tot[SSB.tot$year< 2019 & SSB.tot$year>pyear,] ,aes(x = year, y= SSBmean*1e-6), color = 'black', size = lsize)
+
+
+png(paste('results/Climate/','objectives_presentation.png', sep = ''), width = 16, height =20, res = 400, unit = 'cm')
+cplot/ssbplot
+dev.off()
+
+
+
+
+vplot2 <- ggplot(SSBdf[SSBdf$year>2019,], aes(x = HCR,y = value*1e-6, group = run, fill = climate))+
+  geom_violin(position = dodge)+scale_y_continuous(name = 'SSB \n(million tonnes)', limit = rmout)+geom_line()+theme_bw()+
+  theme(legend.position = 'none',
+        text = element_text(size = 12),
+        plot.margin = unit(c(1,1,0,1), 'pt'))+scale_x_discrete('')+
+  geom_boxplot(width=0.2, col = 'black', outlier.shape = NA, position = dodge)+scale_fill_manual(values= cols)+facet_wrap(~space)
+
+png(paste('results/Climate/','SSB_presentation.png', sep = ''), width = 16, height =10, res = 400, unit = 'cm')
+vplot2
+dev.off()
