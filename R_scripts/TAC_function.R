@@ -4,6 +4,8 @@ library(scales)
 library(reshape2)
 library(PacifichakeMSE)
 library(patchwork)
+library(PNWColors) # remotes::install_github('jakelawlor/PNWColors')
+
 # source('load_data_seasons.R')
 # source('getSelec.R')
 # source('load_files.R')
@@ -60,25 +62,26 @@ df.adjTAC <- data.frame(incpt = c(lm.historical$coefficients[1],lm.realized$coef
 #                       TAC.STAR = predict(lm.STAR, newdata = data.frame(AssessTac = TAC)),
 #                       SSB = SSB)
 
-df.plot <- data.frame(TAC = TAC,
-                      TAC.historical = predict(lm.historical, newdata = data.frame(AssessTac = TAC)),
-                      TAC.realized = predict(lm.realized, newdata = data.frame(AssessTac = TAC)),
-                      SSB = SSB)
+# finer-scale sequence of values spanning range of TAC
+TAC.fine <- seq(0, max(TAC), length = 100)
+df.plot <- data.frame(TAC = TAC.fine,
+                      TAC.historical = predict(lm.historical, newdata = data.frame(AssessTac = TAC.fine)),
+                      TAC.realized = predict(lm.realized, newdata = data.frame(AssessTac = TAC.fine)))
 
 
-
-df.plot$TAC.historical[df.plot$TAC.historical > df.plot$TAC] <-df.plot$TAC[df.plot$TAC.historical >TAC]
-df.plot$TAC.realized[df.plot$TAC.realized > df.plot$TAC] <-df.plot$TAC[df.plot$TAC.realized >TAC]
+df.plot$TAC.historical[df.plot$TAC.historical > df.plot$TAC] <- df.plot$TAC[df.plot$TAC.historical > df.plot$TAC]
+df.plot$TAC.realized[df.plot$TAC.realized > df.plot$TAC] <- df.plot$TAC[df.plot$TAC.realized > df.plot$TAC]
 #df.plot$TAC.STAR[df.plot$TAC.STAR > df.plot$TAC] <-df.plot$TAC[df.plot$TAC.STAR >TAC]
 # Floor data
 df.plot$Floor <- df.plot$TAC*0.5
 df.plot$Floor[df.plot$Floor<= 180000] <- 180000
 df.plot$TAC.HCR <- df.plot$TAC
 
-df.plot.w <- melt(df.plot[,-4], id.vars = 'TAC', value.name = 'Quota', variable.name = 'HCR')
+df.plot.w <- melt(df.plot, id.vars = 'TAC', value.name = 'Quota', variable.name = 'HCR')
 nhcr <- unique(df.plot.w$HCR)
 cols <- PNWColors::pnw_palette('Starfish',n = 4, type = 'discrete')
-
+# add alpha transparency to color vector
+cols <- adjustcolor(cols, alpha.f = 0.7)
 
 df.plot.w$HCR <- factor(df.plot.w$HCR, levels = c("TAC.HCR", "TAC.historical", "TAC.realized",
                                                   'Floor'))
@@ -126,7 +129,7 @@ p2
 
 
 
-png('Figs/tacplot.png', width = 12, height = 8, unit = 'cm', res =400)
+png('results/Figs/tacplot.png', width = 12, height = 8, unit = 'cm', res =400)
 p1
 dev.off()
 
