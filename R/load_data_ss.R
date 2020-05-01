@@ -1,96 +1,106 @@
 ## Load the hake data
-# year and age input 
+# year and age input
+#' Set up a TMB data list from a SS object
+#'
+#' @param mod # SS3 object
+#' @param sum_zero # Force the recruitment deviations to sum to zero?
+#'
+#' @return Returns a list for TMB
+#' @export
+#'
+#' @examples
 load_data_ss <- function(mod,
                          sum_zero = 0){
-  
-  #' @mod SS3 file 
+
+
+  #' @mod SS3 file
   #' @sum_zero flag on whether 'main' recruitment deviations should sum to zero
-  
+
   years <- mod$startyr:mod$endyr
   tEnd <- length(years)
   age <- 0:mod$accuage
-  
+
   F0 <- mod$catch$F[mod$catch$Yr >=years[1] & mod$catch$Yr <(max(years)+1)]
-  
+
   nage <- length(age)
   msel <- rep(1,nage)
   # Maturity
   mat <- as.numeric(mod$ageselex[mod$ageselex$Factor == 'Fecund' & mod$ageselex$Yr == 1963,paste(age)])
-  # weight at age 
+  # weight at age
   wage_ss <- mod$wtatage
 
   wage_ssb <- wage_ss[wage_ss$Fleet == -2,paste(age)]
   wage_catch <- wage_ss[wage_ss$Fleet == 1 & wage_ss$Yr > (years[1]-1) & wage_ss$Yr < years[tEnd]+1, paste(age)]
   wage_survey <- wage_ss[wage_ss$Fleet == 2 & wage_ss$Yr > (years[1]-1) & wage_ss$Yr < years[tEnd]+1, paste(age)]
   wage_mid <- wage_ss[wage_ss$Fleet == -1 & wage_ss$Yr > (years[1]-1) & wage_ss$Yr < years[tEnd]+1, paste(age)]
-  
-  
+
+
   catch <- mod$catch$ret_bio[mod$catch$Yr> (years[1]-1) & (mod$catch$Yr < years[tEnd]+1)]
   # Survey abundance
   survey <- rep(1, tEnd)
-  
+
   sidx <- mod$cpue$Yr[mod$cpue$Use == 1]
   survey[which(years %in% sidx)] <- mod$cpue$Obs[mod$cpue$Use == 1]
   ss.error <- rep(1,tEnd)
-  ss.error[which(years %in% sidx)]  <- (1+mod$cpue$SE[mod$cpue$Use == 1])-mod$cpue$SE[2] # Dunno why this calc is necessary 
-  
-  
+  ss.error[which(years %in% sidx)]  <- (1+mod$cpue$SE[mod$cpue$Use == 1])-mod$cpue$SE[2] # Dunno why this calc is necessary
+
+
   # Age comps
-  
+
   survey.ss <- mod$agedbase[mod$agedbase$Fleet == 2,]
-  
+
   age_survey_ss <- data.frame(year = survey.ss$Yr, age = survey.ss$Bin, obs = survey.ss$Obs,
                               N = survey.ss$N)
-  
+
   age_survey.tmp <- matrix(-1,length(mod$agebins), tEnd)
-  
+
   syears <- unique(survey.ss$Yr)
-  
-  survey_x <- rep(-2, tEnd) # 
-  survey_flag <- rep(-1, tEnd) 
-  
+
+  survey_x <- rep(-2, tEnd) #
+  survey_flag <- rep(-1, tEnd)
+
   ss.survey <- rep(0, tEnd)
-  
+
   for(i in 1:tEnd){
 
     if(years[i] %in% syears){
-      
-    tmp <- age_survey_ss[age_survey_ss$year == years[i],]  
+
+    tmp <- age_survey_ss[age_survey_ss$year == years[i],]
     age_survey.tmp[,i] <- tmp$obs
     ss.survey[i] <- mean(tmp$N)
     survey_x[i]<- 2
     survey_flag[i] <- 1
     }else{
-    age_survey.tmp[,i] <- -1  
+    age_survey.tmp[,i] <- -1
     }
   }
 
-  ###### Order the catch age comps 
-  
+  ###### Order the catch age comps
+
   catch.ss <- mod$agedbase[mod$agedbase$Fleet == 1,]
-  
+
   age_catch_ss <- data.frame(year = catch.ss$Yr, age = catch.ss$Bin, obs = catch.ss$Obs,
                               N = catch.ss$N)
-  
+
   age_catch.tmp <- matrix(-1,length(mod$agebins), tEnd)
-  
+
   cyears <- unique(catch.ss$Yr)
   cflag <- rep(-1, tEnd)
   ss.catch <- rep(0, tEnd)
-  
+
   for(i in 1:tEnd){
-    
+
     if(years[i] %in% cyears){
-      
-      tmp <- age_catch_ss[age_catch_ss$year == years[i],]  
+
+      tmp <- age_catch_ss[age_catch_ss$year == years[i],]
       age_catch.tmp[,i] <- tmp$obs
       ss.catch[i] <- mean(tmp$N)
       cflag[i] <- 1
     }else{
-      age_catch.tmp[,i] <- -1  
+      age_catch.tmp[,i] <- -1
     }
   }
-  
+
 
   b <- matrix(NA, tEnd)
   # Parameters
@@ -122,32 +132,32 @@ load_data_ss <- function(mod,
     }
 
   }
-  
+
   ### h prior distribution ###
   hmin <- 0.2
   hmax <- 1
   hprior <- 0.777
   hsd <- 0.117
-  
+
   mu <- (hprior-hmin)/(hmax-hmin)
   tau <- ((hprior-hmin)*(hmax-hprior))/hsd^2-1
-  
-  
+
+
   Bprior= tau*mu
   Aprior = tau*(1-mu)
   Pconst <- 1e-6
   hrange <- seq(0.2,1, length.out = 100)
-  
-  Prior_Like =  (1.0-Bprior)*log(Pconst+hrange-hmin) + 
+
+  Prior_Like =  (1.0-Bprior)*log(Pconst+hrange-hmin) +
     (1.0-Aprior)*log(Pconst+hmax-hrange)-
-    (1.0-Bprior)*log(Pconst+hprior-hmin) - 
+    (1.0-Bprior)*log(Pconst+hprior-hmin) -
     (1.0-Aprior)*log(Pconst+hmax-hprior)
-  
+
   ### selyear
   sel.tmp <- mod$SelAgeAdj$Yr[mod$SelAgeAdj$`Change?` == 1 & mod$SelAgeAdj$Yr>years[1]][1]
   flag_sel <- rep(0,length(years))
   flag_sel[years %in% unique(mod$SelAgeAdj$Yr[mod$SelAgeAdj$`Change?` == 1 & mod$SelAgeAdj$Yr>years[1]])] <- 1
-  
+
   df <-list(      #### Parameters #####
                   wage_ssb = t(wage_ssb),
                   wage_catch = t(wage_catch),
@@ -161,9 +171,9 @@ load_data_ss <- function(mod,
                   year_sel = length(sel.tmp:years[length(years)]), # Years to model time varying sel
                   selYear = which(sel.tmp == years),
                   flag_sel = flag_sel,
-                  tEnd = length(years), # The extra year is to initialize 
+                  tEnd = length(years), # The extra year is to initialize
                   logQ = mod$parameters$Value[mod$parameters$Label == "LnQ_base_Acoustic_Survey(2)"],   # Analytical solution
-                  # Selectivity 
+                  # Selectivity
                   Smin = 1,
                   Smin_survey = 2,
                   Smax = 6,
@@ -175,11 +185,11 @@ load_data_ss <- function(mod,
                   ss_survey = ss.survey, # sample sizes of ages
                   flag_survey =survey_flag, # Are there age comps that year
                   age_survey = age_survey.tmp,
-                  age_maxage = max(mod$agebins), # Max age for age comps 
+                  age_maxage = max(mod$agebins), # Max age for age comps
                   # Catch
                   Catchobs = catch, # Convert to kg
                   ss_catch = ss.catch, # Age comp sample sizes
-                  flag_catch =cflag, # Are the age comps from the catch? 
+                  flag_catch =cflag, # Are the age comps from the catch?
                   age_catch = age_catch.tmp,
                   # variance parameters
                   logSDcatch = log(mod$catch$se[1]),
@@ -196,10 +206,10 @@ load_data_ss <- function(mod,
                   b = b#,
                   #    ageerr = as.matrix(age_err[,2:22])
   )
-  
-  
+
+
   return(df)
-  
+
 }
 
 

@@ -2,10 +2,22 @@
 % Please edit documentation in R/getParameters_ss.R
 \name{getParameters_ss}
 \alias{getParameters_ss}
-\title{Export EM parameters for TMB based on csv files with parameters}
+\title{Load parameters from stock synthesis}
 \usage{
-getParameters_ss(trueparms = TRUE, mod = NA)
+getParameters_ss(mod = NA)
+}
+\arguments{
+\item{mod}{}
+
+\item{trueparms}{Should the parameters be the}
+}
+\value{
+returns a list suitable for the TMB model
 }
 \description{
+Load parameters from stock synthesis
+}
+\examples{
+df <- getParameters_ss(mod) # check
 Export EM parameters for TMB based on csv files with parameters
 }
