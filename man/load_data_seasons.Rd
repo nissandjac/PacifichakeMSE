@@ -2,7 +2,7 @@
 % Please edit documentation in R/load_data_seasons.R
 \name{load_data_seasons}
 \alias{load_data_seasons}
-\title{Title}
+\title{Load the hake data}
 \usage{
 load_data_seasons(
   nseason = 4,
@@ -57,7 +57,7 @@ load_data_seasons(
 
 }
 \description{
-Title
+Load the hake data
 }
 \examples{
 df <- load_data_seasons(nseason = 12, nspace = 2)
