@@ -4,7 +4,7 @@
 \alias{Check_Identifiable_vs2}
 \title{Title}
 \usage{
-Check_Identifiable_vs2(obj)
+Check_Identifiable_vs2(obj, printParams = TRUE)
 }
 \arguments{
 \item{obj}{TMB object}
