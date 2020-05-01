@@ -7,6 +7,7 @@
 #' @export
 #'
 #' @examples
+#' example here
 getParameters <- function(trueparms = TRUE, df){
 
 
