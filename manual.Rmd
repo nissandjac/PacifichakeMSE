@@ -371,7 +371,7 @@ Now that we know the basic structure of the code, we can prepare a range of MSE 
 
 ```{r}
 
-simyears <- 2 # run 2 yrs to make it quick
+simyears <- 4 # run 2 yrs to make it quick
 
 df <- load_data_seasons(nseason = 4, nspace = 2, nsurvey = 1) # This one has a survey every year
 
@@ -412,7 +412,17 @@ for (i in 1:nruns){
 
 }
 
+
 ```
+
+Alternatively, the function 'fnMSE' exists, which can be used to run bulk MSE's where 'df' is constant 
+
+```{r, eval = FALSE}
+df <- load_data_seasons(nseason = 4, nspace = 2) #  Initilialize data 
+ls.save <- fnMSE(df, simyears = 3, nruns = 2) # Run 2 MSE's 3 years into the future 
+
+```
+
 
 Using a saved MSE run we can plot the data. 
 The function 'summarizeMSE' summarizes all the MSEs in the dataframe, and can be used to internally calculate objectives. 

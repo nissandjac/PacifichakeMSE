@@ -316,7 +316,7 @@ run_multiple_MSEs <- function(simyears = NULL,seeds = 12345, TAC = 1, df = NA,
       nyear <- df$tEnd
 
       # Check convergence in last year
-      conv <- Check_Identifiable_vs2(obj)
+      conv <- Check_Identifiable_vs2(obj, printParams =FALSE)
 
       if(length(conv$WhichBad) == 0){
         mconverge <- 1
