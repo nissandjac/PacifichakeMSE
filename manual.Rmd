@@ -414,14 +414,29 @@ for (i in 1:nruns){
 
 ```
 
-Using a saved MSE run we can plot the data 
+Using a saved MSE run we can plot the data. 
+The function 'summarizeMSE' summarizes all the MSEs in the dataframe, and can be used to internally calculate objectives. 
 
 ```{r}
+
+# This data set assumes the fishery follows the control rule and movement is constant 
 load('results/Climate/MSErun_move_JMC_climate_0_0_HYBR_TAC1.Rdata') # Saved as ls.save
+
 
 # ls.save contains 100 MSE runs, each which contains the following data  
 names(ls.save[[1]])
 
+# USe this fcuntion to get a summary of the MSE 
+p <- summarizeMSE(ls.save)
 
+catchplot <- ggplot(p$catch, aes(x = year, y = catchmean))+geom_line()+
+  geom_ribbon(aes(ymin = quantsmin, ymax = quantsmax),fill = alpha('red', alpha = 0.2))+
+  scale_y_continuous('catch')+theme_minimal()
+
+SSBplot <- ggplot(p$SSB, aes(x = year, y = SSBmean))+geom_line()+
+  geom_ribbon(aes(ymin = quantsmin, ymax = quantsmax),fill = alpha('red', alpha = 0.2))+
+  scale_y_continuous('SSB')+theme_minimal()
+
+catchplot+SSBplot
 
 ```

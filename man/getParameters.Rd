@@ -17,3 +17,6 @@ getParameters(trueparms = TRUE, df)
 \description{
 Load parameters for tmb model
 }
+\examples{
+example here
+}
