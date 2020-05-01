@@ -7,7 +7,7 @@
 #'
 #' @examples
 #'
-Check_Identifiable_vs2 = function( obj ){
+Check_Identifiable_vs2 = function( obj , printParams = TRUE ){
 
     # Finite-different hessian
   ParHat = TMBhelper:::extract_fixed( obj )
@@ -36,7 +36,11 @@ Check_Identifiable_vs2 = function( obj ){
   if( length(List[["WhichBad"]])==0 ){
     message( "All parameters are identifiable" )
   }else{
+    if(printParams == TRUE){
     print( List[["BadParams"]] )
+    }else{
+
+    }
   }
 
   # Return

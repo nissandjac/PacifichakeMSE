@@ -55,6 +55,7 @@ ggplot(df.plot, aes(x = years, y = R))+geom_point()+theme_bw()+scale_y_continuou
 
 
 ```
+
 # Run the operating model 
 
 We can then use the data frame (df) to run an operating model by the parameters specified previously. The function returns a list with a range of different values
@@ -101,10 +102,7 @@ dimnames(sim.data$N.save.age)
 ```
 
 
-We can also simulate the operating model into the future by changing the input to the df
-
-
-With the operating model setup we can use it to run a stock assessment with the estmation model 
+The operating model can be simulated into the future by changing the input to the df
 
 ```{r}
 
@@ -212,7 +210,7 @@ source('R/getParameters_ss.R')
 source('R/load_data_ss.R')
 source('R/getUncertainty.R')
 
-# First load the estimation model 
+# First load the estimation model (also figure out how to make this baseline in the model)
 compile("src/runHakeassessment.cpp")
 dyn.load(dynlib("src/runHakeassessment"))
 
@@ -240,7 +238,8 @@ df.plot <- data.frame(SSB = c(reps$SSB, sim.data$SSB, SSB.ss3*0.5),
   
   
   
-ggplot(df.plot, aes(x = years, y = SSB))+geom_line()+theme_minimal()+facet_wrap(~model, ncol = 3)  
+ggplot(df.plot, aes(x = years, y = SSB*1e-6))+geom_line()+theme_minimal()+facet_wrap(~model, ncol = 3)+
+  scale_y_continuous('SSB\n(tonnes)')
   
   
 ```
@@ -260,6 +259,7 @@ upper[names(upper) == 'PSEL'] <- 9
 upper[names(upper) == 'logh'] <- log(0.999)
 upper[names(upper) == 'F0'] <- 2
 upper[names(upper) == 'psel_fish'] <- 3
+#upper[names(upper) == 'logphi_catch'] <- log(1)
 lower[names(lower) == 'psel_fish'] <- 0.0001
 
 
@@ -287,14 +287,141 @@ df.plot <- data.frame(SSB = c(SSB$value, SSB.ss3*0.5),
                       model = rep(c('TMB','SS3'), each = df$nyear))
 
 
-
+# Plot the fitted model vs the SS3 model 
 ggplot(df.plot, aes(x = years, y = SSB, color = model))+geom_line()+theme_minimal()+
   geom_ribbon(data = df.plot, aes(ymin = SEmin, ymax = SEmax), fill = alpha('red', alpha = 0.15),
               linetype = 0, show.legend = FALSE)
 
 
+```
+
+Second we can fit the model to the operating model for a simulation analysis. Turning the OM into a TMB object is done using the function 'create_TMB_data' which takes input 'sim.data' (the operating model) and 'df' (the operating model parameters)
+
+```{r}
+
+df.sim <- create_TMB_data(sim.data, df.OM ) # prepare the data input from TMB based on the operating model 
+parms.sim <- df.OM$parms # Take the parameter input also used in the OM for initial parameters 
+
+# Add fishing mortality and recruitment to estimated parameters 
+F0 <- rowSums(sim.data$Fout) # Fishing mortality is calculated internally in the OM
+Rdev <- parms.sim$Rin[1:(length(parms.sim$Rin)-1)] # We can't estimate the recruitment in the last year 
+
+
+parms.sim$F0 <- F0#rowSums(sim.data$Fsave, na.rm = TRUE)
+parms.sim$Rin <- Rdev#parms.new$Rin[1:(length(parms.new$Rin)-1)]
+
+
+obj.OM <- MakeADFun(df.sim,parms.sim,DLL="runHakeassessment", silent = TRUE) # Run the assessment
+```
+
+This leads to the following fit 
+```{r, echo = FALSE}
+
+system.time(opt<-nlminb(obj.OM$par,obj.OM$fn,obj.OM$gr,lower=lower,upper=upper,
+                            control = list(iter.max = 1e6,
+                                           eval.max = 1e6))) # If error one of the random effects is unused
+
+system.time(rep<-sdreport(obj.OM)) # Calculate the hessian
+
+sdrep <- summary(rep) # Summary report of parameters and uncertainty 
+rep.values<-rownames(sdrep)
+
+SSB <- getUncertainty('SSB',df.sim, sdrep) # Get the uncertainty estimates 
+SSB$model <- 'EM' # 
+
+
+df.plot <- data.frame(SSB = c(SSB$value, sim.data$SSB),
+                      SEmin = c(SSB$min, rep(NA, df$nyear)),
+                      SEmax = c(SSB$max, rep(NA, df$nyear)),
+                      years = rep(df$years, 2),
+                      model = rep(c('TMB','OM'), each = df$nyear))
+
+
+# Plot the fitted model vs the SS3 model 
+p.ssb <- ggplot(df.plot, aes(x = years, y = SSB, color = model))+geom_line()+theme_minimal()+
+  geom_ribbon(data = df.plot, aes(ymin = SEmin, ymax = SEmax), fill = alpha('red', alpha = 0.15),
+              linetype = 0, show.legend = FALSE)
+print(p.ssb)
+```
+
+Pretty good fit - but the models are also identical. 
+
+
+# Look at the non timevarying parameters 
+Not sure why SSB is so close, but R0 seems to be so far away? 
+
+```{r}
+idx <- 1:3 # Which parameters to plot 
+
+df.parms <- data.frame(parms = rep(rep.values[idx],2),
+                       value = exp(c(sdrep[idx,1], as.numeric(parms.sim[idx]))),
+                       SEMin = c(exp(sdrep[idx,1])-2*sdrep[idx,2], rep(NA, length(idx))),
+                       SEMax = c(exp(sdrep[idx,1])+2*sdrep[idx,2], rep(NA, length(idx))),
+                       model = rep(c('EM','OM'), each = length(idx))
+)
+
+ggplot(df.parms, aes(x = parms, y = value, color = model))+geom_point()+
+  facet_wrap(~parms, scales = 'free')+geom_errorbar(aes(ymin = SEMin, ymax = SEMax), width = 0.1)+theme_minimal()
+
+
+```
+# Run the models combined as an MSE
+
+Now that we know the basic structure of the code, we can prepare a range of MSE simulations. The MSEs run from the function 'run_multiple_MSEs' which takes input 'simyears' which is the number of years to simulate, and 'df' which is the data frame that is used to initialize the operating model. There are furthermore a range of input parameters that can be changed (with defaults), such as the movement parameters, seeds, and type of TAC .To run several MSE's one needs to loop over the function. 
+
+```{r}
+
+simyears <- 2 # run 2 yrs to make it quick
+
+df <- load_data_seasons(nseason = 4, nspace = 2, nsurvey = 1) # This one has a survey every year
+
+tmp <- run_multiple_MSEs(simyears = simyears, 
+                         seeds = 123,
+                         TAC = 1, # Options are TAC 1) HCR, 2) historical, 3) realized
+                         df = df)
+
+
 
 ```
 
+Note that the run_multiple_MSEs summarizes the data, so to get different output, one would have to manipulate the function. It is pretty condensed right now to ensure that the save files don't explode in size. 
+Currently, the operating model is being re-run every year in the simulation, which is pretty inefficient (probably adds about 30 secs to each MSE run). Needs to be fixed. 
+The function plots the fit to the spawning biomass in the final year including the uncertainty in estimation. 
+
+An example of a full MSE loop is printed below 
+```{r, eval = FALSE}
+
+ls.save <- list()
+ls.converge <- matrix(0, nruns)
 
 
+for (i in 1:nruns){
+  tmp <- run_multiple_MSEs(simyears = simyears,
+                           seeds = seeds[i],
+                           TAC = 1, df = df, cincrease = 0, mincrease = 0)
+  print(i)
+
+  if(is.list(tmp)){
+    ls.save[[i]] <-tmp
+    ls.converge[i] <- 1
+  }else{
+    ls.save[[i]] <- NA
+    ls.converge[i] <- 0
+  }
+
+
+}
+
+```
+
+Using a saved MSE run we can plot the data 
+
+```{r}
+load('results/Climate/MSErun_move_JMC_climate_0_0_HYBR_TAC1.Rdata') # Saved as ls.save
+
+# ls.save contains 100 MSE runs, each which contains the following data  
+names(ls.save[[1]])
+
+
+
+```
