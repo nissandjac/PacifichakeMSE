@@ -36,7 +36,8 @@ load_data_seasons <- function(nseason = 4,
                               moveslope = 0.9,
                               selectivity_change = 0,
                               yr_future  = 0,
-                              sel_hist = 1
+                              sel_hist = 1,
+                              species = 'hake'
                               ){
 
   #' Load data frame containing all the parameters from the hake operating model
@@ -46,6 +47,12 @@ load_data_seasons <- function(nseason = 4,
     if(nspace == 2){
     moveinit <-  c(0.25,0.75)
     }
+  }
+
+
+  if(length(moveinit) != nspace){
+    warning('specify recruitment per space - will assume equal distribution')
+    moveinit <- rep(1/nspace, nspace)
   }
 
 
@@ -89,7 +96,7 @@ load_data_seasons <- function(nseason = 4,
 
     movemat[,1:2,,] <- 0 # Recruits and 1 year olds don't move
 
-    if(nseason == 4){ # For the standard model
+    if(species == 'hake'){ # For the standard hake model
 
       movemat[1,3:nage,2:3,] <- movesouth # Don't move south during the year
       movemat[1,3:nage,1,] <- movesouth # continuing south movement at spawning time
@@ -332,7 +339,7 @@ load_data_seasons <- function(nseason = 4,
                   year_sel = length(1991:max(years)), # Years to model time varying sel
 
                   Msel = msel,
-                  Matsel= as.numeric(mat),
+                  Matsel= as.numeric(mat), #
                   nage = nage,
                   age = age,
                   nseason = nseason,
@@ -398,6 +405,14 @@ load_data_seasons <- function(nseason = 4,
 
   Catch.country <- read.csv('inst/extdata/catch_per_country.csv')
   df$Catch.country <- as.matrix(Catch.country[,2:3])[,c(2,1)]
+
+  if(ncol(df$Catch.country) != nspace){
+    warning('Make sure input catches are distributed correctly in space - distributing equally')
+    df$Catch.country <- matrix(rowSums(df$Catch.country)/df$nspace, df$nyear, df$nspace)
+
+
+  }
+
 
   df$Catch <- rowSums(df$Catch.country)
 

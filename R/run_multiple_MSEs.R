@@ -273,25 +273,6 @@ run_multiple_MSEs <- function(simyears = NULL,seeds = 12345, TAC = 1, df = NA,
                                            eval.max = 1e6))) # If error one of the random effects is unused
 
 
-    # if(opt$convergence != 0){
-    #   print(paste('year',df$years[length(df$years)], 'has convergence issues, double checking parameters'))
-    #
-    #   xx<- Check_Identifiable_vs2(obj)
-    #
-    #   # if(xx[[1]] == 'model not converging'){
-    #   #   mconverge[time] <- 1
-    #   #
-    #   #   if(sum(mconverge, na.rm = TRUE)>1){
-    #   #     print('Convergence is bad. Stopping simulation')
-    #   #     return(df.ret= NA)
-    #   #   }
-    #   #
-    #   # }else{
-    #   #   mconverge[time] <- 0
-    #   # }
-    # }else{
-    #   mconverge[time] <- 0
-    # }
 
     reps <- obj$report()
 
@@ -301,12 +282,6 @@ run_multiple_MSEs <- function(simyears = NULL,seeds = 12345, TAC = 1, df = NA,
     Catch <- reps$Catch
     R <- reps$R
 
-    # plot(sim.data$Catch)
-    # lines(df$Catch)
-    #
-    # plot(reps$SSB)
-    # lines(rowSums(sim.data$SSB), col = 'red')
-    # # # #Uncertainty
 
 
     if(time == simyears){

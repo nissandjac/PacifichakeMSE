@@ -207,6 +207,13 @@ run.agebased.true.catch <- function(df, seeds = 100){
 
 
   Fspace <- c(0.2612,0.7388) # Contribution of Total catch (add to one)    #Z <- (Fyear+Myear)
+
+  if(length(Fspace) != nspace){
+    warning('specify distribution of catches - assuming equal distribution')
+    Fspace <- rep(1/nspace, nspace)
+  }
+
+
   Fnseason <- df$Fnseason
   pope.mul <- nseason/1*0.5
   pope.mul <- 0.50
@@ -385,9 +392,22 @@ run.agebased.true.catch <- function(df, seeds = 100){
 
         if(season <nseason){
 
+
+          for(k in 1:length(spaceidx)){
+            Nin.tmp<-  N.save.age[, yr,spaceidx[k],season]*exp(-Z)*(movemat[spaceidx[k],,season,yr])# add the ones come to the surrounding areas
+
+            if(k == 1){
+              Nin <- Nin.tmp
+            }else{
+              Nin <- Nin+Nin.tmp
+            }
+
+          }
+
+
           N.save.age[,yr,space,season+1] <- N.save.age[,yr,space,season]*exp(-Z)-
           N.save.age[, yr,space,season]*exp(-Z)*(movemat[space,,season,yr])+ # Remove the ones that leave
-          N.save.age[, yr,spaceidx,season]*exp(-Z)*(movemat[spaceidx,,season,yr])# add the ones come to the surrounding areas
+          Nin# add the ones come to the surrounding areas
 
         age_comps_OM[,yr,space,season] <- N.save.age[, yr,space,season]/sum(N.save.age[, yr,space,season])
 
@@ -397,20 +417,37 @@ run.agebased.true.catch <- function(df, seeds = 100){
 
 
         }else{
-          N.save.age[2:(nage-1),yr+1,space,1] <- N.save.age[1:(nage-2),yr,space,season]*exp(-Z[1:(nage-2)])-
-            N.save.age[1:(nage-2), yr,space,season]*exp(-Z[1:(nage-2)])*(movemat[space,1:(nage-2),season,yr])+ # Remove the ones that leave
-            N.save.age[1:(nage-2), yr,spaceidx,season]*exp(-Z[1:(nage-2)])*(movemat[spaceidx,1:(nage-2),season,yr])# add the ones come to the surrounding areas
 
+           for(k in 1:length(spaceidx)){
+            Nin.tmp<-  + # Remove the ones that leave
+              N.save.age[1:(nage-2), yr,spaceidx[k],season]*exp(-Z[1:(nage-2)])*(movemat[spaceidx[k],1:(nage-2),season,yr])## add the ones come to the surrounding areas
+
+            Nin.plus.tmp <- (N.save.age[nage-1, yr,spaceidx[k],nseason]*exp(-Z[nage-1])+
+                               N.save.age[nage, yr,spaceidx[k],nseason]*exp(-Z[nage]))*
+              (movemat[spaceidx[k],nage, season,yr]) # Incoming
+
+
+
+            if(k == 1){
+              Nin <- Nin.tmp
+              Nin.plus <- Nin.plus.tmp
+            }else{
+              Nin <- Nin+Nin.tmp
+              Nin.plus <- Nin.plus.tmp+Nin.plus
+
+            }
+
+          }
+
+
+          N.save.age[2:(nage-1),yr+1,space,1] <- N.save.age[1:(nage-2),yr,space,season]*exp(-Z[1:(nage-2)])-
+            N.save.age[1:(nage-2), yr,space,season]*exp(-Z[1:(nage-2)])*(movemat[space,1:(nage-2),season,yr])+
+            Nin #add the ones come to the surrounding areas
           # Plus group
           Nsurvive.plus <- (N.save.age[nage-1, yr,space, nseason]*exp(-Z[nage-1])+
                               N.save.age[nage, yr,space, nseason]*exp(-Z[nage]))
 
           Nout.plus <- Nsurvive.plus*(movemat[space,nage, season,yr]) # Leaving
-
-
-          Nin.plus <- (N.save.age[nage-1, yr,spaceidx,nseason]*exp(-Z[nage-1])+
-                         N.save.age[nage, yr,spaceidx,nseason]*exp(-Z[nage]))*
-                          (movemat[spaceidx,nage, season,yr]) # Incoming
 
           N.save.age[nage,yr+1,space,1] <- Nsurvive.plus- Nout.plus + Nin.plus
 
@@ -497,8 +534,8 @@ run.agebased.true.catch <- function(df, seeds = 100){
 
 
         if(year[yr] > 2018){
-        err <- rnorm(n = 1,mean = 0, sd = surv.sd)
-        surv <- exp(log(sum(Nsurv*surv.sel*q*w_surv))+err) # If the xtra factor is not included the mean is > 1
+        err <- exp(rnorm(n = 1,mean = 0, sd = surv.sd))
+        surv <- sum(Nsurv*surv.sel*q*w_surv*err) # If the xtra factor is not included the mean is > 1
         }else{
          surv <- sum(Nsurv*surv.sel*q*w_surv)
        }
