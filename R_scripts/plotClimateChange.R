@@ -5,6 +5,7 @@ library(PacifichakeMSE)
 library(patchwork)
 
 simyears <- 30
+plot.figures <- FALSE
 df <- load_data_seasons()
 year.future <- c(df$years,(df$years[length(df$years)]+1):(df$years[length(df$years)]+simyears))
 
@@ -69,13 +70,13 @@ p2 <- ggplot(df.plot, aes(x = year, y = moveout, color = Scenario))+theme_classi
   scale_color_manual(values = cols)+scale_y_continuous('return rate')+
   theme(legend.position = 'none')
 
-
+if(plot.figures == TRUE){
 png('results/Figs/climate_movement.png', width= 8, height = 10, units = 'cm', res = 400)
-#windows(width = 8/2.54, height = 10/2.54)
 p1 / p2 + plot_annotation(tag_levels = 'a')
 dev.off()
+}
 
-# Make additional figure of how the movement changes based on climate 
+# Make additional figure of how the movement changes based on climate
 
 # Plot the movement rates
 df.movement <- data.frame(age = rep(df$age, 8), movement = NA, country = rep(c('CAN','USA'), each = df$nage),
@@ -83,7 +84,7 @@ df.movement <- data.frame(age = rep(df$age, 8), movement = NA, country = rep(c('
 df.movement$age[df.movement$country == 'CAN'] <-  df.movement$age[df.movement$country == 'CAN']+0.3 # For plotting
 for(i in 1:df$nseason){
   mm.tmp <- df$movemat[,,i,1]
-  
+
   df.movement[df.movement$season == i & df.movement$country == 'USA',]$movement <- mm.tmp[2,]
   df.movement[df.movement$season == i & df.movement$country == 'CAN',]$movement <- mm.tmp[1,]
 }
@@ -99,51 +100,11 @@ if(plot.figures == TRUE){
   png(filename = 'results/Figs/Movement.png', width = 16, height = 10, res = 400, units = 'cm')
   print(p.move)
   dev.off()
-  
+
 }
 
 
-# Plot the change in movement based on the climate scenarios 
 
-movenew <-array(0, dim = c(df$nspace, df$nage, df$nseason)) # Chances of moving in to the other grid cell
-movemax <- df$movemax
-movefifty <- df$movefifty
-
-if(time == 2){
-  movemaxtmp <- (movemax[1]+cincrease)
-  df$moveout <- df$moveout-mincrease
-}else{
-  movemaxtmp <- movemaxtmp+cincrease
-  df$moveout <- df$moveout-mincrease
-  
-}
-
-if(movemaxtmp >0.9){
-  movemaxtmp <- 0.9 # Not moving more than 90% out
-  
-  # (stop(paste(time,'at max movement')))
-}
-
-if(df$moveout <= 0.5){
-  df$moveout <- 0.5
-}
-
-for(j in 1:nspace){
-  for(i in 1:nseason){
-    movenew[j,,i] <- movemaxtmp/(1+exp(-df$moveslope*(age-movefifty)))
-  }
-}
-
-if(nseason == 4){ # For the standard model
-  movenew[,1:2,] <- 0 # Recruits and 1 year olds don't move
-  
-  movenew[1,4:nage,1:3] <- df$movesouth # Don't move south during the year
-  movenew[1,3:nage,nseason] <- df$moveout
-  movenew[2,3:nage,nseason] <- df$movesouth
-}
-
-move.tmp[,,,df$nyear] <- movenew
-df$movemat <- move.tmp
 
 # Plot the movement rates
 nplot <- 3 # Movement scenarios to include in plot
@@ -155,59 +116,59 @@ for(k in 1:nyears){
 
   df.med <- load_data_seasons(movemaxinit = movemax[2,k], moveout = moveout[2,k])
   df.high <- load_data_seasons(movemaxinit = movemax[3,k], moveout = moveout[3,k])
-  
+
   for(i in 1:df$nseason){
     mm.tmp <- df$movemat[,,i,1]
     mm.med <- df.med$movemat[,,i,1]
     mm.high <- df.high$movemat[,,i,1]
-    
-    tmp  <-   data.frame(age = df$age, movement = mm.tmp[1,], 
+
+    tmp  <-   data.frame(age = df$age, movement = mm.tmp[1,],
                          model = 'base', season = i, country = 'CAN', year = pyears[k])
-    tmp.med <- data.frame(age = df$age, movement = mm.med[1,], 
+    tmp.med <- data.frame(age = df$age, movement = mm.med[1,],
                           model = 'medium', season = i, country = 'CAN', year = pyears[k])
-    tmp.high <- data.frame(age = df$age, movement = mm.high[1,], 
+    tmp.high <- data.frame(age = df$age, movement = mm.high[1,],
                            model = 'high', season = i, country = 'CAN', year = pyears[k])
-    
+
     tmp.us  <-   data.frame(age = df$age, movement = mm.tmp[2,],
                             model = 'base', season = i, country = 'USA', year = pyears[k])
-    tmp.med.us <- data.frame(age = df$age, movement = mm.med[2,], 
+    tmp.med.us <- data.frame(age = df$age, movement = mm.med[2,],
                              model = 'medium', season = i, country = 'USA', year = pyears[k])
-    tmp.high.us <- data.frame(age = df$age, movement = mm.high[2,], 
+    tmp.high.us <- data.frame(age = df$age, movement = mm.high[2,],
                               model = 'high', season = i, country = 'USA', year = pyears[k])
-    
+
     if(i == 1 & k == 1){
       df.movement <- rbind(tmp,tmp.med,tmp.high, tmp.us, tmp.med.us,tmp.high.us)
-      
+
     }else{
       df.movement <- rbind(df.movement, tmp.med,tmp.high, tmp.us, tmp.med.us,tmp.high.us)
     }
-    
+
   }
 }
 
 #png('survey_comps.png', width = 16, height = 10, res= 400, unit = 'cm')
-ggplot(df.movement[df.movement$year %in% c(2019) & 
+ggplot(df.movement[df.movement$year %in% c(2019) &
                    df.movement$model == 'base' & df.movement$country == 'USA' &
                    df.movement$season %in% 1:4,],
        aes(x = age, y = movement, color = factor(year),group = (year)))+
   geom_line(color = 'blue')+facet_wrap(~season)+theme_classic()+
-  geom_line(data = df.movement[df.movement$year %in% c(2019) & 
+  geom_line(data = df.movement[df.movement$year %in% c(2019) &
                           df.movement$model == 'high' & df.movement$country == 'CAN' &
                           df.movement$season %in% 1:4,], linetype = 2, color = 'red')+
   labs(color = 'year')+
   scale_y_continuous('movement\nrate')+
-  geom_line(data = df.movement[df.movement$year %in% c(2048) & 
+  geom_line(data = df.movement[df.movement$year %in% c(2048) &
                                  df.movement$model == 'medium' & df.movement$country == 'USA' &
                                  df.movement$season %in% 1:4,], color = 'blue', linetype = 2)+
-  geom_line(data = df.movement[df.movement$year %in% c(2048) & 
+  geom_line(data = df.movement[df.movement$year %in% c(2048) &
                                  df.movement$model == 'high' & df.movement$country == 'USA' &
                                  df.movement$season %in% 1,], color = 'blue', linetype = 3)+
-  geom_line(data = df.movement[df.movement$year %in% c(2048) & 
+  geom_line(data = df.movement[df.movement$year %in% c(2048) &
                                  df.movement$model == 'medium' & df.movement$country == 'CAN' &
                                  df.movement$season %in% 1:4,], color = 'red', linetype = 2)+
-  geom_line(data = df.movement[df.movement$year %in% c(2048) & 
+  geom_line(data = df.movement[df.movement$year %in% c(2048) &
                                  df.movement$model == 'high' & df.movement$country == 'CAN' &
                                  df.movement$season %in% 1,], color = 'red', linetype = 3)
 
 
-#  scale_colour_brewer(palette = "Greys")+
+ #  scale_colour_brewer(palette = "Greys")+

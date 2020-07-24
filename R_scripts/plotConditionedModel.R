@@ -182,7 +182,7 @@ if(plot.figures == TRUE){
 # Plot the movement rates
 df.movement <- data.frame(age = rep(df$age, 8), movement = NA, country = rep(c('CAN','USA'), each = df$nage),
                           season = rep(1:4, each = df$nage*2))
-df.movement$age[df.movement$country == 'CAN'] <-  df.movement$age[df.movement$country == 'CAN']+0.3 # For plotting
+df.movement$age[df.movement$country == 'CAN'] <-  df.movement$age[df.movement$country == 'CAN'] # For plotting
 for(i in 1:df$nseason){
   mm.tmp <- df$movemat[,,i,1]
 
@@ -190,15 +190,35 @@ for(i in 1:df$nseason){
   df.movement[df.movement$season == i & df.movement$country == 'CAN',]$movement <- mm.tmp[1,]
 }
 
+# Text for publication
+ann_mm <- data.frame(age = 4,movement = 0.75, season = 1, country = 'USA')
+ann_return <- data.frame(age = 10,movement = 0.4, season = 4, country = 'USA')
+
+
 #png('survey_comps.png', width = 16, height = 10, res= 400, unit = 'cm')
 p.move <-ggplot(df.movement, aes(x = age, y = movement, color = country))+facet_wrap(~season)+theme_classic()+
   geom_line(size = 1.45)+scale_y_continuous(limit = c(0,1),name = 'movement rate')+
   scale_color_manual(values = c('darkred','blue4'))+
-  theme(legend.title = element_blank(),legend.position = c(0.85,0.85), legend.direction = 'horizontal',
-        legend.background = element_rect(fill=NA))
+  theme(legend.title = element_blank(),legend.position = c(0.1,0.3), legend.direction = 'vertical',
+        legend.background = element_rect(fill=NA))+
+  geom_hline(data = data.frame(season = 1),
+             aes(yintercept = max(df.movement$movement[df.movement$country == 'USA' & df.movement$season == 1])),
+             linetype = 2)+
+  geom_text(data = ann_mm, label = 'max\n movement', color = 'black')+
+  geom_text(data = ann_return, label = 'return\n rate', color = 'black')+
+  geom_segment(data = data.frame(x= 4, y= 0.57, xend = 4, yend = 0.38, season = 1),
+               aes(x=x,  y= y, xend = xend, yend=yend), color = 'black',
+                arrow = arrow(length = unit(0.1, "inches"))
+               )+
+  geom_segment(data = data.frame(x= 10, y= 0.50, xend = 10, yend = 0.80, season = 4),
+               aes(x=x,  y= y, xend = xend, yend=yend), color = 'black',
+               arrow = arrow(length = unit(0.1, "inches"))
+  )
+
+p.move
 
 if(plot.figures == TRUE){
-png(filename = 'results/Figs/Movement.png', width = 16, height = 10, res = 400, units = 'cm')
+png(filename = 'results/Climate/Movement.png', width = 16, height = 10, res = 400, units = 'cm')
 print(p.move)
 dev.off()
 
