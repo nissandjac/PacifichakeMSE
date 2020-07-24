@@ -192,7 +192,7 @@ for(i in 1:df$nseason){
 
 # Text for publication
 ann_mm <- data.frame(age = 4,movement = 0.75, season = 1, country = 'USA')
-ann_return <- data.frame(age = 10,movement = 0.4, season = 4, country = 'USA')
+ann_return <- data.frame(age = 10,movement = 0.35, season = 4, country = 'USA')
 
 
 #png('survey_comps.png', width = 16, height = 10, res= 400, unit = 'cm')
