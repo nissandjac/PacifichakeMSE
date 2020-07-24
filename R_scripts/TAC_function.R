@@ -105,7 +105,7 @@ p1
 
 p3 <- ggplot(df.plot.w[df.plot.w$HCR != 'Floor',], aes(x= TAC*1e-3, y = Quota*1e-3, color = HCR))+geom_line(linetype = 2, size = 0.8)+
   scale_y_continuous('Catch \n(thousand tonnes)')+scale_color_manual(values = cols[1:3],
-                                                                     labels = c('base scenario','historical','realized'))+
+                                                                     labels = c(expression(paste('HCR'[0])),'MD','AC'))+
   scale_x_continuous('Harvest control rule')+ coord_cartesian(ylim=c(0, 800), xlim = c(0,1000))+
   geom_point(data = df.tac,aes(x=AssessTac*1e-3, y = Realized*1e-3), color = cols[3])+
   geom_point(data = df.tac,aes(x=AssessTac*1e-3,y = TAC*1e-3), color = cols[2])+

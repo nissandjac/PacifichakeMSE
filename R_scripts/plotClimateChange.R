@@ -137,38 +137,73 @@ for(k in 1:nyears){
                               model = 'high', season = i, country = 'USA', year = pyears[k])
 
     if(i == 1 & k == 1){
-      df.movement <- rbind(tmp,tmp.med,tmp.high, tmp.us, tmp.med.us,tmp.high.us)
+      df.movement.all <- rbind(tmp,tmp.med,tmp.high, tmp.us, tmp.med.us,tmp.high.us)
 
     }else{
-      df.movement <- rbind(df.movement, tmp.med,tmp.high, tmp.us, tmp.med.us,tmp.high.us)
+      df.movement.all <- rbind(df.movement.all, tmp.med,tmp.high, tmp.us, tmp.med.us,tmp.high.us)
     }
 
   }
 }
 
 #png('survey_comps.png', width = 16, height = 10, res= 400, unit = 'cm')
-ggplot(df.movement[df.movement$year %in% c(2019) &
-                   df.movement$model == 'base' & df.movement$country == 'USA' &
-                   df.movement$season %in% 1:4,],
+ggplot(df.movement.all[df.movement.all$year %in% c(2019) &
+                   df.movement.all$model == 'base' & df.movement.all$country == 'USA' &
+                   df.movement.all$season %in% 1:4,],
        aes(x = age, y = movement, color = factor(year),group = (year)))+
   geom_line(color = 'blue')+facet_wrap(~season)+theme_classic()+
-  geom_line(data = df.movement[df.movement$year %in% c(2019) &
-                          df.movement$model == 'high' & df.movement$country == 'CAN' &
-                          df.movement$season %in% 1:4,], linetype = 2, color = 'red')+
+  geom_line(data = df.movement.all[df.movement.all$year %in% c(2019) &
+                          df.movement.all$model == 'high' & df.movement.all$country == 'CAN' &
+                          df.movement.all$season %in% 1:4,], linetype = 2, color = 'red')+
   labs(color = 'year')+
   scale_y_continuous('movement\nrate')+
-  geom_line(data = df.movement[df.movement$year %in% c(2048) &
-                                 df.movement$model == 'medium' & df.movement$country == 'USA' &
-                                 df.movement$season %in% 1:4,], color = 'blue', linetype = 2)+
-  geom_line(data = df.movement[df.movement$year %in% c(2048) &
-                                 df.movement$model == 'high' & df.movement$country == 'USA' &
-                                 df.movement$season %in% 1,], color = 'blue', linetype = 3)+
-  geom_line(data = df.movement[df.movement$year %in% c(2048) &
-                                 df.movement$model == 'medium' & df.movement$country == 'CAN' &
-                                 df.movement$season %in% 1:4,], color = 'red', linetype = 2)+
-  geom_line(data = df.movement[df.movement$year %in% c(2048) &
-                                 df.movement$model == 'high' & df.movement$country == 'CAN' &
-                                 df.movement$season %in% 1,], color = 'red', linetype = 3)
+  geom_line(data = df.movement.all[df.movement.all$year %in% c(2048) &
+                                 df.movement.all$model == 'medium' & df.movement.all$country == 'USA' &
+                                 df.movement.all$season %in% 1:4,], color = 'blue', linetype = 2)+
+  geom_line(data = df.movement.all[df.movement.all$year %in% c(2048) &
+                                 df.movement.all$model == 'high' & df.movement.all$country == 'USA' &
+                                 df.movement.all$season %in% 1,], color = 'blue', linetype = 3)+
+  geom_line(data = df.movement.all[df.movement.all$year %in% c(2048) &
+                                 df.movement.all$model == 'medium' & df.movement.all$country == 'CAN' &
+                                 df.movement.all$season %in% 1:4,], color = 'red', linetype = 2)+
+  geom_line(data = df.movement.all[df.movement.all$year %in% c(2048) &
+                                 df.movement.all$model == 'high' & df.movement.all$country == 'CAN' &
+                                 df.movement.all$season %in% 1,], color = 'red', linetype = 3)
 
 
  #  scale_colour_brewer(palette = "Greys")+
+
+# Other figures
+# Text for publication
+ann_mm <- data.frame(age = 4,movement = 0.75, season = 1, country = 'USA')
+ann_return <- data.frame(age = 10,movement = 0.35, season = 4, country = 'USA')
+
+df.rib <- data.frame(ymin = df.movement$movement,
+                     ymax = df.rib$movement[df.rib$model == 'high'],
+                     season = df.rib$season[df.rib$model == 'base'],
+                     age = df.rib$age[df.rib$model == 'base'],
+                     movement =  df.rib$movement[df.rib$model == 'base'], country = df.rib$country[df.rib$model == 'high'])
+
+
+#png('survey_comps.png', width = 16, height = 10, res= 400, unit = 'cm')
+p.move <-ggplot(df.movement, aes(x = age, y = movement, color = country))+facet_wrap(~season)+theme_classic()+
+  geom_line(size = 1.45)+scale_y_continuous(limit = c(0,1),name = 'movement rate')+
+  scale_color_manual(values = c('darkred','blue4'))+
+  theme(legend.title = element_blank(),legend.position = c(0.1,0.3), legend.direction = 'vertical',
+        legend.background = element_rect(fill=NA))+
+  geom_hline(data = data.frame(season = 1),
+             aes(yintercept = max(df.movement$movement[df.movement$country == 'USA' & df.movement$season == 1])),
+             linetype = 2)+
+  geom_text(data = ann_mm, label = 'max\n movement', color = 'black')+
+  geom_text(data = ann_return, label = 'return\n rate', color = 'black')+
+  geom_segment(data = data.frame(x= 4, y= 0.57, xend = 4, yend = 0.38, season = 1),
+               aes(x=x,  y= y, xend = xend, yend=yend), color = 'black',
+               arrow = arrow(length = unit(0.1, "inches"))
+  )+
+  geom_segment(data = data.frame(x= 10, y= 0.50, xend = 10, yend = 0.80, season = 4),
+               aes(x=x,  y= y, xend = xend, yend=yend), color = 'black',
+               arrow = arrow(length = unit(0.1, "inches"))
+  )+
+  geom_ribbon(data = df.rib, aes(x = age,ymin = ymin, ymax=ymax), fill = 'gray', alpha = 0.4, linetype =)+guides(fill = NA)
+
+p.move
