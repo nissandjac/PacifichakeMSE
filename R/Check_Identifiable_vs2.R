@@ -6,11 +6,22 @@
 #' @export
 #'
 #' @examples
-#'
+#' 
+#' 
+#' 
+extract_fixed = function( obj ){
+  if( length(obj$env$random)==0 ){
+    Return = obj$env$last.par.best
+  }else{
+    Return = obj$env$last.par.best[-c(obj$env$random)]
+  }
+  return( Return )
+}
+
 Check_Identifiable_vs2 = function( obj , printParams = TRUE ){
 
     # Finite-different hessian
-  ParHat = TMBhelper:::extract_fixed( obj )
+  ParHat = extract_fixed( obj )
   List = NULL
   List[["Hess"]] = optimHess( par=ParHat, fn=obj$fn, gr=obj$gr )
 
