@@ -108,7 +108,7 @@ ls.save <- list()
 ls.converge <- matrix(0, nruns)
 
 
-for (i in 1:nruns){
+for (i in 131:nruns){
   tmp <- run_multiple_MSEs(simyears = simyears,
                            seeds = seeds[i],
                            TAC = 2, df = df, cincrease = 0, mincrease = 0)
@@ -151,7 +151,7 @@ if(is.list(tmp)){
 
 }
 # # # #
-save(ls.save,file = 'results/Climate/MSErun_move_JMC_climate_0_02_HYBR_TAC2.Rdata')
+save(ls.save,file = 'results/Climate/MSErun_move_JMC_climate_0_02_HYBR_TAC2_480.Rdata')
 #
 #
 # #
