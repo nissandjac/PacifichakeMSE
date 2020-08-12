@@ -37,7 +37,7 @@ simdata0 <- sim.data # The other one is gonna get overwritten.
 
 
 
-folder <- 'results/Climate/'
+folder <- 'C:/Users/Nis/Dropbox/NOAA/Hake MSE/MSE results/final results/'
 
 
 files <- dir(folder)[grep(dir(folder),pattern = '.Rdata')]
@@ -204,7 +204,7 @@ AAVplot <- ggplot(AAV.tot[AAV.tot$year>1990,], aes(x = year, y = AAVmean, color 
 
 
 
-png(paste('results/Climate/','objectives_presentation.png', sep = ''), width = 16, height =20, res = 400, unit = 'cm')
+png('results/Climate/objectives_presentation.png', width = 16, height =20, res = 400, unit = 'cm')
 
 cplot/ssbplot
 
