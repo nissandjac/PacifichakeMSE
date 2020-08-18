@@ -39,7 +39,7 @@ simdata0 <- sim.data # The other one is gonna get overwritten.
 
 folder <- 'C:/Users/Nis/Dropbox/NOAA/Hake MSE/MSE results/final results/'
 
-folder <- 'C:/Users/nsja/Dropbox/NOAA/Hake MSE/MSE results/final results/'
+#folder <- 'C:/Users/nsja/Dropbox/NOAA/Hake MSE/MSE results/final results/'
 
 
 
@@ -60,8 +60,12 @@ for(i in 1:length(files)){
 
   catchcdf <- processMSE(df.MSE, 'Catch', idx = c(2,3), spacenames = c('CAN', 'USA'), runs = 500,nspace = 2)
   catchdf <- processMSE(df.MSE, 'Catch', idx = 2, spacenames = c('CAN', 'USA'), runs = 500,nspace = 2)
+
   SSB_mid <- processMSE(df.MSE, id = 'SSB.mid', idx = c(1,2), spacenames = c('CAN', 'USA'), runs = 500,nspace = 2)
   SSB_tot <- processMSE(df.MSE, id = 'SSB', idx = 1, spacenames = c('CAN', 'USA'), runs = 500,nspace = 2)
+
+  SSB.om <- processMSE(df.MSE, id = 'SSB.hes', idx = 1:2, fn = 'rows', spacenames = c('CAN', 'USA'), runs = 500,nspace = 2)
+
   # Calculate AAV
   AAVdf <- AAV(catchcdf)
   AAVtottmp <- AAV(catchdf)
@@ -143,7 +147,7 @@ for(i in 1:length(files)){
     catchdfexp <- catchdf
     catchcdfexp <- catchcdf
     catch.tot <- catch.tot.tmp
-    
+
     SSBdf <- SSB_mid
     SSB.tot <- SSB.tot.tmp
     SSB_cdf <- SSB_tot
@@ -151,7 +155,7 @@ for(i in 1:length(files)){
     AAVdfexp <- AAVdf
     AAV.tot <- AAV.tot.tmp
     AAVcdf <- AAVtottmp
-    
+
     }else{
     catchdfexp <- rbind(catchdfexp,catchdf)
     catchcdfexp <- rbind(catchcdfexp,catchcdf)
@@ -160,11 +164,11 @@ for(i in 1:length(files)){
     SSBdf <- rbind(SSBdf, SSB_mid)
     SSB.tot <- rbind(SSB.tot, SSB.tot.tmp)
     SSB_cdf <- rbind(SSB_cdf, SSB_tot)
-    
+
     AAVdfexp <- rbind(AAVdfexp, AAVdf)
     AAV.tot <- rbind(AAV.tot, AAV.tot.tmp)
     AAVcdf <- rbind(AAVcdf, AAVtottmp)
-    
+
   }
 
 
@@ -307,7 +311,7 @@ ccc-pp
 
 median(AAVdfexp$AAV[AAVdfexp$year>2019 & AAVdfexp$HCR == 'HCR0' & AAVdfexp$climate =='0'])
 
-# Relative SSB 
+# Relative SSB
 median(SSB_cdf$value[SSB_cdf$year>2040 & SSB_cdf$HCR == 'HCR0' & SSB.tot$climate == '0']/sum(sim.data$SSB0))# Country catch
 sd(SSB_cdf$value[SSB_cdf$year>2040 & SSB_cdf$HCR == 'HCR0' & SSB.tot$climate == '0']/sum(sim.data$SSB0))# Country catch
 median(SSB_cdf$value[SSB_cdf$year>2040 & SSB_cdf$HCR == 'HCR0' & SSB.tot$climate == '0'])# Country catch
@@ -316,9 +320,9 @@ median(SSB_cdf$value[SSB_cdf$year>2040 & SSB_cdf$HCR == 'HCR0' & SSB.tot$climate
 
 HCRtest <- 'HCR0'
 
-p <- median(catchcdfexp[catchcdfexp$year>2040 & catchcdfexp$space == 'CAN' & 
+p <- median(catchcdfexp[catchcdfexp$year>2040 & catchcdfexp$space == 'CAN' &
                           catchcdfexp$climate == '0' & catchcdfexp$HCR == HCRtest,]$value)/
-  median(catchcdfexp[catchcdfexp$year>2040 & catchcdfexp$space == 'CAN' & 
+  median(catchcdfexp[catchcdfexp$year>2040 & catchcdfexp$space == 'CAN' &
                        catchcdfexp$climate == '04' & catchcdfexp$HCR == HCRtest,]$value)
 p <- median(catchcdfexp[catchcdfexp$year>2040 & catchcdfexp$space == 'USA' & catchcdfexp$climate == '0'& catchcdfexp$HCR == HCRtest,]$value)/
   median(catchcdfexp[catchcdfexp$year>2040 & catchcdfexp$space == 'USA' & catchcdfexp$climate == '04' & catchcdfexp$HCR == HCRtest,]$value)
@@ -327,9 +331,9 @@ p
 
 HCRtest <- 'HCR0'
 
-p <- median(SSBdf[SSBdf$year>2040 & SSBdf$space == 'CAN' & 
+p <- median(SSBdf[SSBdf$year>2040 & SSBdf$space == 'CAN' &
                           SSBdf$climate == '0' & SSBdf$HCR == HCRtest,]$value)/
-  median(SSBdf[SSBdf$year>2040 & SSBdf$space == 'CAN' & 
+  median(SSBdf[SSBdf$year>2040 & SSBdf$space == 'CAN' &
                        SSBdf$climate == '04' & SSBdf$HCR == HCRtest,]$value)
 p <- median(SSBdf[SSBdf$year>2040 & SSBdf$space == 'USA' & SSBdf$climate == '0'& SSBdf$HCR == HCRtest,]$value)/
   median(SSBdf[SSBdf$year>2040 & SSBdf$space == 'USA' & SSBdf$climate == '04' & SSBdf$HCR == HCRtest,]$value)
@@ -337,15 +341,32 @@ p
 
 
 HCRtest <- 'HCR0'
+ytest <- 2040
 
-p <- median(AAVdf[AAVdf$year>2040 & AAVdf$space == 'CAN' & 
-                    AAVdf$climate == '0' & AAVdf$HCR == HCRtest,]$AAV)/
-  median(AAVdf[AAVdf$year>2040 & AAVdf$space == 'CAN' & 
-                 AAVdf$climate == '04' & AAVdf$HCR == HCRtest,]$value)
-p <- median(AAVdf[AAVdf$year>2040 & AAVdf$space == 'USA' & AAVdf$climate == '0'& AAVdf$HCR == HCRtest,]$value)/
-  median(AAVdf[AAVdf$year>2040 & AAVdf$space == 'USA' & AAVdf$climate == '04' & AAVdf$HCR == HCRtest,]$value)
+p <- (1-(median(AAVdfexp[AAVdfexp$year>ytest &AAVdfexp$space == 'CAN' &
+                   AAVdfexp$climate == '0' &AAVdfexp$HCR == HCRtest,]$AAV)/
+  median(AAVdfexp[AAVdfexp$year>ytest & AAVdfexp$space == 'CAN' &
+                AAVdfexp$climate == '04' & AAVdfexp$HCR == HCRtest,]$AAV)))*100
+print(p)
+
+p <- (1-median(AAVdfexp[AAVdfexp$year>ytest & AAVdfexp$space == 'USA' &AAVdfexp$climate == '0'& AAVdfexp$HCR == HCRtest,]$AAV)/
+  median(AAVdfexp[AAVdfexp$year>ytest & AAVdfexp$space == 'USA' & AAVdfexp$climate == '04' & AAVdfexp$HCR == HCRtest,]$AAV))*100
 p
 
+# Biggest differerence
+ccc <- median(SSB.tot$SSBmean[catch.tot$year>2040 & catch.tot$HCR == 'AC' & catch.tot$climate =='02'])
+cc1 <- median(SSB.tot$SSBmean[catch.tot$year>2040 & catch.tot$HCR == 'MD' & catch.tot$climate =='02'])
+pp <- median(SSB.tot$SSBmean[SSB.tot$year>2040 & SSB.tot$HCR == 'HCR0' & catch.tot$climate =='02'])
+
+
+(cc1/pp-1)*100
+
+cc <- median(catch.tot[catch.tot$year>2040 & catch.tot$HCR == 'AC' & catch.tot$climate =='0',]$catchmean)
+cc <- median(catch.tot[catch.tot$year>2040 & catch.tot$HCR == 'MD' & catch.tot$climate =='0',]$catchmean)
+cc2 <- median(catch.tot[catch.tot$year>2040 & catch.tot$HCR == 'HCR0' & catch.tot$climate =='04',]$catchmean)
+
+
+(cc/cc2-1)*100
 
 
 
@@ -400,7 +421,7 @@ dev.off()
 
 
 
-# Group catches by decade 
+# Group catches by decade
 
 catchdfexp$decade <- 0
 catchdfexp$decade[catchdfexp$year >2019 & catchdfexp$year<2030] <- 2020
@@ -426,7 +447,7 @@ pdec.c <- ggplot(ctmp[ctmp$decade != 0,], aes(x = as.factor(decade), y= value*1e
   scale_fill_manual(values = cols)+
   scale_color_manual(values = cols, labels = c('no change', 'medium', 'high'))+
   scale_x_discrete(name = '',breaks = c(2020,2030,2040), labels = c("","",""))+
-  scale_y_continuous('catch\n(million tonnes)') + 
+  scale_y_continuous('catch\n(million tonnes)') +
   theme(legend.position = 'top',
         text = element_text(size = 8),
         legend.title = element_blank(),
@@ -453,7 +474,7 @@ ssbtmp$decade[ssbtmp$year >2039 & ssbtmp$year<2050] <- 2040
 
 
 
-pdec.ssb <- ggplot(ssbtmp[ssbtmp$decade != 0,], 
+pdec.ssb <- ggplot(ssbtmp[ssbtmp$decade != 0,],
                  aes(x = as.factor(decade), y= value*1e-6, color = climate, fill = climate))+
   facet_wrap(~HCR)+coord_cartesian(ylim = c(0,1.6))+
   theme_classic()+
@@ -463,7 +484,7 @@ pdec.ssb <- ggplot(ssbtmp[ssbtmp$decade != 0,],
   scale_color_manual(values = cols)+
   scale_x_discrete(name = '',breaks = c(2020,2030,2040), labels = c("","",""))+
   scale_y_continuous('spawning biomass\n(million tonnes)')+
-  theme(legend.position = 'none') + 
+  theme(legend.position = 'none') +
   theme(text = element_text(size = 8),
         axis.text.x = element_text(size =6),
         plot.margin = unit(c(1,1,0,1), 'pt'),
@@ -480,14 +501,14 @@ aavtmp$decade[aavtmp$year >2019 & aavtmp$year<2030] <- 2020
 aavtmp$decade[aavtmp$year >2029 & aavtmp$year<2040] <- 2030
 aavtmp$decade[aavtmp$year >2039 & aavtmp$year<2050] <- 2040
 
-# 
+#
  # aavtmp <- aavtmp %>%
  #   group_by(run,year,HCR,climate,decade) %>%
  #   summarise(AAV = median(AAV))
 
 
 
-pdec.aav <- ggplot(aavtmp[aavtmp$decade != 0,], 
+pdec.aav <- ggplot(aavtmp[aavtmp$decade != 0,],
                    aes(x = as.factor(decade), y= AAV, color = climate, fill = climate))+
   facet_wrap(~HCR)+coord_cartesian(ylim = c(0,2))+
   theme_classic()+
@@ -510,3 +531,16 @@ pdec.aav
 png(paste('results/Climate/','objectives_decade.png', sep = ''), width = 16, height =12, res = 400, unit = 'cm')
 pdec.c/pdec.ssb/pdec.aav
 dev.off()
+
+
+
+# Plot the performance of the operating model
+
+
+
+
+
+
+
+
+

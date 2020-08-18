@@ -21,12 +21,13 @@ fnsum <- function(x, idx){
 #' @param df.MSE MSE that contains the data
 #' @param id object to extract
 #' @param idx which indexes to save to
+#' @param fn function to summarize data
 #' @param spacenames naming convention for spatial areas
 #' @param runs number of runs in MSE
 #' @param nspace number of spaces
 
 #'
-#' @return returns a concanated data frame
+#' @return returns a concatenated data frame
 #' @export
 #'
 #' @examples
@@ -36,21 +37,29 @@ processMSE <- function(
   df.MSE,
   id,
   idx = 1,
+  fn = 'sums',
   spacenames = c('CAN','USA'),
   runs = 100,
   nspace = 2
 ){
 
-tmp <- lapply(purrr::map(df.MSE[names(df.MSE) == id],
+  if(fn == 'sums'){
+  tmp <- lapply(purrr::map(df.MSE[names(df.MSE) == id],
                          .f = fnsum, idx = idx), data.frame, stringsAsFactors = FALSE)
+  }
 
-if(length(idx) == 1){
-tmp <- lapply(tmp, setNames, nm = 'value')
-}
+  if(fn == 'rows'){
+  tmp <- lapply(purrr::map(df.MSE[names(df.MSE) == id],
+                         .f = select, idx), data.frame, stringsAsFactors = FALSE)
+  }
 
-if(length(idx) > 1){
+  if(length(idx) == 1){
+  tmp <- lapply(tmp, setNames, nm = 'value')
+  }
+
+  if(length(idx) > 1){
   tmp <- lapply(tmp, setNames, spacenames)
-}
+  }
 
 
 yrs <- as.numeric(rownames(tmp[[1]]))
