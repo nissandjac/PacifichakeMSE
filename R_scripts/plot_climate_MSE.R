@@ -59,16 +59,16 @@ for(i in 1:length(files)){
 
 
   catchcdf <- processMSE(df.MSE, 'Catch', idx = c(2,3), spacenames = c('CAN', 'USA'), runs = 500,nspace = 2)
-  catchdf <- processMSE(df.MSE, 'Catch', idx = 2, spacenames = c('CAN', 'USA'), runs = 500,nspace = 2)
+  catchdf <- processMSE(df.MSE, 'Catch', idx = 2, spacenames = c('value'), runs = 500,nspace = 2)
 
   SSB_mid <- processMSE(df.MSE, id = 'SSB.mid', idx = c(1,2), spacenames = c('CAN', 'USA'), runs = 500,nspace = 2)
-  SSB_tot <- processMSE(df.MSE, id = 'SSB', idx = 1, spacenames = c('CAN', 'USA'), runs = 500,nspace = 2)
+  SSB_tot <- processMSE(df.MSE, id = 'SSB', idx = 1, spacenames = c('value'), runs = 500,nspace = 2)
 
-  SSB.om <- processMSE(df.MSE, id = 'SSB.hes', idx = 1:2, fn = 'rows', spacenames = c('CAN', 'USA'), runs = 500,nspace = 2)
+  SSB.om <- processMSE(df.MSE, id = 'SSB.hes', idx = 1, fn = 'rows', spacenames = c('value'), runs = 500,nspace = 2)
 
   # Calculate AAV
-  AAVdf <- AAV(catchcdf)
-  AAVtottmp <- AAV(catchdf)
+  AAVdf <- AAV(catchcdf, idx = 4)
+  AAVtottmp <- AAV(catchdf, idx = 2)
 
   catch.tot.tmp <- catchdf %>%
     group_by(year) %>%
@@ -95,17 +95,19 @@ for(i in 1:length(files)){
 
   runname <- paste(strs[4],strs[6],strsplit(strs[8], split = '.Rdata')[[1]], sep = '_')
 
-  catchdf$run <- runname
-  catchcdf$run <- runname
-  catch.tot.tmp$run <- runname
+  catchdf$MP <- runname
+  catchcdf$MP <- runname
+  catch.tot.tmp$MP <- runname
 
-  SSB_mid$run <- runname
-  SSB_tot$run <- runname
-  SSB.tot.tmp$run <- runname
+  SSB_mid$MP <- runname
+  SSB_tot$MP <- runname
+  SSB.tot.tmp$MP <- runname
+  SSB.om$MP <- runname
 
-  AAVdf$run <- runname
-  AAVtottmp$run <- runname
-  AAV.tot.tmp$run <- runname
+
+  AAVdf$MP <- runname
+  AAVtottmp$MP <- runname
+  AAV.tot.tmp$MP <- runname
 
   HCRname <- strsplit(strs[8], split = '.Rdata')[[1]]
 
@@ -126,6 +128,7 @@ for(i in 1:length(files)){
   SSB_mid$HCR <- HCRname
   SSB.tot.tmp$HCR <- HCRname
   SSB_tot$HCR <- HCRname
+  SSB.om$HCR <- HCRname
 
   AAVdf$HCR <- HCRname
   AAV.tot.tmp$HCR <- HCRname
@@ -138,6 +141,7 @@ for(i in 1:length(files)){
   SSB_mid$climate <- strs[6]
   SSB.tot.tmp$climate <- strs[6]
   SSB_tot$climate <- strs[6]
+  SSB.om$climate <- strs[6]
 
   AAV.tot.tmp$climate <- strs[6]
   AAVdf$climate <- strs[6]
@@ -151,6 +155,7 @@ for(i in 1:length(files)){
     SSBdf <- SSB_mid
     SSB.tot <- SSB.tot.tmp
     SSB_cdf <- SSB_tot
+    ssb.om <- SSB.om
 
     AAVdfexp <- AAVdf
     AAV.tot <- AAV.tot.tmp
@@ -164,6 +169,7 @@ for(i in 1:length(files)){
     SSBdf <- rbind(SSBdf, SSB_mid)
     SSB.tot <- rbind(SSB.tot, SSB.tot.tmp)
     SSB_cdf <- rbind(SSB_cdf, SSB_tot)
+    ssb.om <- rbind(ssb.om,SSB.om)
 
     AAVdfexp <- rbind(AAVdfexp, AAVdf)
     AAV.tot <- rbind(AAV.tot, AAV.tot.tmp)
@@ -239,7 +245,7 @@ perc <- c(0.1,0.90)
 
 rmout <- quantile(catchcdfexp$value[catchdfexp$year>2019]*1e-6, probs = perc)
 
-vplot1 <- ggplot(catchcdfexp[catchcdfexp$year>2019,], aes(x = HCR,y = value*1e-6, group = run, fill = climate))+
+vplot1 <- ggplot(catchcdfexp[catchcdfexp$year>2019,], aes(x = HCR,y = value*1e-6, group = MP, fill = climate))+
   geom_violin(position = dodge)+scale_y_continuous(name = 'Catch \n(million tonnes)')+geom_line()+
   theme_bw()+theme(legend.position = 'top',
                    text = element_text(size = 8),
@@ -254,11 +260,11 @@ vplot1 <- ggplot(catchcdfexp[catchcdfexp$year>2019,], aes(x = HCR,y = value*1e-6
   geom_boxplot(width=0.2, col = 'black', outlier.shape = NA, position = dodge,
                 show.legend = FALSE)+scale_fill_manual(values= cols, labels = c('no change','medium', 'high'))+
   guides(shape = guide_legend(override.aes = list(shape = 2)))+
-  facet_wrap(~space)+coord_cartesian(ylim = rmout)
+  facet_wrap(~variable)+coord_cartesian(ylim = rmout)
 
 rmout <- quantile(SSBdf$value[SSBdf$year>2019]*1e-6, probs = perc)
 
-vplot2 <- ggplot(SSBdf[SSBdf$year>2019,], aes(x = HCR,y = value*1e-6, group = run, fill = climate))+
+vplot2 <- ggplot(SSBdf[SSBdf$year>2019,], aes(x = HCR,y = value*1e-6, group = MP, fill = climate))+
   geom_violin(position = dodge)+scale_y_continuous(name = 'SSB \n(million tonnes)')+geom_line()+theme_bw()+
   theme(legend.position = 'none',
         text = element_text(size = 8),
@@ -267,13 +273,13 @@ vplot2 <- ggplot(SSBdf[SSBdf$year>2019,], aes(x = HCR,y = value*1e-6, group = ru
         axis.text.x = element_blank(),
         plot.margin = unit(c(1,1,0,1), 'pt'))+scale_x_discrete('')+
   geom_boxplot(width=0.2, col = 'black', outlier.shape = NA, position = dodge)+
-  scale_fill_manual(values= cols)+facet_wrap(~space)+coord_cartesian(ylim = rmout)
+  scale_fill_manual(values= cols)+facet_wrap(~variable)+coord_cartesian(ylim = rmout)
 
 # Remove stupid outliers
 rmout <- quantile(AAVdfexp$AAV[AAVdfexp$year>2019], probs = perc)
 rmout <- c(0,4)
 
-vplot3 <- ggplot(AAVdfexp[AAVdfexp$year>2019,], aes(x = HCR,y = AAV, group = run, fill = climate))+
+vplot3 <- ggplot(AAVdfexp[AAVdfexp$year>2019,], aes(x = HCR,y = AAV, group = MP, fill = climate))+
   geom_violin(position = dodge)+scale_y_continuous(name = 'AAV')+geom_line()+theme_bw()+
   theme(legend.position = 'none',
         text = element_text(size = 8),
@@ -282,7 +288,7 @@ vplot3 <- ggplot(AAVdfexp[AAVdfexp$year>2019,], aes(x = HCR,y = AAV, group = run
         strip.background = element_blank(),
         strip.text.x = element_blank())+
   geom_boxplot(width=0.2, col = 'black', outlier.shape = NA, position = dodge)+scale_fill_manual(values= cols)+
-  facet_wrap(~space, nrow =1)+coord_cartesian(ylim = rmout)
+  facet_wrap(~variable, nrow =1)+coord_cartesian(ylim = rmout)
 
 
 png(paste('results/Climate/','violin_publication.png', sep = ''), width = 16, height =12, res = 400, unit = 'cm')
@@ -290,7 +296,6 @@ png(paste('results/Climate/','violin_publication.png', sep = ''), width = 16, he
 vplot1/vplot2/vplot3
 
 dev.off()
-
 
 # Minor calculations for manuscript
 
@@ -320,37 +325,37 @@ median(SSB_cdf$value[SSB_cdf$year>2040 & SSB_cdf$HCR == 'HCR0' & SSB.tot$climate
 
 HCRtest <- 'HCR0'
 
-p <- median(catchcdfexp[catchcdfexp$year>2040 & catchcdfexp$space == 'CAN' &
+p <- median(catchcdfexp[catchcdfexp$year>2040 & catchcdfexp$variable == 'CAN' &
                           catchcdfexp$climate == '0' & catchcdfexp$HCR == HCRtest,]$value)/
-  median(catchcdfexp[catchcdfexp$year>2040 & catchcdfexp$space == 'CAN' &
+  median(catchcdfexp[catchcdfexp$year>2040 & catchcdfexp$variable == 'CAN' &
                        catchcdfexp$climate == '04' & catchcdfexp$HCR == HCRtest,]$value)
-p <- median(catchcdfexp[catchcdfexp$year>2040 & catchcdfexp$space == 'USA' & catchcdfexp$climate == '0'& catchcdfexp$HCR == HCRtest,]$value)/
-  median(catchcdfexp[catchcdfexp$year>2040 & catchcdfexp$space == 'USA' & catchcdfexp$climate == '04' & catchcdfexp$HCR == HCRtest,]$value)
+p <- median(catchcdfexp[catchcdfexp$year>2040 & catchcdfexp$variable == 'USA' & catchcdfexp$climate == '0'& catchcdfexp$HCR == HCRtest,]$value)/
+  median(catchcdfexp[catchcdfexp$year>2040 & catchcdfexp$variable == 'USA' & catchcdfexp$climate == '04' & catchcdfexp$HCR == HCRtest,]$value)
 p
 
 
 HCRtest <- 'HCR0'
 
-p <- median(SSBdf[SSBdf$year>2040 & SSBdf$space == 'CAN' &
+p <- median(SSBdf[SSBdf$year>2040 & SSBdf$variable == 'CAN' &
                           SSBdf$climate == '0' & SSBdf$HCR == HCRtest,]$value)/
-  median(SSBdf[SSBdf$year>2040 & SSBdf$space == 'CAN' &
+  median(SSBdf[SSBdf$year>2040 & SSBdf$variable == 'CAN' &
                        SSBdf$climate == '04' & SSBdf$HCR == HCRtest,]$value)
-p <- median(SSBdf[SSBdf$year>2040 & SSBdf$space == 'USA' & SSBdf$climate == '0'& SSBdf$HCR == HCRtest,]$value)/
-  median(SSBdf[SSBdf$year>2040 & SSBdf$space == 'USA' & SSBdf$climate == '04' & SSBdf$HCR == HCRtest,]$value)
+p <- median(SSBdf[SSBdf$year>2040 & SSBdf$variable == 'USA' & SSBdf$climate == '0'& SSBdf$HCR == HCRtest,]$value)/
+  median(SSBdf[SSBdf$year>2040 & SSBdf$variable == 'USA' & SSBdf$climate == '04' & SSBdf$HCR == HCRtest,]$value)
 p
 
 
 HCRtest <- 'HCR0'
 ytest <- 2040
 
-p <- (1-(median(AAVdfexp[AAVdfexp$year>ytest &AAVdfexp$space == 'CAN' &
+p <- (1-(median(AAVdfexp[AAVdfexp$year>ytest &AAVdfexp$variable == 'CAN' &
                    AAVdfexp$climate == '0' &AAVdfexp$HCR == HCRtest,]$AAV)/
-  median(AAVdfexp[AAVdfexp$year>ytest & AAVdfexp$space == 'CAN' &
+  median(AAVdfexp[AAVdfexp$year>ytest & AAVdfexp$variable == 'CAN' &
                 AAVdfexp$climate == '04' & AAVdfexp$HCR == HCRtest,]$AAV)))*100
 print(p)
 
-p <- (1-median(AAVdfexp[AAVdfexp$year>ytest & AAVdfexp$space == 'USA' &AAVdfexp$climate == '0'& AAVdfexp$HCR == HCRtest,]$AAV)/
-  median(AAVdfexp[AAVdfexp$year>ytest & AAVdfexp$space == 'USA' & AAVdfexp$climate == '04' & AAVdfexp$HCR == HCRtest,]$AAV))*100
+p <- (1-median(AAVdfexp[AAVdfexp$year>ytest & AAVdfexp$variable == 'USA' &AAVdfexp$climate == '0'& AAVdfexp$HCR == HCRtest,]$AAV)/
+  median(AAVdfexp[AAVdfexp$year>ytest & AAVdfexp$variable == 'USA' & AAVdfexp$climate == '04' & AAVdfexp$HCR == HCRtest,]$AAV))*100
 p
 
 # Biggest differerence
@@ -406,14 +411,14 @@ cplot/ssbplot
 dev.off()
 
 
-vplot2 <- ggplot(SSBdf[SSBdf$year>2019,], aes(x = HCR,y = value*1e-6, group = run, fill = climate))+
+vplot2 <- ggplot(SSBdf[SSBdf$year>2019,], aes(x = HCR,y = value*1e-6, group = MP, fill = climate))+
   geom_violin(position = dodge)+scale_y_continuous(name = 'SSB \n(million tonnes)', limit = rmout)+
   geom_line()+theme_bw()+
   theme(legend.position = 'none',
         text = element_text(size = 12),
         plot.margin = unit(c(1,1,0,1), 'pt'))+scale_x_discrete('')+
   geom_boxplot(width=0.2, col = 'black', outlier.shape = NA, position = dodge)+scale_fill_manual(values= cols)+
-  facet_wrap(~space)
+  facet_wrap(~variable)
 
 png(paste('results/Climate/','SSB_presentation.png', sep = ''), width = 16, height =10, res = 400, unit = 'cm')
 vplot2
@@ -536,11 +541,34 @@ dev.off()
 
 # Plot the performance of the operating model
 
+EE <- data.frame(EE.ssb = (ssb.om$value - SSB_cdf$value)/SSB_cdf$value, year = as.numeric(rownames(ls.save[[1]]$SSB)),
+                 run = ssb.om$run, MP = ssb.om$MP, HCR = ssb.om$HCR,
+                 climate = ssb.om$climate)
+
+ggplot(EE[EE$HCR == 'HCR0' & EE$year > 2010,], aes(x = as.factor(year), y = EE.ssb))+
+  geom_boxplot(outlier.alpha = 0.1)+facet_wrap(~climate)+coord_cartesian(ylim = c(-2,2))+theme_classic()+
+  scale_x_discrete(breaks = seq(1970,2050,by = 10), labels= seq(1970,2050,by = 10))+scale_y_continuous('relative\nerror')
 
 
+# summarize data
+EE.tot <- EE %>%
+  group_by(year, MP, HCR, climate) %>%
+  summarise(Emedian = median(EE.ssb),
+            Emin = quantile(EE.ssb, probs = 0.05),
+            Emax = quantile(EE.ssb, probs = 0.95))
+
+p.ee <- ggplot(EE.tot[EE.tot$year > 2018 & EE.tot$HCR == 'HCR0',], aes(x = year, y = Emedian, color = climate, fill = climate, linetype = climate))+
+  geom_line(size = 1.2)+theme_classic()+
+  scale_y_continuous('relative\nerror')+
+  geom_ribbon(aes(ymin = Emin, ymax = Emax), alpha = 0.2, linetype = 0,show.legend = FALSE)+coord_cartesian(ylim = c(-0.8,0.8))+
+  scale_color_manual(values = cols, labels = c('no change', 'medium', 'high'))+
+  scale_fill_manual(values = cols)+theme(legend.position = c(0.12,0.85))+guides(linetype = FALSE)+
+  geom_hline(aes(yintercept = 0), linetype = 2, color = 'black')#+facet_wrap(~HCR)
 
 
+p.ee
 
 
-
-
+png(file = 'test.png')
+p.ee
+dev.off()

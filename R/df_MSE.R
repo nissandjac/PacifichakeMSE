@@ -21,7 +21,7 @@ fnsum <- function(x, idx){
 #' @param df.MSE MSE that contains the data
 #' @param id object to extract
 #' @param idx which indexes to save to
-#' @param fn function to summarize data
+#' @param fn function to summarize data sums; sums data over indices, rows extracts data
 #' @param spacenames naming convention for spatial areas
 #' @param runs number of runs in MSE
 #' @param nspace number of spaces
@@ -38,7 +38,7 @@ processMSE <- function(
   id,
   idx = 1,
   fn = 'sums',
-  spacenames = c('CAN','USA'),
+  spacenames = NA,
   runs = 100,
   nspace = 2
 ){
@@ -57,20 +57,23 @@ processMSE <- function(
   tmp <- lapply(tmp, setNames, nm = 'value')
   }
 
-  if(length(idx) > 1){
+  if(all(is.na(spacenames) == 0)){
   tmp <- lapply(tmp, setNames, spacenames)
   }
 
 
-yrs <- as.numeric(rownames(tmp[[1]]))
+yrs <- as.numeric(rownames(df.MSE[names(df.MSE) == 'F0'][[1]]))
 
 names(tmp) <- paste('run',1:runs, sep = '')
 
 tmp.df <- data.table::rbindlist(tmp, idcol = 'run')
 tmp.df$year <- rep(yrs, runs)
 
+mnames <- names(tmp.df)
+mnames <- mnames[-which(mnames %in% c('year','run'))]
+
 if(length(idx) > 1){
-  tmp.df <- reshape2::melt(tmp.df, measure.vars = spacenames, variable.name = 'space')
+  tmp.df <- reshape2::melt(tmp.df, measure.vars = mnames)
 }
 
 
