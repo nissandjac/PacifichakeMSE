@@ -19,7 +19,6 @@ run_multiple_MSEs <- function(simyears = NULL,seeds = 12345, TAC = 1, df = NA,
 
 
 
-
   if(is.null(simyears)){
     print('Number of years to simulate not specified. Simulating 30 years into the future')
     simyears <- 30

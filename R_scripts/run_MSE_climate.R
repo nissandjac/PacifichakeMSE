@@ -34,23 +34,23 @@ ls.save <- list()
 ls.converge <- matrix(0, nruns)
 
 #
-# for (i in 1:nruns){
-#   tmp <- run_multiple_MSEs(simyears = simyears,
-#                            seeds = seeds[i],
-#                            TAC = 1, df = df, cincrease = 0, mincrease = 0)
-#   print(i)
-#
-#   if(is.list(tmp)){
-#     ls.save[[i]] <-tmp
-#     ls.converge[i] <- 1
-#   }else{
-#     ls.save[[i]] <- NA
-#     ls.converge[i] <- 0
-#   }
-#
-#
-# }
-#
+for (i in 1:nruns){
+  tmp <- run_multiple_MSEs(simyears = simyears,
+                           seeds = seeds[i],
+                           TAC = 1, df = df, cincrease = 0, mincrease = 0)
+  print(i)
+
+  if(is.list(tmp)){
+    ls.save[[i]] <-tmp
+    ls.converge[i] <- 1
+  }else{
+    ls.save[[i]] <- NA
+    ls.converge[i] <- 0
+  }
+
+
+}
+
 # # # # #
 # save(ls.save,file = 'results/Climate/MSErun_move_JMC_climate_0_HYBR_TAC1.Rdata')
 #

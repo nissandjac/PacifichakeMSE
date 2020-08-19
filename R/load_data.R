@@ -1,5 +1,5 @@
 ## Load the hake data
-# year and age input 
+# year and age input
 load_data <- function(){
 #' Load hake data for operating model
 
@@ -13,13 +13,13 @@ age <- 0:20
 nage <- length(age)
 msel <- rep(1,nage)
 # Maturity
-mat <- read.csv('data/maturity.csv')
+mat <- read.csv('inst/extdata/maturity.csv')
 
-# weight at age 
-wage <- read.csv('data/waa.csv')
-wage_unfished <- read.csv('data/unfished_waa.csv')
+# weight at age
+wage <- read.csv('inst/extdata/waa.csv')
+wage_unfished <- read.csv('inst/extdata/unfished_waa.csv')
 
-# Make the weight at ages the same length as the time series 
+# Make the weight at ages the same length as the time series
 wage_ssb = rbind(matrix(rep(as.numeric(wage_unfished[2:(nage+1)]),each = 9), nrow = 9),
                         as.matrix(wage[wage$fleet == 0,3:(nage+2)]))
 wage_catch = rbind(matrix(rep(as.numeric(wage_unfished[2:(nage+1)]),each = 9), nrow = 9),
@@ -33,19 +33,19 @@ wage_mid = rbind(matrix(rep(as.numeric(wage_unfished[2:(nage+1)]),each = 9), nro
 
 # Catch
 # catch <- read.csv('hake_totcatch.csv')
-catches.obs <- read.csv('data/catches.csv')
+catches.obs <- read.csv('inst/extdata/catches.csv')
 catch <- catches.obs$Total
 
 # Survey abundance
-df.survey <- read.csv('data/acoustic survey.csv')
+df.survey <- read.csv('inst/extdata/acoustic survey.csv')
 
 
 
 # Age comps
 
-age_survey.df <- read.csv('data/agecomps_survey.csv')
+age_survey.df <- read.csv('inst/extdata/agecomps_survey.csv')
 age_survey.df$flag <- 1
-age_catch.df <- read.csv('data/agecomps_fishery.csv')
+age_catch.df <- read.csv('inst/extdata/agecomps_fishery.csv')
 age_catch.df$flag <- 1
 # Insert dummy years
 
@@ -59,19 +59,19 @@ age_catch$year <- years
 for (i in 1:dim(age_survey.df)[1]){
     idx <- which(age_survey$year == age_survey.df$year[i])
     age_survey[idx,] <-age_survey.df[i,]
-  
+
 }
 
 for (i in 1:dim(age_catch.df)[1]){
   idx <- which(age_catch$year == age_catch.df$year[i])
   age_catch[idx,] <-age_catch.df[i,]
-  
+
 }
 
-# Calculate the bias adjustment 
+# Calculate the bias adjustment
 b <- matrix(NA, tEnd)
 Yr <- 1946:2017
-# Parameters 
+# Parameters
 yb_1 <- 1965 #_last_early_yr_nobias_adj_in_MPD
 yb_2 <- 1971 #_first_yr_fullbias_adj_in_MPD
 yb_3 <- 2016 #_last_yr_fullbias_adj_in_MPD
@@ -80,28 +80,28 @@ b_max <- 0.87 #_max_bias_adj_in_MPD
 
 b[1] <- 0
 for(j in 2:length(Yr)){
-  
+
   if (Yr[j] <= yb_1){
     b[j] = 0}
-  
+
   if(Yr[j] > yb_1 & Yr[j]< yb_2){
     b[j] = b_max*((Yr[j]-yb_1)/(yb_2-yb_1));
   }
-  
+
   if(Yr[j] >= yb_2 & Yr[j] <= yb_3){
     b[j] = b_max}
-  
+
   if(Yr[j] > yb_3 & Yr[j] < yb_4){
     b[j] = b_max*(1-(yb_3-Yr[j])/(yb_4-yb_3))
   }
-  
+
   if(Yr[j] >= yb_4){
     b[j] = 0
   }
   # if (b[j]<b[j-1]){
   #   stop('why')
   # }
-}  
+}
 
 ### h prior distribution
 hmin <- 0.2
@@ -118,31 +118,31 @@ Aprior = tau*(1-mu)
 Pconst <- 1e-6
 hrange <- seq(0.2,1, length.out = 100)
 
-Prior_Like =  (1.0-Bprior)*log(Pconst+hrange-hmin) + 
+Prior_Like =  (1.0-Bprior)*log(Pconst+hrange-hmin) +
               (1.0-Aprior)*log(Pconst+hmax-hrange)-
-              (1.0-Bprior)*log(Pconst+hprior-hmin) - 
+              (1.0-Bprior)*log(Pconst+hprior-hmin) -
               (1.0-Aprior)*log(Pconst+hmax-hprior)
 
 
-## Load the ageing error 
-# age_err <- read.csv('data/age_error_head.csv')
+## Load the ageing error
+# age_err <- read.csv('inst/extdata/age_error_head.csv')
 # names(age_err)[1] <- 'age'
 # age_err <- apply(age_err, 2, rev)
-# 
-# # fix the input matrices to  add ageing error 
-# ## survey 
+#
+# # fix the input matrices to  add ageing error
+# ## survey
 # survey_age <- matrix(-1, tEnd,nage-1)
-# 
+#
 # for(i in 1:tEnd){
 #   if(age_survey$flag[i] == 1){
 #     for(j in 1:20){
 #       survey_age[i,j] <- age_survey[i,j+2]
-#       
-#     }  
-# 
+#
+#     }
+#
 #   }
-#   
-#   
+#
+#
 # }
 
 df <-list(      #### Parameters #####
@@ -157,9 +157,9 @@ df <-list(      #### Parameters #####
                 age = age,
                 year_sel = length(1991:years[length(years)]), # Years to model time varying sel
                 selYear = 26,
-                tEnd = length(years), # The extra year is to initialize 
+                tEnd = length(years), # The extra year is to initialize
                 logQ = log(1.135767),   # Analytical solution
-                # Selectivity 
+                # Selectivity
                 Smin = 1,
                 Smin_survey = 2,
                 Smax = 6,
@@ -171,7 +171,7 @@ df <-list(      #### Parameters #####
                 ss_survey = age_survey$nTrips,
                 flag_survey =age_survey$flag,
                 age_survey = t(as.matrix(age_survey[,3:17])*0.01),
-                age_maxage = 15, # Max age for age comps 
+                age_maxage = 15, # Max age for age comps
                 logSDF = log(0.1),
                 # Catch
                 Catchobs = catch, # Convert to kg

@@ -2,16 +2,17 @@ library(TMB)
 compile("src/runHakeassessment.cpp")
 dyn.load(dynlib("src/runHakeassessment"))
 library(r4ss)
-mod <- SS_output('inst/extdata/SS32018/', printstats=FALSE, verbose = FALSE) # Read the true selectivity 
+library(PacifichakeMSE)
+mod <- SS_output('inst/extdata/SS32018/', printstats=FALSE, verbose = FALSE) # Read the true selectivity
 
 # Set the seed
 seedz <- 12345
 set.seed(seedz)
 
-source('R/load_files.R')
-source('R/load_files_OM.R')
-source('R/run_multiple_OMs.R')
-nruns <- 1000
+# source('R/load_files.R')
+# source('R/load_files_OM.R')
+# source('R/run_multiple_OMs.R')
+nruns <- 10
 seeds <- floor(runif(n = nruns, min = 1, max = 1e6))
 
 ls.save <- list()
@@ -31,10 +32,10 @@ for (i in 1:nruns){
     ls.save[[i]] <- NA
     ls.converge[i] <- 0
   }
-  
+
 }
-# # # # 
-save(ls.save,file = 'results/bias adjustment/MSErun_move_nofishing_nobiasadj.Rdata')
+# # # #
+#save(ls.save,file = 'results/bias adjustment/MSErun_move_nofishing_nobiasadj.Rdata')
 
 ls.save <- list()
 ls.converge <- matrix(0, nruns)
@@ -53,10 +54,10 @@ for (i in 1:nruns){
     ls.save[[i]] <- NA
     ls.converge[i] <- 0
   }
-  
+
 }
-# # # # 
-save(ls.save,file = 'results/bias adjustment/MSErun_move_nofishing_biasadj.Rdata')
+# # # #
+#save(ls.save,file = 'results/bias adjustment/MSErun_move_nofishing_biasadj.Rdata')
 
 ls.save <- list()
 ls.converge <- matrix(0, nruns)
@@ -74,8 +75,8 @@ for (i in 1:nruns){
     ls.save[[i]] <- NA
     ls.converge[i] <- 0
   }
-  
+
 }
-# # # # 
-save(ls.save,file = 'results/bias adjustment/MSErun_move_nofishing_biasadj_med.Rdata')
+# # # #
+#save(ls.save,file = 'results/bias adjustment/MSErun_move_nofishing_biasadj_med.Rdata')
 
