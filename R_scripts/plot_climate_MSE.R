@@ -596,4 +596,24 @@ dev.off()
 ggplot(EE[EE$MP == 'climate_0_TAC1',], aes(x= year, y = EE.ssb, group = run))+geom_line(size = 0.2, alpha = 0.1)+coord_cartesian(ylim = c(-2,2))+
   theme_classic()
 
+median(EE$EE.ssb[EE$year>2018 & EE$climate == '0' & EE$HCR == 'HCR0'])
 
+median(EE$EE.ssb[EE$year>2018 & EE$climate == '02' & EE$HCR == 'HCR0'])
+
+median(EE$EE.ssb[EE$year>2018 & EE$climate == '04' & EE$HCR == 'HCR0'])
+
+
+p.ee.all <- ggplot(EE.tot[EE.tot$year > 2018,], aes(x = year, y = Emedian, color = climate, fill = climate, linetype = climate))+
+  geom_line(size = 1.2)+theme_classic()+
+  scale_y_continuous('relative\nerror')+
+  geom_ribbon(aes(ymin = Emin, ymax = Emax), alpha = 0.2, linetype = 0,show.legend = FALSE)+coord_cartesian(ylim = c(-0.8,0.8))+
+  scale_color_manual(values = cols, labels = c('no change', 'medium', 'high'))+
+  scale_fill_manual(values = cols)+
+  theme(legend.position = 'top', legend.direction = 'horizontal', legend.title = element_blank(),
+        legend.text = element_text(size = 6))+
+  guides(linetype = FALSE)+facet_wrap(~HCR)+
+  geom_hline(aes(yintercept = 0), linetype = 2, color = 'black')
+
+png('results/climate_alternative_all.png', width = 16, height = 12, res = 400, units = 'cm')
+p.ee.all
+dev.off()
