@@ -39,7 +39,7 @@ simdata0 <- sim.data # The other one is gonna get overwritten.
 
 folder <- 'C:/Users/Nis/Dropbox/NOAA/Hake MSE/MSE results/final results/'
 
-#folder <- 'C:/Users/nsja/Dropbox/NOAA/Hake MSE/MSE results/final results/'
+folder <- 'C:/Users/nsja/Dropbox/NOAA/Hake MSE/MSE results/final results/'
 
 
 
@@ -568,6 +568,12 @@ p.ee <- ggplot(EE.tot[EE.tot$year > 2018 & EE.tot$HCR == 'HCR0',], aes(x = year,
 
 p.ee
 
+png('results/climate_EE.png', width = 8, height = 6, res = 400, units = 'cm')
+p.ee
+dev.off()
+
+
+
 p.ee2 <- ggplot(EE.tot[EE.tot$year > 2018 & EE.tot$HCR == 'HCR0' ,], aes(x = year, y = Emedian))+
   geom_line(size = 1.2)+theme_classic()+
   scale_y_continuous('relative\nerror')+
@@ -580,7 +586,9 @@ p.ee2 <- ggplot(EE.tot[EE.tot$year > 2018 & EE.tot$HCR == 'HCR0' ,], aes(x = yea
 
 p.ee2
 
-
+png('results/climate_alternative.png', width = 8, height = 6, res = 400, units = 'cm')
+p.ee2
+dev.off()
 
 
 ggplot(EE[EE$MP == 'climate_0_TAC1',], aes(x= year, y = EE.ssb, group = run))+geom_line(size = 0.2, alpha = 0.1)+coord_cartesian(ylim = c(-2,2))+
