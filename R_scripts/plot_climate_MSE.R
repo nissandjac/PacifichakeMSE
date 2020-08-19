@@ -562,13 +562,15 @@ p.ee <- ggplot(EE.tot[EE.tot$year > 2018 & EE.tot$HCR == 'HCR0',], aes(x = year,
   scale_y_continuous('relative\nerror')+
   geom_ribbon(aes(ymin = Emin, ymax = Emax), alpha = 0.2, linetype = 0,show.legend = FALSE)+coord_cartesian(ylim = c(-0.8,0.8))+
   scale_color_manual(values = cols, labels = c('no change', 'medium', 'high'))+
-  scale_fill_manual(values = cols)+theme(legend.position = c(0.12,0.85))+guides(linetype = FALSE)+
-  geom_hline(aes(yintercept = 0), linetype = 2, color = 'black')#+facet_wrap(~HCR)
-
+  scale_fill_manual(values = cols)+
+  theme(legend.position = 'top', legend.direction = 'horizontal', legend.title = element_blank(),
+        legend.text = element_text(size = 6))+
+  guides(linetype = FALSE)+
+  geom_hline(aes(yintercept = 0), linetype = 2, color = 'black')
 
 p.ee
 
-png('results/climate_EE.png', width = 8, height = 6, res = 400, units = 'cm')
+png('results/Climate/climate_EE.png', width = 8, height = 6, res = 400, units = 'cm')
 p.ee
 dev.off()
 
