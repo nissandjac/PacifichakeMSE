@@ -568,7 +568,22 @@ p.ee <- ggplot(EE.tot[EE.tot$year > 2018 & EE.tot$HCR == 'HCR0',], aes(x = year,
 
 p.ee
 
+p.ee2 <- ggplot(EE.tot[EE.tot$year > 2018 & EE.tot$HCR == 'HCR0' ,], aes(x = year, y = Emedian))+
+  geom_line(size = 1.2)+theme_classic()+
+  scale_y_continuous('relative\nerror')+
+  geom_ribbon(aes(ymin = Emin, ymax = Emax), alpha = 0.2, linetype = 0,show.legend = FALSE)+coord_cartesian(ylim = c(-0.8,0.8))+
+  scale_color_manual(values = cols, labels = c('no change', 'medium', 'high'))+
+  scale_fill_manual(values = cols)+theme(legend.position = c(0.12,0.85))+guides(linetype = FALSE)+
+  geom_hline(aes(yintercept = 0), linetype = 2, color = 'black')+
+  facet_wrap(~climate)+
+  geom_line(data = EE[EE$HCR == 'HCR0' & EE$year > 2018,], aes(x= year, y = EE.ssb, group = run),alpha = 0.05, color ='black')
 
-png(file = 'test.png')
-p.ee
-dev.off()
+p.ee2
+
+
+
+
+ggplot(EE[EE$MP == 'climate_0_TAC1',], aes(x= year, y = EE.ssb, group = run))+geom_line(size = 0.2, alpha = 0.1)+coord_cartesian(ylim = c(-2,2))+
+  theme_classic()
+
+
