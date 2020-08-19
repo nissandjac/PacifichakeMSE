@@ -36,11 +36,11 @@ simdata0 <- sim.data # The other one is gonna get overwritten.
 
 
 
-
-folder <- 'C:/Users/Nis/Dropbox/NOAA/Hake MSE/MSE results/final results/'
-
-folder <- 'C:/Users/nsja/Dropbox/NOAA/Hake MSE/MSE results/final results/'
-
+#
+# folder <- 'C:/Users/Nis/Dropbox/NOAA/Hake MSE/MSE results/final results/'
+#
+# folder <- 'C:/Users/nsja/Dropbox/NOAA/Hake MSE/MSE results/final results/'
+#
 
 
 files <- dir(folder)[grep(dir(folder),pattern = '.Rdata')]
