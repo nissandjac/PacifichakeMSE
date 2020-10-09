@@ -20,7 +20,7 @@ parms.true <- getParameters_OM(TRUE,mod, df) # Load parameters from assessment
 
 time <- 1
 yrinit <- df$nyear
-nruns <- 100
+nruns <- 500
 
 seeds <- floor(runif(n = nruns, min = 1, max = 1e6))
 ### Run the OM and the EM for x number of years in the MSE
@@ -39,7 +39,7 @@ simdata0 <- sim.data # The other one is gonna get overwritten.
 #
 # folder <- 'C:/Users/Nis/Dropbox/NOAA/Hake MSE/MSE results/final results/'
 #
-# folder <- 'C:/Users/nsja/Dropbox/NOAA/Hake MSE/MSE results/final results/'
+folder <- 'C:/Users/nsja/Dropbox/NOAA/Hake MSE/MSE results/final results/'
 #
 
 
@@ -57,7 +57,7 @@ for(i in 1:length(files)){
   load(paste(folder,files[i], sep = '')) # Prints as 'ls.save'
   df.MSE <- flatten(ls.save) # Change the list a little bit
 
-
+   # ProcessMSE is in the df_MSE function 
   catchcdf <- processMSE(df.MSE, 'Catch', idx = c(2,3), spacenames = c('CAN', 'USA'), runs = 500,nspace = 2)
   catchdf <- processMSE(df.MSE, 'Catch', idx = 2, spacenames = c('value'), runs = 500,nspace = 2)
 
@@ -69,7 +69,9 @@ for(i in 1:length(files)){
   # Calculate AAV
   AAVdf <- AAV(catchcdf, idx = 4)
   AAVtottmp <- AAV(catchdf, idx = 2)
-
+  
+  
+  
   catch.tot.tmp <- catchdf %>%
     group_by(year) %>%
     summarise(catchmean = median(value),
@@ -181,6 +183,18 @@ for(i in 1:length(files)){
 
   }
 
+# Calculate risk 
+risk <- SSB_cdf %>% mutate(rel = value/sum(sim.data$SSB_0))
+risk.tot <- risk %>% group_by(year, MP, HCR, climate) %>% 
+  summarise(riskmed = median(rel),
+            quants95 = quantile(rel, probs =perc[2]),
+            quants5 = quantile(rel, probs= perc[1])
+            )
+
+risk.sum <- risk[risk$year>2018,] 
+risk.sum$closed <- 1
+risk.sum$closed[which(risk.sum$rel < 0.1)] <- 0
+
 
 cols <- PNWColors::pnw_palette('Starfish',n = 3, type = 'discrete')
 
@@ -197,7 +211,7 @@ cplot <- ggplot(catch.tot[catch.tot$year>pyear,], aes(x = year, y = catchmean*1e
         axis.text.x = element_text(size = 5, angle = 90),
         plot.margin = unit(c(1,1,0,1), 'pt'),
         legend.margin = margin(c(0,0,0,0)))+
-  scale_color_manual(values = cols, labels = c('no change', 'medium', 'high'))+
+  scale_color_manual(values = cols, labels = c('baseline', 'moderate', 'high'))+
   geom_line(aes(y = quants5*1e-6), linetype = 2, size = usize)+
   geom_line(aes(y = quants95*1e-6), linetype = 2, size = usize)+
   scale_y_continuous('Catch')+
@@ -232,7 +246,37 @@ AAVplot <- ggplot(AAV.tot[AAV.tot$year>pyear,], aes(x = year, y = AAVmean, color
   geom_line(data = AAV.tot[AAV.tot$year< 2019  & AAV.tot$year> pyear,] ,
             aes(x = year, y= AAVmean), color = 'black', size = lsize)
 
+# Risk plots 
 
+riskrun <- risk[risk$year>2020,] %>% 
+  group_by(run, MP, HCR, climate) %>%
+  summarise(nyears = n(),
+            nover = sum(rel>0.1),
+            frac = nover/nyears) 
+
+riskmean <- riskrun %>% 
+  group_by(MP, HCR, climate, year) %>% 
+  summarise(riskmed = median(frac),
+            quants95 = quantile(frac, probs =0.95),
+            quants5 = quantile(frac, probs= 0.05)
+  )
+
+
+riskviolin <- ggplot(riskrun,aes(x = HCR, y= 1-frac, color = HCR,fill = HCR))+
+    geom_violin(fill = NA)+
+    facet_wrap(~climate)+
+    theme_bw()+geom_hline(aes(yintercept = 0.05), linetype = 2)+coord_cartesian(ylim = c(0,0.2))+
+    scale_color_manual(values = cols)+scale_fill_manual(values = cols)+scale_x_discrete("")#+
+
+riskviolin
+  
+riskplot <-  ggplot(riskmean,aes(x = year, y= 1-riskmed, color = climate,fill = climate))+
+  geom_line()+geom_ribbon(aes(ymin = quants5, ymax = quants95))+
+  theme_bw()+geom_hline(aes(yintercept = 0.05), linetype = 2)+coord_cartesian(ylim = c(0,0.2))+
+  scale_color_manual(values = cols)+scale_fill_manual(values = cols)+scale_x_discrete("")
+
+riskplot  
+  
 
 png('results/Climate/objectives_publication.png', width = 16, height =12, res = 400, unit = 'cm')
 
@@ -258,7 +302,7 @@ vplot1 <- ggplot(catchcdfexp[catchcdfexp$year>2019,], aes(x = HCR,y = value*1e-6
                    legend.margin = margin(c(0,0,0,0)))+
   scale_x_discrete('')+
   geom_boxplot(width=0.2, col = 'black', outlier.shape = NA, position = dodge,
-                show.legend = FALSE)+scale_fill_manual(values= cols, labels = c('no change','medium', 'high'))+
+                show.legend = FALSE)+scale_fill_manual(values= cols, labels = c('baseline', 'moderate', 'high'))+
   guides(shape = guide_legend(override.aes = list(shape = 2)))+
   facet_wrap(~variable)+coord_cartesian(ylim = rmout)
 
@@ -387,7 +431,7 @@ cplot <- ggplot(catch.tot[catch.tot$year>pyear,], aes(x = year, y = catchmean*1e
         axis.text.x = element_text(size = 10, angle = 90),
         plot.margin = unit(c(1,1,0,1), 'pt'),
         legend.margin = margin(c(0,0,0,0)))+
-  scale_color_manual(values = cols, labels = c('no change', 'medium', 'high'))+
+  scale_color_manual(values = cols, labels = c('baseline', 'moderate', 'high'))+
   geom_line(aes(y = quants5*1e-6), linetype = 2, size = usize)+
   geom_line(aes(y = quants95*1e-6), linetype = 2, size = usize)+scale_y_continuous( 'Catch')+
   scale_x_continuous('')+
@@ -450,7 +494,7 @@ pdec.c <- ggplot(ctmp[ctmp$decade != 0,], aes(x = as.factor(decade), y= value*1e
   geom_violin(position = dodge, show.legend = FALSE)+
   geom_boxplot(color = 'black', position = dodge, width = 0.2, show.legend = FALSE, outlier.alpha = 0)+
   scale_fill_manual(values = cols)+
-  scale_color_manual(values = cols, labels = c('no change', 'medium', 'high'))+
+  scale_color_manual(values = cols, labels = c('baseline', 'moderate', 'high'))+
   scale_x_discrete(name = '',breaks = c(2020,2030,2040), labels = c("","",""))+
   scale_y_continuous('catch\n(million tonnes)') +
   theme(legend.position = 'top',
@@ -561,7 +605,7 @@ p.ee <- ggplot(EE.tot[EE.tot$year > 2018 & EE.tot$HCR == 'HCR0',], aes(x = year,
   geom_line(size = 1.2)+theme_classic()+
   scale_y_continuous('relative\nerror')+
   geom_ribbon(aes(ymin = Emin, ymax = Emax), alpha = 0.2, linetype = 0,show.legend = FALSE)+coord_cartesian(ylim = c(-0.8,0.8))+
-  scale_color_manual(values = cols, labels = c('no change', 'medium', 'high'))+
+  scale_color_manual(values = cols, labels = c('baseline', 'moderate', 'high'))+
   scale_fill_manual(values = cols)+
   theme(legend.position = 'top', legend.direction = 'horizontal', legend.title = element_blank(),
         legend.text = element_text(size = 6))+
@@ -580,7 +624,7 @@ p.ee2 <- ggplot(EE.tot[EE.tot$year > 2018 & EE.tot$HCR == 'HCR0' ,], aes(x = yea
   geom_line(size = 1.2)+theme_classic()+
   scale_y_continuous('relative\nerror')+
   geom_ribbon(aes(ymin = Emin, ymax = Emax), alpha = 0.2, linetype = 0,show.legend = FALSE)+coord_cartesian(ylim = c(-0.8,0.8))+
-  scale_color_manual(values = cols, labels = c('no change', 'medium', 'high'))+
+  scale_color_manual(values = cols, labels = c('baseline', 'moderate', 'high'))+
   scale_fill_manual(values = cols)+theme(legend.position = c(0.12,0.85))+guides(linetype = FALSE)+
   geom_hline(aes(yintercept = 0), linetype = 2, color = 'black')+
   facet_wrap(~climate)+
@@ -607,7 +651,7 @@ p.ee.all <- ggplot(EE.tot[EE.tot$year > 2018,], aes(x = year, y = Emedian, color
   geom_line(size = 1.2)+theme_classic()+
   scale_y_continuous('relative\nerror')+
   geom_ribbon(aes(ymin = Emin, ymax = Emax), alpha = 0.2, linetype = 0,show.legend = FALSE)+coord_cartesian(ylim = c(-0.8,0.8))+
-  scale_color_manual(values = cols, labels = c('no change', 'medium', 'high'))+
+  scale_color_manual(values = cols, labels = c('baseline', 'moderate', 'high'))+
   scale_fill_manual(values = cols)+
   theme(legend.position = 'top', legend.direction = 'horizontal', legend.title = element_blank(),
         legend.text = element_text(size = 6))+

@@ -3,6 +3,7 @@ compile("src/runHakeassessment.cpp")
 dyn.load(dynlib("src/runHakeassessment"))
 library(r4ss)
 library(PacifichakeMSE)
+source('R/run_multiple_OMs.R')
 mod <- SS_output('inst/extdata/SS32018/', printstats=FALSE, verbose = FALSE) # Read the true selectivity
 
 # Set the seed
@@ -12,7 +13,7 @@ set.seed(seedz)
 # source('R/load_files.R')
 # source('R/load_files_OM.R')
 # source('R/run_multiple_OMs.R')
-nruns <- 10
+nruns <- 100
 seeds <- floor(runif(n = nruns, min = 1, max = 1e6))
 
 ls.save <- list()
@@ -35,7 +36,7 @@ for (i in 1:nruns){
 
 }
 # # # #
-#save(ls.save,file = 'results/bias adjustment/MSErun_move_nofishing_nobiasadj.Rdata')
+save(ls.save,file = 'results/bias adjustment/MSErun_move_nofishing_nobiasadj.Rdata')
 
 ls.save <- list()
 ls.converge <- matrix(0, nruns)
@@ -57,7 +58,7 @@ for (i in 1:nruns){
 
 }
 # # # #
-#save(ls.save,file = 'results/bias adjustment/MSErun_move_nofishing_biasadj.Rdata')
+save(ls.save,file = 'results/bias adjustment/MSErun_move_nofishing_biasadj.Rdata')
 
 ls.save <- list()
 ls.converge <- matrix(0, nruns)
@@ -78,5 +79,13 @@ for (i in 1:nruns){
 
 }
 # # # #
-#save(ls.save,file = 'results/bias adjustment/MSErun_move_nofishing_biasadj_med.Rdata')
+save(ls.save,file = 'results/bias adjustment/MSErun_move_nofishing_biasadj_med.Rdata')
 
+
+
+# Plot stuff 
+
+df.MSE <- purrr::flatten(ls.save) # Change the list a little bit
+
+tmp <- lapply(purrr::map(df.MSE[names(df.MSE) == 'id'],
+                           .f = fnsum, idx = idx), data.frame, stringsAsFactors = FALSE)

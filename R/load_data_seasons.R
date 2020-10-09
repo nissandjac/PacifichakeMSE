@@ -36,6 +36,7 @@ load_data_seasons <- function(nseason = 4,
                               moveslope = 0.9,
                               selectivity_change = 0,
                               yr_future  = 0,
+                              catch.future = NA,
                               sel_hist = 1,
                               species = 'hake'
                               ){
@@ -418,14 +419,22 @@ load_data_seasons <- function(nseason = 4,
 
   if(nyear > length(df$Catch)){
 
-
+    if(is.na(catch.future)){
     df$Catch <- c(df$Catch,rep(mean(df$Catch), nyear-length(df$Catch)))
-
+    }else{
+      df$Catch <- c(df$Catch,rep(catch.future, yr_future))
+    }
 
   }
 
   if(nyear >nrow(df$Catch.country)){
+    
+    if(is.na(catch.future)){
     df$Catch.country <- rbind(df$Catch.country,t(replicate(nyear-nrow(Catch.country),colMeans(df$Catch.country))))
+    }else{
+      df$Catch.country <- rbind(df$Catch.country, 
+                                t(replicate(yr_future,rep(catch.future, nspace))))
+    }
   }
 
   if(yr_future > 0){
