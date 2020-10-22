@@ -15,7 +15,7 @@
 #' @examples
 run_multiple_MSEs <- function(simyears = NULL,seeds = 12345, TAC = 1, df = NA,
                                       cincrease = 0, mincrease = 0,
-                              sel_change = 0){
+                              sel_change = 0, runOM = TRUE){
 
 
 
@@ -237,7 +237,7 @@ run_multiple_MSEs <- function(simyears = NULL,seeds = 12345, TAC = 1, df = NA,
     parms.new$Rin <- Rdev#parms.new$Rin[1:(length(parms.new$Rin)-1)]
 
 
-
+    if(runOM == TRUE){
     obj <-TMB::MakeADFun(df.new,parms.new,DLL="runHakeassessment", silent = TRUE) # Run the assessment
 
     reps <- obj$report()
@@ -319,45 +319,58 @@ run_multiple_MSEs <- function(simyears = NULL,seeds = 12345, TAC = 1, df = NA,
 
     }
 
-
+    }
+    
     Vreal <- sum(sim.data$N.save.age[,df$nyear,,df$nseason]*
                    matrix(rep(df$wage_catch[,df$nyear-1],df$nspace), ncol = df$nspace)*(sim.data$Fsel[,df$nyear,]))
 
-    Nend <- N[,dim(N)[2]]
-    Fnew <- getRefpoint(opt$par, df,SSBy = SSB[length(SSB)], Fin=Fyear[length(Fyear)], Nend, TAC = TAC,
-                        Vreal)
-    #Fnew <- 0.3
-    # Update the data data frame
-    # if(Fnew[[1]] == 1){
-    #   stop('fishery closed')
-    # }
-    #
-    Ntmp <- sim.data$Nout
+    if(runOM == TRUE){
+      Nend <- N[,dim(N)[2]]
+      Fnew <- getRefpoint(opt$par, df,SSBy = SSB[length(SSB)], Fin=Fyear[length(Fyear)], Nend, TAC = TAC,
+                          Vreal)
+      Ntmp <- sim.data$Nout
+      
+      
+      # Save some EM stuff in the last year
+      SSB.save[[time]] <- SSB
+      R.save[[time]] <- N[1,]
+      F40.save[time] <- Fnew[[2]]
+      Catch.save[[time]] <- Catch
+      
+      ### Include the parameters needed to calculate SSB0
+      parms.save[time, ] <- exp(opt$par)[1:4]
+      nms <- unlist(strsplit(names(opt$par), split = 'log')[1:4])[c(2,4,6,8)]
+      names(parms.save) <- nms
+      
+    }else{
+      Nend <- sim.data$N.save[,ncol(sim.data$N.save)]
+      Nend[1] <- 0 # Recruitment in current year is unknown
+      
+      opt.OM <- unlist(df$parms)
+      Fin <- rowSums(sim.data$Fout)[df$nyear]
+      
 
-
-    # Save some EM stuff in the last year
-    SSB.save[[time]] <- SSB
-    R.save[[time]] <- N[1,]
-    F40.save[time] <- Fnew[[2]]
-    Catch.save[[time]] <- Catch
-
-    # And the fishing mortality
-    #F0.save <- Fnew
-
-    #  print(year.future[year])
-    #SSB.test.om[[time]] <- rowSums(sim.data$SSB)
-
-    ### Include the parameters needed to calculate SSB0
-    parms.save[time, ] <- exp(opt$par)[1:4]
-
+      Fnew <- getRefpoint(opt$par, df,SSBy = SSB[length(SSB)], Fin=Fyear[length(Fyear)], Nend, TAC = TAC,
+                          Vreal)
+      Ntmp <- sim.data$Nout
+      
+      
+      # Save some EM stuff in the last year
+      SSB.save[[time]] <- rowSums(sim.data$SSB)
+      R.save[[time]] <- rowSums(sim.data$R.save)
+      F40.save[time] <- Fnew[[2]]
+      Catch.save[[time]] <- sim.data$Catch
+      
+      ### Include the parameters needed to calculate SSB0
+      parms.save[time, ] <- exp(opt.OM)[1:4]
+      SSB.hes <- NA
+      mconverge <- 1
+      
+      
+      
+    }
     # year = df$years[time]
-
-
   }
-
-  nms <- unlist(strsplit(names(opt$par), split = 'log')[1:4])[c(2,4,6,8)]
-  names(parms.save) <- nms
-
 
   end.time <- Sys.time()
   time.taken <- end.time - start.time
