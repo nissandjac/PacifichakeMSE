@@ -186,9 +186,11 @@ for(i in 1:length(files)){
 
 # Table results relative to base - HCR0 
 
-catch.rel <- catch.tot %>% group_by(year, HCR, climate) %>%
-  mutate(rel = catchmean/first(rel, order_by(MP)))
+catch.rel <- catch.tot[catch.tot$year > 2030,] %>% 
+      mutate(rel = catchmean/catchmean[MP == 'climate_0_TAC1']) 
 
+ggplot(catch.rel, aes(x= year, y=  rel, color = climate))+geom_line()+facet_wrap(~HCR)+theme_bw()+
+  scale_y_continuous('catch\nrelative to base scenario')
 
 
 data %>% 
