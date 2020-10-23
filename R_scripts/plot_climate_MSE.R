@@ -37,9 +37,9 @@ simdata0 <- sim.data # The other one is gonna get overwritten.
 
 
 #
-# folder <- 'C:/Users/Nis/Dropbox/NOAA/Hake MSE/MSE results/final results/'
+folder <- 'C:/Users/Nis/Dropbox/NOAA/Hake MSE/MSE results/final results/'
 #
-folder <- 'C:/Users/nsja/Dropbox/NOAA/Hake MSE/MSE results/final results/'
+# folder <- 'C:/Users/nsja/Dropbox/NOAA/Hake MSE/MSE results/final results/'
 #
 
 
@@ -49,7 +49,7 @@ files <- dir(folder)[grep(dir(folder),pattern = '.Rdata')]
 
 yrs <- 1966:2047
 
-perc <- c(0.25,0.75) # Percentiles for plotting
+perc <- c(0.2,0.8) # Percentiles for plotting
 
 load_all()
 
@@ -57,7 +57,7 @@ for(i in 1:length(files)){
   load(paste(folder,files[i], sep = '')) # Prints as 'ls.save'
   df.MSE <- flatten(ls.save) # Change the list a little bit
 
-   # ProcessMSE is in the df_MSE function 
+   # ProcessMSE is in the df_MSE function
   catchcdf <- processMSE(df.MSE, 'Catch', idx = c(2,3), spacenames = c('CAN', 'USA'), runs = 500,nspace = 2)
   catchdf <- processMSE(df.MSE, 'Catch', idx = 2, spacenames = c('value'), runs = 500,nspace = 2)
 
@@ -69,9 +69,9 @@ for(i in 1:length(files)){
   # Calculate AAV
   AAVdf <- AAV(catchcdf, idx = 4)
   AAVtottmp <- AAV(catchdf, idx = 2)
-  
-  
-  
+
+
+
   catch.tot.tmp <- catchdf %>%
     group_by(year) %>%
     summarise(catchmean = median(value),
@@ -183,15 +183,15 @@ for(i in 1:length(files)){
 
   }
 
-# Calculate risk 
+# Calculate risk
 risk <- SSB_cdf %>% mutate(rel = value/sum(sim.data$SSB_0))
-risk.tot <- risk %>% group_by(year, MP, HCR, climate) %>% 
+risk.tot <- risk %>% group_by(year, MP, HCR, climate) %>%
   summarise(riskmed = median(rel),
             quants95 = quantile(rel, probs =perc[2]),
             quants5 = quantile(rel, probs= perc[1])
             )
 
-risk.sum <- risk[risk$year>2018,] 
+risk.sum <- risk[risk$year>2018,]
 risk.sum$closed <- 1
 risk.sum$closed[which(risk.sum$rel < 0.1)] <- 0
 
@@ -214,7 +214,7 @@ cplot <- ggplot(catch.tot[catch.tot$year>pyear,], aes(x = year, y = catchmean*1e
   scale_color_manual(values = cols, labels = c('baseline', 'moderate', 'high'))+
   geom_line(aes(y = quants5*1e-6), linetype = 2, size = usize)+
   geom_line(aes(y = quants95*1e-6), linetype = 2, size = usize)+
-  scale_y_continuous('Catch')+
+  scale_y_continuous('Catch/\n(million tonnes)')+
   scale_x_continuous('')+
   geom_line(data = catch.tot[catch.tot$year< 2019 & catch.tot$year> pyear,] ,aes(x = year, y= catchmean*1e-6), color = 'black', size = lsize)
 cplot
@@ -231,6 +231,23 @@ ssbplot <- ggplot(SSB.tot[SSB.tot$year>pyear,], aes(x = year, y = SSBmean*1e-6, 
   scale_x_continuous('')+facet_wrap(~HCR, ncol = 3)+scale_y_continuous('SSB')+
   geom_line(data = SSB.tot[SSB.tot$year< 2019 & SSB.tot$year>pyear,] ,aes(x = year, y= SSBmean*1e-6), color = 'black', size = lsize)
 
+riskplot <- ggplot(risk.tot[risk.tot$year>pyear,], aes(x = year, y = riskmed, color = climate))+geom_line(size = lsize)+theme_bw()+
+  theme(legend.position = 'none',
+        text = element_text(size = 8),
+        strip.text = element_text(size=5),
+        axis.text.x = element_text(size = 5, angle = 90),
+        plot.margin = unit(c(1,1,0,1), 'pt'))+
+  geom_line(aes(y = quants5), linetype = 2, size = usize)+
+  geom_line(aes(y = quants95), linetype = 2, size = usize)+
+  scale_color_manual(values = cols)+coord_cartesian(ylim = c(0,0.7))+
+  geom_hline(aes(yintercept = .1), linetype = 2, color = 'black')+
+  scale_x_continuous('')+facet_wrap(~HCR, ncol = 3)+scale_y_continuous('SSB/\nSSB0')+
+  geom_line(data = risk.tot[risk.tot$year< 2019 & risk.tot$year>pyear,] ,aes(x = year, y= riskmed), color = 'black', size = lsize)
+
+riskplot
+
+
+
 AAVplot <- ggplot(AAV.tot[AAV.tot$year>pyear,], aes(x = year, y = AAVmean, color = climate))+
   geom_line(size = lsize)+theme_bw()+
   theme(legend.position = 'none',
@@ -246,20 +263,21 @@ AAVplot <- ggplot(AAV.tot[AAV.tot$year>pyear,], aes(x = year, y = AAVmean, color
   geom_line(data = AAV.tot[AAV.tot$year< 2019  & AAV.tot$year> pyear,] ,
             aes(x = year, y= AAVmean), color = 'black', size = lsize)
 
-# Risk plots 
+AAVplot
+# Risk plots
 
-riskrun <- risk[risk$year>2020,] %>% 
+riskrun <- risk[risk$year>2020,] %>%
   group_by(run, MP, HCR, climate) %>%
   summarise(nyears = n(),
             nover = sum(rel>0.1),
-            frac = nover/nyears) 
-
-riskmean <- riskrun %>% 
-  group_by(MP, HCR, climate, year) %>% 
-  summarise(riskmed = median(frac),
-            quants95 = quantile(frac, probs =0.95),
-            quants5 = quantile(frac, probs= 0.05)
-  )
+            frac = nover/nyears)
+#
+# riskmean <- riskrun %>%
+#   group_by(MP, HCR, climate, year) %>%
+#   summarise(riskmed = median(frac),
+#             quants95 = quantile(frac, probs =0.95),
+#             quants5 = quantile(frac, probs= 0.05)
+#   )
 
 
 riskviolin <- ggplot(riskrun,aes(x = HCR, y= 1-frac, color = HCR,fill = HCR))+
@@ -269,18 +287,18 @@ riskviolin <- ggplot(riskrun,aes(x = HCR, y= 1-frac, color = HCR,fill = HCR))+
     scale_color_manual(values = cols)+scale_fill_manual(values = cols)+scale_x_discrete("")#+
 
 riskviolin
-  
+
 riskplot <-  ggplot(riskmean,aes(x = year, y= 1-riskmed, color = climate,fill = climate))+
   geom_line()+geom_ribbon(aes(ymin = quants5, ymax = quants95))+
   theme_bw()+geom_hline(aes(yintercept = 0.05), linetype = 2)+coord_cartesian(ylim = c(0,0.2))+
   scale_color_manual(values = cols)+scale_fill_manual(values = cols)+scale_x_discrete("")
 
-riskplot  
-  
+riskplot
 
-png('results/Climate/objectives_publication.png', width = 16, height =12, res = 400, unit = 'cm')
 
-cplot/ssbplot/AAVplot
+png('results/Climate/objectives_publication.png', width = 16, height =14, res = 400, unit = 'cm')
+
+cplot/riskplot/AAVplot
 
 dev.off()
 
@@ -289,7 +307,7 @@ perc <- c(0.1,0.90)
 
 rmout <- quantile(catchcdfexp$value[catchdfexp$year>2019]*1e-6, probs = perc)
 
-vplot1 <- ggplot(catchcdfexp[catchcdfexp$year>2019,], aes(x = HCR,y = value*1e-6, group = MP, fill = climate))+
+vplot1 <- ggplot(catchcdfexp[catchcdfexp$year>2030,], aes(x = HCR,y = value*1e-6, group = MP, fill = climate))+
   geom_violin(position = dodge)+scale_y_continuous(name = 'Catch \n(million tonnes)')+geom_line()+
   theme_bw()+theme(legend.position = 'top',
                    text = element_text(size = 8),
@@ -304,12 +322,12 @@ vplot1 <- ggplot(catchcdfexp[catchcdfexp$year>2019,], aes(x = HCR,y = value*1e-6
   geom_boxplot(width=0.2, col = 'black', outlier.shape = NA, position = dodge,
                 show.legend = FALSE)+scale_fill_manual(values= cols, labels = c('baseline', 'moderate', 'high'))+
   guides(shape = guide_legend(override.aes = list(shape = 2)))+
-  facet_wrap(~variable)+coord_cartesian(ylim = rmout)
+  facet_wrap(~variable)+coord_cartesian(ylim = c(0,0.6))
 
 rmout <- quantile(SSBdf$value[SSBdf$year>2019]*1e-6, probs = perc)
 
-vplot2 <- ggplot(SSBdf[SSBdf$year>2019,], aes(x = HCR,y = value*1e-6, group = MP, fill = climate))+
-  geom_violin(position = dodge)+scale_y_continuous(name = 'SSB \n(million tonnes)')+geom_line()+theme_bw()+
+vplot2 <- ggplot(SSBdf[SSBdf$year>2030,], aes(x = HCR,y = value/sum(sim.data$SSB_0), group = MP, fill = climate))+
+  geom_violin(position = dodge)+scale_y_continuous(name = 'SSB/ \nSSB0')+geom_line()+theme_bw()+
   theme(legend.position = 'none',
         text = element_text(size = 8),
         strip.background = element_blank(),
@@ -317,13 +335,13 @@ vplot2 <- ggplot(SSBdf[SSBdf$year>2019,], aes(x = HCR,y = value*1e-6, group = MP
         axis.text.x = element_blank(),
         plot.margin = unit(c(1,1,0,1), 'pt'))+scale_x_discrete('')+
   geom_boxplot(width=0.2, col = 'black', outlier.shape = NA, position = dodge)+
-  scale_fill_manual(values= cols)+facet_wrap(~variable)+coord_cartesian(ylim = rmout)
+  scale_fill_manual(values= cols)+facet_wrap(~variable)+coord_cartesian(ylim = c(0,1.5))
 
 # Remove stupid outliers
 rmout <- quantile(AAVdfexp$AAV[AAVdfexp$year>2019], probs = perc)
 rmout <- c(0,4)
 
-vplot3 <- ggplot(AAVdfexp[AAVdfexp$year>2019,], aes(x = HCR,y = AAV, group = MP, fill = climate))+
+vplot3 <- ggplot(AAVdfexp[AAVdfexp$year>2030,], aes(x = HCR,y = AAV, group = MP, fill = climate))+
   geom_violin(position = dodge)+scale_y_continuous(name = 'AAV')+geom_line()+theme_bw()+
   theme(legend.position = 'none',
         text = element_text(size = 8),
@@ -332,7 +350,7 @@ vplot3 <- ggplot(AAVdfexp[AAVdfexp$year>2019,], aes(x = HCR,y = AAV, group = MP,
         strip.background = element_blank(),
         strip.text.x = element_blank())+
   geom_boxplot(width=0.2, col = 'black', outlier.shape = NA, position = dodge)+scale_fill_manual(values= cols)+
-  facet_wrap(~variable, nrow =1)+coord_cartesian(ylim = rmout)
+  facet_wrap(~variable, nrow =1)+coord_cartesian(ylim = c(0,3))
 
 
 png(paste('results/Climate/','violin_publication.png', sep = ''), width = 16, height =12, res = 400, unit = 'cm')
@@ -360,6 +378,9 @@ ccc-pp
 
 median(AAVdfexp$AAV[AAVdfexp$year>2019 & AAVdfexp$HCR == 'HCR0' & AAVdfexp$climate =='0'])
 
+
+# Relative
+
 # Relative SSB
 median(SSB_cdf$value[SSB_cdf$year>2040 & SSB_cdf$HCR == 'HCR0' & SSB.tot$climate == '0']/sum(sim.data$SSB0))# Country catch
 sd(SSB_cdf$value[SSB_cdf$year>2040 & SSB_cdf$HCR == 'HCR0' & SSB.tot$climate == '0']/sum(sim.data$SSB0))# Country catch
@@ -373,10 +394,15 @@ p <- median(catchcdfexp[catchcdfexp$year>2040 & catchcdfexp$variable == 'CAN' &
                           catchcdfexp$climate == '0' & catchcdfexp$HCR == HCRtest,]$value)/
   median(catchcdfexp[catchcdfexp$year>2040 & catchcdfexp$variable == 'CAN' &
                        catchcdfexp$climate == '04' & catchcdfexp$HCR == HCRtest,]$value)
+p
+
 p <- median(catchcdfexp[catchcdfexp$year>2040 & catchcdfexp$variable == 'USA' & catchcdfexp$climate == '0'& catchcdfexp$HCR == HCRtest,]$value)/
   median(catchcdfexp[catchcdfexp$year>2040 & catchcdfexp$variable == 'USA' & catchcdfexp$climate == '04' & catchcdfexp$HCR == HCRtest,]$value)
 p
 
+x <- median(SSB_cdf$value[SSB_cdf$year>2040 & SSB_cdf$climate == '0' & SSB_cdf$HCR == HCRtest])/
+  median(SSB_cdf$value[SSB_cdf$year>2040 & SSB_cdf$climate == '04' & SSB_cdf$HCR == HCRtest])
+x
 
 HCRtest <- 'HCR0'
 
@@ -386,6 +412,11 @@ p <- median(SSBdf[SSBdf$year>2040 & SSBdf$variable == 'CAN' &
                        SSBdf$climate == '04' & SSBdf$HCR == HCRtest,]$value)
 p <- median(SSBdf[SSBdf$year>2040 & SSBdf$variable == 'USA' & SSBdf$climate == '0'& SSBdf$HCR == HCRtest,]$value)/
   median(SSBdf[SSBdf$year>2040 & SSBdf$variable == 'USA' & SSBdf$climate == '04' & SSBdf$HCR == HCRtest,]$value)
+p
+
+
+p <- median(catchcdf[catchcdfexp$year>2040 & catchcdfexp$variable == 'USA' & catchcdfexp$climate == '0'& catchcdfexp$HCR == HCRtest,]$value)/
+  median(catchcdfexp[catchcdfexp$year>2040 & catchcdfexp$variable == 'USA' & catchcdfexp$climate == '04' & catchcdfexp$HCR == HCRtest,]$value)
 p
 
 
@@ -490,7 +521,7 @@ ctmp <- catchdfexp
 
 pdec.c <- ggplot(ctmp[ctmp$decade != 0,], aes(x = as.factor(decade), y= value*1e-6, color = climate, fill = climate))+
   facet_wrap(~HCR)+coord_cartesian(ylim = c(0,.6))+
-  theme_classic()+geom_line()+
+  theme_bw()+geom_line()+
   geom_violin(position = dodge, show.legend = FALSE)+
   geom_boxplot(color = 'black', position = dodge, width = 0.2, show.legend = FALSE, outlier.alpha = 0)+
   scale_fill_manual(values = cols)+
