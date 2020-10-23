@@ -1,0 +1,10 @@
+HCR,climate,catch,SSB,AAV
+HCR0,Baseline,0,0,0
+MD,Baseline,14.7,14.2,-41.9
+AC,Baseline,9.7,28.1,-69.1
+HCR0,Medium,-14.6,-13.5,29.3
+MD,Medium,11.1,8.1,-37.2
+AC,Medium,2.3,4.3,-42.3
+HCR0,High,-17.8,-18.9,32.5
+MD,High,-7.9,-5.8,4.4
+AC,High,-9.2,9,-27.7
