@@ -185,15 +185,29 @@ for(i in 1:length(files)){
 
 # Calculate risk
 risk <- SSB_cdf %>% mutate(rel = value/sum(sim.data$SSB_0))
-risk.tot <- risk %>% group_by(year, MP, HCR, climate) %>%
+
+risk.year <- risk %>% group_by(year, MP, HCR, climate) %>%
   summarise(riskmed = median(rel),
-            quants95 = quantile(rel, probs =perc[2]),
-            quants5 = quantile(rel, probs= perc[1])
+            quants95 = quantile(rel, probs =0.99),
+            quants5 = quantile(rel, probs= 0.01)
             )
+
+
 
 risk.sum <- risk[risk$year>2018,]
 risk.sum$closed <- 1
 risk.sum$closed[which(risk.sum$rel < 0.1)] <- 0
+
+risk.sum$decline <- 1
+risk.sum$decline[which(risk.sum$rel < 0.4)] <- 0
+
+
+# Risk per metric long term
+risk.time <- risk.sum %>%
+  group_by(MP, HCR, climate, year) %>%
+  summarise(risk = length(which(rel< 0.1))/length(which(rel > 0.1)))
+            # ymin = quantile(length(closed[closed ==1])/n(), probs = perc[1]),
+            # ymax = quantile(length(closed[closed ==1])/n(), probs = perc[2]))
 
 
 cols <- PNWColors::pnw_palette('Starfish',n = 3, type = 'discrete')
@@ -231,7 +245,7 @@ ssbplot <- ggplot(SSB.tot[SSB.tot$year>pyear,], aes(x = year, y = SSBmean*1e-6, 
   scale_x_continuous('')+facet_wrap(~HCR, ncol = 3)+scale_y_continuous('SSB')+
   geom_line(data = SSB.tot[SSB.tot$year< 2019 & SSB.tot$year>pyear,] ,aes(x = year, y= SSBmean*1e-6), color = 'black', size = lsize)
 
-riskplot <- ggplot(risk.tot[risk.tot$year>pyear,], aes(x = year, y = riskmed, color = climate))+geom_line(size = lsize)+theme_bw()+
+riskplot <- ggplot(risk.year[risk.year$year>pyear,], aes(x = year, y = riskmed, color = climate))+geom_line(size = lsize)+theme_bw()+
   theme(legend.position = 'none',
         text = element_text(size = 8),
         strip.text = element_text(size=5),
@@ -242,7 +256,7 @@ riskplot <- ggplot(risk.tot[risk.tot$year>pyear,], aes(x = year, y = riskmed, co
   scale_color_manual(values = cols)+coord_cartesian(ylim = c(0,0.7))+
   geom_hline(aes(yintercept = .1), linetype = 2, color = 'black')+
   scale_x_continuous('')+facet_wrap(~HCR, ncol = 3)+scale_y_continuous('SSB/\nSSB0')+
-  geom_line(data = risk.tot[risk.tot$year< 2019 & risk.tot$year>pyear,] ,aes(x = year, y= riskmed), color = 'black', size = lsize)
+  geom_line(data = risk.year[risk.year$year< 2019 & risk.year$year>pyear,] ,aes(x = year, y= riskmed), color = 'black', size = lsize)
 
 riskplot
 
@@ -296,6 +310,26 @@ riskplot <-  ggplot(riskmean,aes(x = year, y= 1-riskmed, color = climate,fill = 
 riskplot
 
 
+risk.time$climate <- levels()
+
+risklines <- ggplot(risk.time, aes(x = year, y = risk, color = climate))+
+  geom_line()+
+  facet_wrap(~HCR)+
+  theme_classic()+geom_hline(aes(yintercept = 0.05), linetype = 2)+
+  scale_color_manual(values = cols[1:3], labels = c("baseline", "moderate", "high"))+
+  coord_cartesian(ylim = c(0,0.2)) +
+  theme(strip.background =element_rect(fill="white"))+theme(legend.position = 'top',
+                                                            legend.title = element_blank(),
+                                                            legend.background = element_blank())
+
+
+risklines
+
+png('results/Climate/risklines.png', width = 16, height =6, res = 400, unit = 'cm')
+risklines
+dev.off()
+
+
 png('results/Climate/objectives_publication.png', width = 16, height =14, res = 400, unit = 'cm')
 
 cplot/riskplot/AAVplot
@@ -322,7 +356,7 @@ vplot1 <- ggplot(catchcdfexp[catchcdfexp$year>2030,], aes(x = HCR,y = value*1e-6
   geom_boxplot(width=0.2, col = 'black', outlier.shape = NA, position = dodge,
                 show.legend = FALSE)+scale_fill_manual(values= cols, labels = c('baseline', 'moderate', 'high'))+
   guides(shape = guide_legend(override.aes = list(shape = 2)))+
-  facet_wrap(~variable)+coord_cartesian(ylim = c(0,0.6))
+  facet_wrap(~variable)+coord_cartesian(ylim = c(0,0.5))
 
 rmout <- quantile(SSBdf$value[SSBdf$year>2019]*1e-6, probs = perc)
 
@@ -555,15 +589,15 @@ ssbtmp$decade[ssbtmp$year >2039 & ssbtmp$year<2050] <- 2040
 
 
 pdec.ssb <- ggplot(ssbtmp[ssbtmp$decade != 0,],
-                 aes(x = as.factor(decade), y= value*1e-6, color = climate, fill = climate))+
-  facet_wrap(~HCR)+coord_cartesian(ylim = c(0,1.6))+
+                 aes(x = as.factor(decade), y= value/sum(sim.data$SSB_0), color = climate, fill = climate))+
+  facet_wrap(~HCR)+coord_cartesian(ylim = c(0,1))+
   theme_classic()+
   geom_violin(position = dodge)+
   geom_boxplot(color = 'black', position = dodge, width = 0.2, show.legend = FALSE, outlier.alpha = 0)+
   scale_fill_manual(values = cols)+
   scale_color_manual(values = cols)+
   scale_x_discrete(name = '',breaks = c(2020,2030,2040), labels = c("","",""))+
-  scale_y_continuous('spawning biomass\n(million tonnes)')+
+  scale_y_continuous('SSB/SSB0')+
   theme(legend.position = 'none') +
   theme(text = element_text(size = 8),
         axis.text.x = element_text(size =6),

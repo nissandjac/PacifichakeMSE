@@ -196,6 +196,8 @@ AAV.rel <- AAV.tot[AAV.tot$year > 2030, ] %>%
   mutate(rel = AAVmean/AAVmean[MP == 'climate_0_TAC1'])
 
 
+
+
 ggplot(catch.rel, aes(x= year, y=  rel, color = climate))+geom_line()+facet_wrap(~HCR)+theme_bw()+
   scale_y_continuous('catch\nrelative to base scenario')
 
