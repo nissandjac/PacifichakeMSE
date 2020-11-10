@@ -90,30 +90,42 @@ cplot <- c(
 )
 # Retrievethe map data
 cplot <- map_data("world", region = cplot)
+cplot <-
 
 df.border <- data.frame(x = US.CAN.lon, y = US.CAN.lat)
 
 
 pmap <- ggplot(cplot, aes(x = long, y = lat)) +
   geom_polygon(aes( group = group), fill = 'gray', color = 'black')+
-  coord_cartesian(xlim = c(-135,-110), ylim = c(30,55))+
+  coord_cartesian(xlim = c(-135,-115), ylim = c(30,55))+
   theme_classic()+
-  geom_line(data = df.border, aes(x=x,y= y), linetype = 1.5, col ='black', size = 2)+
-  scale_x_continuous('Longitude')+scale_y_continuous('Latitude')+
-  geom_curve(aes(x= -129, y = 33, xend = -130,yend = 48), col = 'black',
+  geom_line(data = df.border, aes(x=x,y= y), linetype = 2, col ='black', size = 1.5)+
+  scale_x_continuous('Longitude')+
+  scale_y_continuous('Latitude')+
+  geom_curve(aes(x= -129, y = 34, xend = -130,yend = 48), col = 'black',
                arrow = arrow(length = unit(0.03, "npc")), curvature = -0.15)+
   geom_curve(aes(x= -128, y = 48, xend = -126,yend = 34), col = 'black',
              arrow = arrow(length = unit(0.03, "npc")), curvature = -0.15)+
-  annotate(geom="text", x=-120, y=50, label="CAN", color="black")+
-  annotate(geom="text", x=-120, y=48, label="USA", color="black")+
+  annotate(geom="text", x=-120, y=51, label="CAN", color="black")+
+  annotate(geom="text", x=-120, y=47, label="USA", color="black")+
   geom_ellipse(aes(x0 = -127, y0 = 32, a = 5, b = 2, angle = 0), fill = alpha('gray', alpha = 0.1), linetype = 0)+
-  annotate(geom='text', x = -127, y = 32, label = 'spawning', color ='black')+
-  annotate(geom='text', x = -132, y = 40, label = 'movement', color ='black', angle = 90)+
+  geom_ellipse(aes(x0 = -129, y0 = 49, a = 2, b = 1, angle = 0), fill = alpha('gray', alpha = 0.1), linetype = 0)+
+#  annotate(geom='text', x = -127, y = 32, label = 'spawning', color ='black')+
+  annotate(geom='text', x = -133, y = 40, label = 'movement', color ='black', angle = 90)+
   annotate(geom='text', x = -127, y = 40, label = 'return', color ='black', angle = 90)
 
 #
+pmap
 
 
 png(filename = 'results/Climate/hakedistribution.png', width = 8, height = 16, units = 'cm', res = 400)
 pmap
 dev.off()
+
+
+pdf(file = 'results/Climate/hakedistribution.pdf', width = 8/2.54, height = 16/2.54)
+pmap
+dev.off()
+
+
+
