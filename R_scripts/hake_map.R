@@ -90,29 +90,34 @@ cplot <- c(
 )
 # Retrievethe map data
 cplot <- map_data("world", region = cplot)
-cplot <-
 
 df.border <- data.frame(x = US.CAN.lon, y = US.CAN.lat)
 
+cplot <- cplot[-which(cplot$long> -100),]
+cplot <- cplot[-which(cplot$long< -135),]
+
+cplot <- cplot[-which(cplot$lat> 70),]
+cplot <- cplot[-which(cplot$lat< 20),]
 
 pmap <- ggplot(cplot, aes(x = long, y = lat)) +
   geom_polygon(aes( group = group), fill = 'gray', color = 'black')+
-  coord_cartesian(xlim = c(-135,-115), ylim = c(30,55))+
+  coord_cartesian(xlim = c(-134,-115), ylim = c(30,52))+
   theme_classic()+
   geom_line(data = df.border, aes(x=x,y= y), linetype = 2, col ='black', size = 1.5)+
   scale_x_continuous('Longitude')+
   scale_y_continuous('Latitude')+
   geom_curve(aes(x= -129, y = 34, xend = -130,yend = 48), col = 'black',
-               arrow = arrow(length = unit(0.03, "npc")), curvature = -0.15)+
+               arrow = arrow(length = unit(0.03, "npc"), ends = 'both'), curvature = -0.15)+
   geom_curve(aes(x= -128, y = 48, xend = -126,yend = 34), col = 'black',
              arrow = arrow(length = unit(0.03, "npc")), curvature = -0.15)+
   annotate(geom="text", x=-120, y=51, label="CAN", color="black")+
   annotate(geom="text", x=-120, y=47, label="USA", color="black")+
   geom_ellipse(aes(x0 = -127, y0 = 32, a = 5, b = 2, angle = 0), fill = alpha('gray', alpha = 0.1), linetype = 0)+
-  geom_ellipse(aes(x0 = -129, y0 = 49, a = 2, b = 1, angle = 0), fill = alpha('gray', alpha = 0.1), linetype = 0)+
+  geom_ellipse(aes(x0 = -129, y0 = 49, a = 1.5, b = 0.7, angle = 0), fill = alpha('gray', alpha = 0.1), linetype = 0)+
 #  annotate(geom='text', x = -127, y = 32, label = 'spawning', color ='black')+
-  annotate(geom='text', x = -133, y = 40, label = 'movement', color ='black', angle = 90)+
-  annotate(geom='text', x = -127, y = 40, label = 'return', color ='black', angle = 90)
+  annotate(geom='text', x = -133, y = 40, label = 'Quarterly\nmovement', color ='black', angle = 90)+
+  annotate(geom='text', x = -127.5, y = 40, label = 'end of year\nreturn', color ='black', angle = 90)+
+  annotate(geom='text', x = -127, y = 32, label = 'spawning', color ='black', angle = 90)
 
 #
 pmap
@@ -126,6 +131,3 @@ dev.off()
 pdf(file = 'results/Climate/hakedistribution.pdf', width = 8/2.54, height = 16/2.54)
 pmap
 dev.off()
-
-
-
