@@ -13,7 +13,7 @@ library(PNWColors) # remotes::install_github('jakelawlor/PNWColors')
 
 df.tac <- read.csv('inst/extdata/TAC.csv')
 
-df <- load_data_seasons(nseason = 1, nspace = 1)
+df <- load_data_seasons(nseason = 4, nspace = 2)
 sim.data <- run.agebased.true.catch(df)
 ## Calculate the theoretical TAC
 SSB <- seq(0, sum(sim.data$SSB0)*2, length.out = dim(df.tac)[1])
@@ -30,7 +30,7 @@ TAC[ix]<- 0.4*SSB[ix]*((SSB[ix]-0.1*SSB_0)*((0.4*SSB_0/SSB[ix])/(0.4*SSB_0-0.1*S
 
 df.plot <- data.frame(SSB = SSB, TAC = TAC)
 
-ggplot(data = df.plot, aes(x = SSB*1e-6, y = TAC*1e-6))+geom_line()+
+ggplot(data = df.plot, aes(x = SSB*1e-6, y = TAC*1e-6/(SSB*1e-6)))+geom_line()+
   scale_y_continuous('TAC (million tonnes)')+scale_x_continuous('SSB (million tonnes)')+theme_classic()
 
 df.tac$theotac <- TAC
@@ -105,9 +105,9 @@ p1
 
 p3 <- ggplot(df.plot.w[df.plot.w$HCR != 'Floor',], aes(x= TAC*1e-3, y = Quota*1e-3, color = HCR))+
   geom_line(linetype = 1, size = 0.8)+
-  scale_y_continuous('Catch \n(thousand tonnes)')+scale_color_manual(values = cols[1:3],
+  scale_y_continuous('projected catch \n(thousand tonnes)')+scale_color_manual(values = cols[1:3],
                                                                      labels = c(expression(paste('HCR'[0])),'MD','AC'))+
-  scale_x_continuous('Total allowable catch')+ coord_cartesian(ylim=c(0, 800), xlim = c(0,1000))+
+  scale_x_continuous('TAC from \ndefault HCR')+ coord_cartesian(ylim=c(0, 800), xlim = c(0,1000))+
   geom_point(data = df.tac,aes(x=AssessTac*1e-3, y = Realized*1e-3), color = cols[3])+
   geom_point(data = df.tac,aes(x=AssessTac*1e-3,y = TAC*1e-3), color = cols[2])+
   theme_classic()+
@@ -137,4 +137,37 @@ dev.off()
 # Without the floor thing
 png('results/Climate/tacs.png', width = 8, height = 5, unit = 'cm', res =400)
 p3
+dev.off()
+
+
+# Calculate the TAC based on SSB
+ssb0 <- sum(sim.data$SSB0)
+
+SSB <- seq(0,sum(sim.data$SSB0), length.out = 100)
+
+df.plot <- data.frame(SSB = SSB,
+                      TAC = NA)
+df.plot$TAC[(df.plot$SSB/ssb0) <= 0.1] <- 0
+
+xx <- df.plot$SSB[(df.plot$SSB/ssb0)>0.1 & (df.plot$SSB/ssb0) <= 0.4]
+
+df.plot$TAC[(df.plot$SSB/ssb0)>0.1 & (df.plot$SSB/ssb0) <= 0.4] <- 0.4*xx*
+                                                ((xx-0.1*ssb0)*((0.4*ssb0/xx)/(0.4*ssb0-0.1*ssb0)))
+df.plot$TAC[(df.plot$SSB/ssb0) > 0.4] <- 0.4*df.plot$SSB[(df.plot$SSB/ssb0) > 0.4]
+
+df.plot$TAC.historical <- predict(lm.historical, newdata = data.frame(AssessTac = df.plot$TAC))
+df.plot$TAC.realized <- predict(lm.realized, newdata = data.frame(AssessTac = df.plot$TAC))
+df.plot$TAC.historical[df.plot$TAC.historical > df.plot$TAC] <- df.plot$TAC[df.plot$TAC.historical > df.plot$TAC]
+df.plot$TAC.realized[df.plot$TAC.realized > df.plot$TAC] <- df.plot$TAC[df.plot$TAC.realized > df.plot$TAC]
+
+df.mplot <- df.plot %>% pivot_longer(cols = 2:4, names_to = 'HCR', values_to = 'TAC')
+
+p4 <- ggplot(df.mplot, aes(x= SSB/ssb0, y = TAC/SSB, color = HCR))+geom_line(size = 0.8)+theme_classic()+
+  scale_y_continuous('TAC/SSB0')+theme(legend.position = 'none')+
+  scale_x_continuous('SSB/SSB0')+scale_color_manual(values = cols[1:3],
+                                                     labels = c('base scenario','historical','realized'))
+
+
+png('results/Climate/tacs.png', width = 8*2, height = 5, unit = 'cm', res =400)
+p3+p4
 dev.off()

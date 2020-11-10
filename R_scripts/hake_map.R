@@ -117,7 +117,7 @@ pmap <- ggplot(cplot, aes(x = long, y = lat)) +
 #  annotate(geom='text', x = -127, y = 32, label = 'spawning', color ='black')+
   annotate(geom='text', x = -133, y = 40, label = 'Quarterly\nmovement', color ='black', angle = 90)+
   annotate(geom='text', x = -127.5, y = 40, label = 'end of year\nreturn', color ='black', angle = 90)+
-  annotate(geom='text', x = -127, y = 32, label = 'spawning', color ='black', angle = 90)
+  annotate(geom='text', x = -127, y = 32, label = 'spawning', color ='black')
 
 #
 pmap

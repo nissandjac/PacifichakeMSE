@@ -205,7 +205,7 @@ p.move <-ggplot(df.movement, aes(x = age, y = movement, color = country))+facet_
   theme(legend.title = element_blank(),legend.position = c(0.15,0.35), legend.direction = 'vertical',
         legend.background = element_rect(fill=NA))+
   geom_hline(data = data.frame(season = 1),
-             aes(yintercept = max(df.movement$movement[df.movement$country == 'South' & df.movement$season == 1])),
+             aes(yintercept = max(df.movement$movement[df.movement$country == 'North movement' & df.movement$season == 1])),
              linetype = 2)+
   geom_text(data = ann_mm, label = 'max\n movement', color = 'black')+
   geom_text(data = ann_return, label = 'return\n rate', color = 'black')+
