@@ -5,7 +5,7 @@ library(reshape2)
 library(PacifichakeMSE)
 library(patchwork)
 library(PNWColors) # remotes::install_github('jakelawlor/PNWColors')
-
+library(tidyverse)
 # source('load_data_seasons.R')
 # source('getSelec.R')
 # source('load_files.R')
@@ -79,7 +79,7 @@ df.plot$TAC.HCR <- df.plot$TAC
 
 df.plot.w <- melt(df.plot, id.vars = 'TAC', value.name = 'Quota', variable.name = 'HCR')
 nhcr <- unique(df.plot.w$HCR)
-cols <- PNWColors::pnw_palette('Starfish',n = 4, type = 'discrete')
+cols <- PNWColors::pnw_palette('Starfish',n = 3, type = 'discrete')
 # add alpha transparency to color vector
 cols <- adjustcolor(cols, alpha.f = 0.7)
 
@@ -105,11 +105,11 @@ p1
 
 p3 <- ggplot(df.plot.w[df.plot.w$HCR != 'Floor',], aes(x= TAC*1e-3, y = Quota*1e-3, color = HCR))+
   geom_line(linetype = 1, size = 0.8)+
-  scale_y_continuous('projected catch \n(thousand tonnes)')+scale_color_manual(values = cols[1:3],
-                                                                     labels = c(expression(paste('HCR'[0])),'MD','AC'))+
+  scale_y_continuous('projected catch \n(thousand tonnes)')+
+  scale_color_manual(values = cols[1:3],labels = c(expression(paste('HCR'[0])),'MD','AC'))+
   scale_x_continuous('TAC from \ndefault HCR')+ coord_cartesian(ylim=c(0, 800), xlim = c(0,1000))+
-  geom_point(data = df.tac,aes(x=AssessTac*1e-3, y = Realized*1e-3), color = cols[3])+
-  geom_point(data = df.tac,aes(x=AssessTac*1e-3,y = TAC*1e-3), color = cols[2])+
+  geom_point(data = df.tac,aes(x=AssessTac*1e-3, y = Realized*1e-3), color = cols[3], shape = 2)+
+  geom_point(data = df.tac,aes(x=AssessTac*1e-3,y = TAC*1e-3), color = cols[2], shape = 3)+
   theme_classic()+
   #geom_point(data = df.tac[df.tac$Year >= 2012,],aes(x=AssessTac*1e-3,y = TAC*1e-3), color = alpha(cols[4],0.5))+
   theme(legend.title = element_blank(),
@@ -169,5 +169,5 @@ p4 <- ggplot(df.mplot, aes(x= SSB/ssb0, y = TAC/SSB, color = HCR))+geom_line(siz
 
 
 png('results/Climate/tacs.png', width = 8*2, height = 5, unit = 'cm', res =400)
-p3+p4
+p3+p4+plot_annotation(tag_levels = 'a')
 dev.off()

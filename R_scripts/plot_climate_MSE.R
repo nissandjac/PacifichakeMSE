@@ -37,9 +37,9 @@ simdata0 <- sim.data # The other one is gonna get overwritten.
 
 
 #
-folder <- 'C:/Users/Nis/Dropbox/NOAA/Hake MSE/MSE results/final results/'
+# folder <- 'C:/Users/Nis/Dropbox/NOAA/Hake MSE/MSE results/final results/'
 #
-# folder <- 'C:/Users/nsja/Dropbox/NOAA/Hake MSE/MSE results/final results/'
+ folder <- 'C:/Users/nsja/Dropbox/NOAA/Hake MSE/MSE results/final results/'
 #
 
 
@@ -389,7 +389,7 @@ vplot3 <- ggplot(AAVdfexp[AAVdfexp$year>2030,], aes(x = HCR,y = AAV, group = MP,
 
 png(paste('results/Climate/','violin_publication.png', sep = ''), width = 16, height =12, res = 400, unit = 'cm')
 
-vplot1/vplot2/vplot3
+vplot1/vplot2/vplot3+plot_annotation(tag_levels = 'a')
 
 dev.off()
 
@@ -643,7 +643,7 @@ pdec.aav
 
 
 png(paste('results/Climate/','objectives_decade.png', sep = ''), width = 16, height =12, res = 400, unit = 'cm')
-pdec.c/pdec.ssb/pdec.aav
+pdec.c/pdec.ssb/pdec.aav+plot_annotation(tag_levels = 'a')
 dev.off()
 
 
