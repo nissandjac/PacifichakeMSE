@@ -341,8 +341,8 @@ run.agebased.true.catch <- function(df, seeds = 100){
         V.save[yr,space,season] <- B.tmp
         Catch.quota[yr,space,season] <- E.temp
 
-        if(E.temp/B.tmp >= .9){
-          if(df$years[yr] < 2018){
+        if(E.temp/B.tmp >= .75){
+          if(df$years[yr] < 2019){
             stop(paste('Catch exceeds available biomass in year:',year,' and season', season, 'area', space)) # Stop if in the past
           }
           #print(paste('Catch exceeds available biomass in year:',year,' and season', season, 'area', space))

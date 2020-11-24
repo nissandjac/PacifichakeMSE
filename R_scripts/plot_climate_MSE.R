@@ -360,8 +360,8 @@ vplot1 <- ggplot(catchcdfexp[catchcdfexp$year>2030,], aes(x = HCR,y = value*1e-6
 
 rmout <- quantile(SSBdf$value[SSBdf$year>2019]*1e-6, probs = perc)
 
-vplot2 <- ggplot(SSBdf[SSBdf$year>2030,], aes(x = HCR,y = value/sum(sim.data$SSB_0), group = MP, fill = climate))+
-  geom_violin(position = dodge)+scale_y_continuous(name = 'SSB/ \nSSB0')+geom_line()+theme_bw()+
+vplot2 <- ggplot(SSBdf[SSBdf$year>2030,], aes(x = HCR,y = value*1e-6, group = MP, fill = climate))+
+  geom_violin(position = dodge)+scale_y_continuous(name = 'SSB  \n(million tonnes)')+geom_line()+theme_bw()+
   theme(legend.position = 'none',
         text = element_text(size = 8),
         strip.background = element_blank(),
@@ -369,7 +369,7 @@ vplot2 <- ggplot(SSBdf[SSBdf$year>2030,], aes(x = HCR,y = value/sum(sim.data$SSB
         axis.text.x = element_blank(),
         plot.margin = unit(c(1,1,0,1), 'pt'))+scale_x_discrete('')+
   geom_boxplot(width=0.2, col = 'black', outlier.shape = NA, position = dodge)+
-  scale_fill_manual(values= cols)+facet_wrap(~variable)+coord_cartesian(ylim = c(0,1.5))
+  scale_fill_manual(values= cols)+facet_wrap(~variable)+coord_cartesian(ylim = c(0,2))
 
 # Remove stupid outliers
 rmout <- quantile(AAVdfexp$AAV[AAVdfexp$year>2019], probs = perc)
