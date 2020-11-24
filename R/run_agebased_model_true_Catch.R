@@ -82,25 +82,11 @@ run.agebased.true.catch <- function(df, seeds = 100){
   }
   names(SSB_0) <- paste(rep('space',each = df$nspace),1:nspace)
 
+  
+  # Recruitment per country
   R_0 <- R0*move.init
-  # Used the inital recruitment devs to get a start
 
-
-  # Ninit <- rep(NA,nage)
-  # Ninit_dev <- (df$parms$initN)
-  # Ninit[1] <- R0
-  # Ninit[2:(nage-1)] <-R0 * exp(-M[2:(nage-1)]*age[2:(nage-1)])*exp(-0.5*SDR^2*0+Ninit_dev[1:(nage-2)])
-  # Ninit[nage] <- R0*exp(-(M[nage-1]*age[nage-1]))/(1-exp(-M[nage]))*exp(-0.5*SDR^2*0+Ninit_dev[nage-1])# Plus group (ignore recruitment dev's in first year )
-  #
-  # Create containers to save the data
-  # SSB_init <- NA
-  #
-  # for(i in 1:nspace){
-  #   SSB_init[i] <- sum(df$Matsel*Ninit*move.init[i], na.rm =T)*0.5
-  # }
-  #
-
-  #Ninit[1] <- sum((4*h*R_0*SSB_init/(SSB_0*(1-h)+ SSB_init*(5*h-1)))*exp(-0.5*1*SDR^2+df$parms$Rin[1]), na.rm = T)
+  # Initialize for saving 
   year_1 <- c(year,max(year)+1)
 
   SSB <- matrix(NA,nyear, nspace,
@@ -205,8 +191,7 @@ run.agebased.true.catch <- function(df, seeds = 100){
 
 
 
-
-  Fspace <- c(0.2612,0.7388) # Contribution of Total catch (add to one)    #Z <- (Fyear+Myear)
+  Fspace <- df$Fspace 
 
   if(length(Fspace) != nspace){
     warning('specify distribution of catches - assuming equal distribution')
@@ -215,8 +200,7 @@ run.agebased.true.catch <- function(df, seeds = 100){
 
 
   Fnseason <- df$Fnseason
-  pope.mul <- nseason/1*0.5
-  pope.mul <- 0.50
+  pope.mul <- 0.50 # Calculate Pope stuff in the middle of the season
 
   if(nseason == 1){
 
@@ -262,23 +246,43 @@ run.agebased.true.catch <- function(df, seeds = 100){
 
     Mseason <- Myear/nseason # M is distributed throughout the year
 
-
-    # fix Ssb and recruitment in all areas
     for(space in 1:nspace){
       SSB.weight[yr,space] <- sum(N.save.age[,yr,space,1]*as.numeric(w_ssb), na.rm = TRUE)*0.5
       SSB[yr,space] <- SSB.weight[yr,space] #sum(N.save.age[,yr,space,1]*Mat.sel, na.rm = TRUE)
-
+      
       SSB.all[1,space,1]<- sum(N.save.age[,1,space,1]*Mat.sel, na.rm = TRUE)*0.5
-
+    }
+    
+    
+    if(df$recspace == TRUE){
+    # fix Ssb and recruitment in all areas
+      for(space in 1:nspace){
     # Recruitment only in season 1
+        
+      if(R_0[space] != 0){  
       R <- (4*h*R_0[space]*SSB[yr,space]/
             (SSB_0[space]*(1-h)+ SSB[yr,space]*(5*h-1)))*exp(-0.5*df$b[yr]*SDR^2+Ry)#*recruitmat[space]
-
+      }else{
+      R <- 0  
+      }
+      
       N.save.age[1,yr,space,1] <- R
       R.save[yr,space] <- R
+      }
+      
+    }else{
+      
+      R <- (4*h*sum(R_0)*sum(SSB[yr,])/
+              (sum(SSB_0)*(1-h)+ sum(SSB[yr,])*(5*h-1)))*exp(-0.5*df$b[yr]*SDR^2+Ry)#*recruitmat[space]
+      
+      for(space in 1:nspace){
+      N.save.age[1,yr,space,1] <- R*move.init
+      R.save[yr,space] <- R*move.init
+      }
+      
     }
 
-
+    
     for (season in 1:nseason){
       for (space in 1:nspace){
 
