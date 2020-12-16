@@ -7,7 +7,6 @@ library(purrr)
 library(dplyr)
 library(reshape2)
 library(patchwork)
-load_all()
 
 mod <- SS_output('inst/extdata/SS32018', printstats=FALSE, verbose = FALSE) # Read the true selectivity
 
@@ -38,7 +37,7 @@ simdata0 <- sim.data # The other one is gonna get overwritten.
 
 
 #
- folder <- 'C:/Users/Nis/Dropbox/NOAA/Hake MSE/MSE results/final results/'
+folder <- 'C:/Users/Nis/Dropbox/NOAA/Hake MSE/MSE results/perfect/'
 #
 #  folder <- 'C:/Users/nsja/Dropbox/NOAA/Hake MSE/MSE results/final results/'
 # #
@@ -52,67 +51,65 @@ yrs <- 1966:2047
 
 perc <- c(0.2,0.8) # Percentiles for plotting
 
+load_all()
 
 for(i in 1:length(files)){
   load(paste(folder,files[i], sep = '')) # Prints as 'ls.save'
   df.MSE <- flatten(ls.save) # Change the list a little bit
-
-   # ProcessMSE is in the df_MSE function
+  
+  # ProcessMSE is in the df_MSE function
   catchcdf <- processMSE(df.MSE, 'Catch', idx = c(2,3), spacenames = c('CAN', 'USA'), runs = 500,nspace = 2)
   catchdf <- processMSE(df.MSE, 'Catch', idx = 2, spacenames = c('value'), runs = 500,nspace = 2)
-
+  
   SSB_mid <- processMSE(df.MSE, id = 'SSB.mid', idx = c(1,2), spacenames = c('CAN', 'USA'), runs = 500,nspace = 2)
   SSB_tot <- processMSE(df.MSE, id = 'SSB', idx = 1, spacenames = c('value'), runs = 500,nspace = 2)
-
-  SSB.om <- processMSE(df.MSE, id = 'SSB.hes', idx = 1, fn = 'rows', spacenames = c('value'), runs = 500,nspace = 2)
-
+  
   # Calculate AAV
   AAVdf <- AAV(catchcdf, idx = 4)
   AAVtottmp <- AAV(catchdf, idx = 2)
-
-
-
+  
+  
+  
   catch.tot.tmp <- catchdf %>%
     group_by(year) %>%
     summarise(catchmean = median(value),
               quants95 = quantile(value, probs =perc[2]),
               quants5 = quantile(value, probs= perc[1]))
-
-
+  
+  
   SSB.tot.tmp <- SSB_tot  %>%
     group_by(year) %>%
     summarise(SSBmean = median(value),
               quants95 = quantile(value, probs = perc[2]),
               quants5 = quantile(value, probs= perc[1]))
-
-
+  
+  
   AAV.tot.tmp <- AAVtottmp[AAVtottmp$year > 1966,] %>%
     group_by(year) %>%
     summarise(AAVmean = median(AAV, na.rm = TRUE),
               quants95 = quantile(AAV, probs = perc[2]),
               quants5 = quantile(AAV, probs= perc[1]))
-
-
+  
+  
   strs <- strsplit(files[i], split = '_')[[1]]
-
+  
   runname <- paste(strs[4],strs[6],strsplit(strs[8], split = '.Rdata')[[1]], sep = '_')
-
+  
   catchdf$MP <- runname
   catchcdf$MP <- runname
   catch.tot.tmp$MP <- runname
-
+  
   SSB_mid$MP <- runname
   SSB_tot$MP <- runname
   SSB.tot.tmp$MP <- runname
-  SSB.om$MP <- runname
-
-
+  
+  
   AAVdf$MP <- runname
   AAVtottmp$MP <- runname
   AAV.tot.tmp$MP <- runname
-
+  
   HCRname <- strsplit(strs[8], split = '.Rdata')[[1]]
-
+  
   if(HCRname == 'TAC1'){
     HCRname <- as.factor('HCR0')
   }
@@ -122,66 +119,62 @@ for(i in 1:length(files)){
   if(HCRname == 'TAC3'){
     HCRname <- as.factor('AC')
   }
-
+  
   catchdf$HCR <- HCRname
   catchcdf$HCR <- HCRname
   catch.tot.tmp$HCR <- HCRname
-
+  
   SSB_mid$HCR <- HCRname
   SSB.tot.tmp$HCR <- HCRname
   SSB_tot$HCR <- HCRname
-  SSB.om$HCR <- HCRname
-
+  
   AAVdf$HCR <- HCRname
   AAV.tot.tmp$HCR <- HCRname
   AAVtottmp$HCR <- HCRname
-
+  
   catchdf$climate <- strs[6]
   catchcdf$climate <- strs[6]
   catch.tot.tmp$climate <- strs[6]
-
+  
   SSB_mid$climate <- strs[6]
   SSB.tot.tmp$climate <- strs[6]
   SSB_tot$climate <- strs[6]
-  SSB.om$climate <- strs[6]
-
+  
   AAV.tot.tmp$climate <- strs[6]
   AAVdf$climate <- strs[6]
   AAVtottmp$climate <- strs[6]
-
+  
   if(i == 1){
     catchdfexp <- catchdf
     catchcdfexp <- catchcdf
     catch.tot <- catch.tot.tmp
-
+    
     SSBdf <- SSB_mid
     SSB.tot <- SSB.tot.tmp
     SSB_cdf <- SSB_tot
-    ssb.om <- SSB.om
-
+    
     AAVdfexp <- AAVdf
     AAV.tot <- AAV.tot.tmp
     AAVcdf <- AAVtottmp
-
-    }else{
+    
+  }else{
     catchdfexp <- rbind(catchdfexp,catchdf)
     catchcdfexp <- rbind(catchcdfexp,catchcdf)
     catch.tot <- rbind(catch.tot,catch.tot.tmp)
-
+    
     SSBdf <- rbind(SSBdf, SSB_mid)
     SSB.tot <- rbind(SSB.tot, SSB.tot.tmp)
     SSB_cdf <- rbind(SSB_cdf, SSB_tot)
-    ssb.om <- rbind(ssb.om,SSB.om)
-
+    
     AAVdfexp <- rbind(AAVdfexp, AAVdf)
     AAV.tot <- rbind(AAV.tot, AAV.tot.tmp)
     AAVcdf <- rbind(AAVcdf, AAVtottmp)
-
+    
   }
-
-
-
-  }
+  
+  
+  
+}
 
 # Calculate risk
 risk <- SSB_cdf %>% mutate(rel = value/sum(sim.data$SSB_0))
@@ -190,7 +183,7 @@ risk.year <- risk %>% group_by(year, MP, HCR, climate) %>%
   summarise(riskmed = median(rel),
             quants95 = quantile(rel, probs =0.99),
             quants5 = quantile(rel, probs= 0.01)
-            )
+  )
 
 
 
@@ -206,8 +199,8 @@ risk.sum$decline[which(risk.sum$rel < 0.4)] <- 0
 risk.time <- risk.sum %>%
   group_by(MP, HCR, climate, year) %>%
   summarise(risk = length(which(rel< 0.1))/length(which(rel > 0.1)))
-            # ymin = quantile(length(closed[closed ==1])/n(), probs = perc[1]),
-            # ymax = quantile(length(closed[closed ==1])/n(), probs = perc[2]))
+# ymin = quantile(length(closed[closed ==1])/n(), probs = perc[1]),
+# ymax = quantile(length(closed[closed ==1])/n(), probs = perc[2]))
 
 
 cols <- PNWColors::pnw_palette('Starfish',n = 3, type = 'discrete')
@@ -295,10 +288,10 @@ riskrun <- risk[risk$year>2020,] %>%
 
 
 riskviolin <- ggplot(riskrun,aes(x = HCR, y= 1-frac, color = HCR,fill = HCR))+
-    geom_violin(fill = NA)+
-    facet_wrap(~climate)+
-    theme_bw()+geom_hline(aes(yintercept = 0.05), linetype = 2)+coord_cartesian(ylim = c(0,0.2))+
-    scale_color_manual(values = cols)+scale_fill_manual(values = cols)+scale_x_discrete("")#+
+  geom_violin(fill = NA)+
+  facet_wrap(~climate)+
+  theme_bw()+geom_hline(aes(yintercept = 0.05), linetype = 2)+coord_cartesian(ylim = c(0,0.2))+
+  scale_color_manual(values = cols)+scale_fill_manual(values = cols)+scale_x_discrete("")#+
 
 riskviolin
 
@@ -325,7 +318,7 @@ risklines <- ggplot(risk.time, aes(x = year, y = risk, color = climate))+
 
 risklines
 
-png('results/Climate/risklines.png', width = 16, height =6, res = 400, unit = 'cm')
+png('results/Climate/risklines_perfect.png', width = 16, height =6, res = 400, unit = 'cm')
 risklines
 dev.off()
 
@@ -354,7 +347,7 @@ vplot1 <- ggplot(catchcdfexp[catchcdfexp$year>2030,], aes(x = HCR,y = value*1e-6
                    legend.margin = margin(c(0,0,0,0)))+
   scale_x_discrete('')+
   geom_boxplot(width=0.2, col = 'black', outlier.shape = NA, position = dodge,
-                show.legend = FALSE)+scale_fill_manual(values= cols, labels = c('baseline', 'moderate', 'high'))+
+               show.legend = FALSE)+scale_fill_manual(values= cols, labels = c('baseline', 'moderate', 'high'))+
   guides(shape = guide_legend(override.aes = list(shape = 2)))+
   facet_wrap(~variable)+coord_cartesian(ylim = c(0,0.5))
 
@@ -447,9 +440,9 @@ x
 HCRtest <- 'HCR0'
 
 p <- median(SSBdf[SSBdf$year>2040 & SSBdf$variable == 'CAN' &
-                          SSBdf$climate == '0' & SSBdf$HCR == HCRtest,]$value)/
+                    SSBdf$climate == '0' & SSBdf$HCR == HCRtest,]$value)/
   median(SSBdf[SSBdf$year>2040 & SSBdf$variable == 'CAN' &
-                       SSBdf$climate == '04' & SSBdf$HCR == HCRtest,]$value)
+                 SSBdf$climate == '04' & SSBdf$HCR == HCRtest,]$value)
 p <- median(SSBdf[SSBdf$year>2040 & SSBdf$variable == 'USA' & SSBdf$climate == '0'& SSBdf$HCR == HCRtest,]$value)/
   median(SSBdf[SSBdf$year>2040 & SSBdf$variable == 'USA' & SSBdf$climate == '04' & SSBdf$HCR == HCRtest,]$value)
 p
@@ -464,13 +457,13 @@ HCRtest <- 'HCR0'
 ytest <- 2040
 
 p <- (1-(median(AAVdfexp[AAVdfexp$year>ytest &AAVdfexp$variable == 'CAN' &
-                   AAVdfexp$climate == '0' &AAVdfexp$HCR == HCRtest,]$AAV)/
-  median(AAVdfexp[AAVdfexp$year>ytest & AAVdfexp$variable == 'CAN' &
-                AAVdfexp$climate == '04' & AAVdfexp$HCR == HCRtest,]$AAV)))*100
+                           AAVdfexp$climate == '0' &AAVdfexp$HCR == HCRtest,]$AAV)/
+           median(AAVdfexp[AAVdfexp$year>ytest & AAVdfexp$variable == 'CAN' &
+                             AAVdfexp$climate == '04' & AAVdfexp$HCR == HCRtest,]$AAV)))*100
 print(p)
 
 p <- (1-median(AAVdfexp[AAVdfexp$year>ytest & AAVdfexp$variable == 'USA' &AAVdfexp$climate == '0'& AAVdfexp$HCR == HCRtest,]$AAV)/
-  median(AAVdfexp[AAVdfexp$year>ytest & AAVdfexp$variable == 'USA' & AAVdfexp$climate == '04' & AAVdfexp$HCR == HCRtest,]$AAV))*100
+        median(AAVdfexp[AAVdfexp$year>ytest & AAVdfexp$variable == 'USA' & AAVdfexp$climate == '04' & AAVdfexp$HCR == HCRtest,]$AAV))*100
 p
 
 # Biggest differerence
@@ -595,7 +588,7 @@ ssbtmp$decade[ssbtmp$year >2039 & ssbtmp$year<2050] <- 2040
 
 
 pdec.ssb <- ggplot(ssbtmp[ssbtmp$decade != 0,],
-                 aes(x = as.factor(decade), y= value/sum(sim.data$SSB_0), color = climate, fill = climate))+
+                   aes(x = as.factor(decade), y= value/sum(sim.data$SSB_0), color = climate, fill = climate))+
   facet_wrap(~HCR)+coord_cartesian(ylim = c(0,1))+
   theme_classic()+
   geom_violin(position = dodge)+
@@ -622,9 +615,9 @@ aavtmp$decade[aavtmp$year >2029 & aavtmp$year<2040] <- 2030
 aavtmp$decade[aavtmp$year >2039 & aavtmp$year<2050] <- 2040
 
 #
- # aavtmp <- aavtmp %>%
- #   group_by(run,year,HCR,climate,decade) %>%
- #   summarise(AAV = median(AAV))
+# aavtmp <- aavtmp %>%
+#   group_by(run,year,HCR,climate,decade) %>%
+#   summarise(AAV = median(AAV))
 
 
 

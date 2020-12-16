@@ -199,8 +199,9 @@ df.movement$country[df.movement$country == 'USA'] <- 'North movement'
 df.movement$country[df.movement$country == 'CAN'] <- 'South movement'
 
 #png('survey_comps.png', width = 16, height = 10, res= 400, unit = 'cm')
-p.move <-ggplot(df.movement, aes(x = age, y = movement, color = country))+facet_wrap(~season)+theme_classic()+
-  geom_line(size = 1.45)+scale_y_continuous(limit = c(0,1),name = 'movement rate')+
+p.move <-ggplot(df.movement, aes(x = age, y = movement, color = country))+
+  facet_wrap(~season)+theme_classic()+
+  geom_line(size = 1.45, aes(linetype = country))+scale_y_continuous(limit = c(0,1),name = 'movement rate')+
   scale_color_manual(values = c('darkred','blue4'))+
   theme(legend.title = element_blank(),legend.position = c(0.15,0.35), legend.direction = 'vertical',
         legend.background = element_rect(fill=NA))+

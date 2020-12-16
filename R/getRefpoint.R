@@ -163,6 +163,8 @@ if(TAC == 1){
   if(Cexp < 180000){
     Cexp <- 180000
   }
+}else if(TAC == 0){
+  Cexp <- 0
 }
 
 # Do a test run
@@ -174,5 +176,13 @@ if(Cexp > Cnew){ # Never go over the JTC recommendation
 }
 
 
-return(list(Cnew = Cexp, Fnew = F40$par))
+if(TAC == 0){
+  Cnew <- 0
+  Fnew <- 0
+}else{
+  Cnew <- Cexp
+  Fnew <- F40$par
+}
+
+return(list(Cnew = Cnew, Fnew = Fnew))
 }

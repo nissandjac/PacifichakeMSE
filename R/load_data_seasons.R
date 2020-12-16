@@ -371,6 +371,7 @@ load_data_seasons <- function(nseason = 4,
                   # variance parameters
                   logSDcatch = log(0.01),
                   logSDR = log(logSDR), # Fixed in stock assessment ,
+                  recspace = TRUE,
                   logphi_survey = log(11.46),
                   years = years,
                   b = b,
@@ -381,6 +382,9 @@ load_data_seasons <- function(nseason = 4,
                   sigma_psel = 1.4,
                   sum_zero = 0,
                   nspace = nspace,
+                  Fspace = c(0.2612,0.7388), # Contribution of Total catch (add to one)    #Z <- (Fyear+Myear)
+                  
+                  
                   #TAC = TAC,
                   movemat = movemat,
                   move = move,

@@ -235,7 +235,7 @@ ls.save <- list()
 ls.converge <- matrix(0, nruns)
 
 for (i in 271:nruns){
-  tmp <- run_multiple_MSEs(simyears = simyears,
+  tmp <- run_multiple_unfished(simyears = simyears,
                                    seeds = seeds[i],
                                    TAC = 3, df = df, cincrease = 0.04, mincrease = 0.02)
   #tmp <- run_multiple_MSEs(simyears = 30, seeds[i])
