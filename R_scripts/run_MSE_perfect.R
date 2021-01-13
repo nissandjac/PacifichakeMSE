@@ -16,7 +16,7 @@ parms.true <- getParameters_OM(TRUE,mod, df) # Load parameters from assessment
 
 time <- 1
 yrinit <- df$nyear
-nruns <- 100
+nruns <- 1000
 
 seeds <- floor(runif(n = nruns, min = 1, max = 1e6))
 ### Run the OM and the EM for x number of years in the MSE
@@ -36,24 +36,24 @@ ls.converge <- matrix(0, nruns)
 
 
 # # #
-# for (i in 1:nruns){
-#   tmp <- run_multiple_MSEs(simyears = simyears,
-#                            seeds = seeds[i],
-#                            TAC = 1, df = df, cincrease = 0, mincrease = 0, runOM = FALSE)
-#   print(i)
-#
-#   if(is.list(tmp)){
-#     ls.save[[i]] <-tmp
-#     ls.converge[i] <- 1
-#   }else{
-#     ls.save[[i]] <- NA
-#     ls.converge[i] <- 0
-#   }
-#
-#
-# }
-#
-# save(ls.save,file = 'results/Climate/perfect/MSErun_move_JMC_climate_0_HYBR_TAC1_perfect.Rdata')
+for (i in 1:nruns){
+  tmp <- run_multiple_MSEs(simyears = simyears,
+                           seeds = seeds[i],
+                           TAC = 1, df = df, cincrease = 0, mincrease = 0, runOM = FALSE)
+  print(i)
+
+  if(is.list(tmp)){
+    ls.save[[i]] <-tmp
+    ls.converge[i] <- 1
+  }else{
+    ls.save[[i]] <- NA
+    ls.converge[i] <- 0
+  }
+
+
+}
+
+save(ls.save,file = 'results/Climate/perfect/MSErun_move_JMC_climate_0_HYBR_TAC1_perfect.Rdata')
 # #
 # # # # ### Loop MSE's with different errors in future survey and recruitment
 # ls.save <- list()
@@ -332,4 +332,18 @@ for (i in 1:nruns){
 save(ls.save,file = 'results/Climate/MSErun_move_JMC_climate_0_04_HYBR_perfect_nofishing.Rdata')
 
 
+# Run the three climate scenarios with 0 recruitment devs
+
+df <- load_data_seasons(nseason = 4, nspace = 2, bfuture = 0, logSDR = 0, yr_future = 100,
+                          ) # Prepare data for operating model
+parms.true <- getParameters_OM(TRUE,mod) # Load parameters from assessment
+sim.data <- run.agebased.true.catch(df) # Run the operating model until 2018
+
+
+df <- load_data_seasons(nseason = 1, nspace = 1, bfuture = 0, logSDR = 0, yr_future = 100) # Prepare data for operating model
+sim.data0 <- run.agebased.true.catch(df) # Run the operating model until 2018
+
+
+plot(rowSums(sim.data$SSB))
+lines(rep(sum(sim.data$SSB0), 200))
 

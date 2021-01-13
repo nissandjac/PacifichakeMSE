@@ -185,67 +185,13 @@ load_data_seasons <- function(nseason = 4,
   age_catch.tmp <- read.csv('inst/extdata/age_catch_ss.csv')
   ac.data <- read.csv('inst/extdata/ac_data.csv')
 
-  # age_survey <- as.data.frame(matrix(-1, nyear,dim(age_survey.df)[2]))
-  # names(age_survey) <- names(age_survey.df)
-  # age_survey$year <- years
-  # age_catch <- as.data.frame(matrix(-1, nyear,dim(age_catch.df)[2]))
-  # names(age_catch) <- names(age_catch.df)
-  # age_catch$year <- years
-  #
-  # for (i in 1:dim(age_survey.df)[1]){
-  #   idx <- which(age_survey$year == age_survey.df$year[i])
-  #   age_survey[idx,] <-age_survey.df[i,]
-  #
-  # }
-  #
-  # for (i in 1:dim(age_catch.df)[1]){
-  #   idx <- which(age_catch$year == age_catch.df$year[i])
-  #   age_catch[idx,] <-age_catch.df[i,]
-  #
-  # }
 
-  # Load parameters from the assessment
 
   initN <- rev(read.csv('inst/extdata/Ninit_MLE.csv')[,1])
   Rdev <- read.csv('inst/extdata/Rdev_MLE.csv')[,1]
   PSEL <- as.matrix(read.csv('inst/extdata/p_MLE.csv'))
-  #Fin <- assessment$F0
 
-  # b <- matrix(NA, nyear)
-  # Yr <- 1946:max(years)
-  # # Parameters
-  # yb_1 <- 1965 #_last_early_yr_nobias_adj_in_MPD
-  # yb_2 <- 1971 #_first_yr_fullbias_adj_in_MPD
-  # yb_3 <- 2016 #_last_yr_fullbias_adj_in_MPD
-  # yb_4 <- max(years) #_first_recent_yr_nobias_adj_in_MPD
-  # b_max <- 0.87 #_max_bias_adj_in_MPD
-  #
-  # b[1] <- 0
-  # for(j in 2:length(Yr)){
-  #
-  #   if (Yr[j] <= yb_1){
-  #     b[j] = 0}
-  #
-  #   if(Yr[j] > yb_1 & Yr[j]< yb_2){
-  #     b[j] = b_max*((Yr[j]-yb_1)/(yb_2-yb_1));
-  #   }
-  #
-  #   if(Yr[j] >= yb_2 & Yr[j] <= yb_3){
-  #     b[j] = b_max}
-  #
-  #   if(Yr[j] > yb_3 & Yr[j] < yb_4){
-  #     b[j] = b_max*(1-(yb_3-Yr[j])/(yb_4-yb_3))
-  #   }
-  #
-  #   if(Yr[j] >= yb_4){
-  #     b[j] = 0
-  #   }
-  #   # if (b[j]<b[j-1]){
-  #   #   stop('why')
-  #   # }
-  # }
-  #
-  #b <- matrix(1, tEnd)
+
   b <- as.matrix(read.csv('inst/extdata/b_input.csv'))
 
 
@@ -273,9 +219,7 @@ load_data_seasons <- function(nseason = 4,
   if(nseason == 4 & nspace == 2){
   Fnseason <- matrix(NA, 2,4)
 
-  #Fnseason[1,] <- c(0.0,0.4,0.50,0.1) # Must add to one
   Fnseason[1,] <- c(0.001,0.188,0.603,0.208)
-  #Fnseason[2,] <- c(0.0,0.4,0.50,0.1) # Must add to onec
   Fnseason[2,] <- c(0.000,0.317,0.382,0.302)/sum(c(0.000,0.317,0.382,0.302)) # Divide by sum to sum to 1
 
   }else{
@@ -383,8 +327,8 @@ load_data_seasons <- function(nseason = 4,
                   sum_zero = 0,
                   nspace = nspace,
                   Fspace = c(0.2612,0.7388), # Contribution of Total catch (add to one)    #Z <- (Fyear+Myear)
-                  
-                  
+
+
                   #TAC = TAC,
                   movemat = movemat,
                   move = move,
@@ -409,12 +353,17 @@ load_data_seasons <- function(nseason = 4,
 
 
   Catch.country <- read.csv('inst/extdata/catch_per_country.csv')
-  df$Catch.country <- as.matrix(Catch.country[,2:3])[,c(2,1)]
 
-  if(ncol(df$Catch.country) != nspace){
+  if(nspace != 2){
     warning('Make sure input catches are distributed correctly in space - distributing equally')
-    df$Catch.country <- matrix(rowSums(df$Catch.country)/df$nspace, df$nyear, df$nspace)
+    if(nspace == 1){df$Catch.country <- as.numeric(rowSums(df$Catch.country))
+    }else{
 
+    }
+
+
+  }else{
+    df$Catch.country <- as.matrix(Catch.country[,2:3])[,c(2,1)]
 
   }
 
@@ -432,11 +381,11 @@ load_data_seasons <- function(nseason = 4,
   }
 
   if(nyear >nrow(df$Catch.country)){
-    
+
     if(is.na(catch.future)){
     df$Catch.country <- rbind(df$Catch.country,t(replicate(nyear-nrow(Catch.country),colMeans(df$Catch.country))))
     }else{
-      df$Catch.country <- rbind(df$Catch.country, 
+      df$Catch.country <- rbind(df$Catch.country,
                                 t(replicate(yr_future,rep(catch.future, nspace))))
     }
   }

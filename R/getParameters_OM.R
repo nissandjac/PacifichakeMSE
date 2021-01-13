@@ -8,7 +8,7 @@
 #' @export
 #'
 #' @examples
-getParameters_OM <- function(trueparms = TRUE, mod = NA,df){
+getParameters_OM <- function(trueparms = TRUE, mod = NA,df = NA){
 
 
   if (trueparms == TRUE){
@@ -19,7 +19,7 @@ getParameters_OM <- function(trueparms = TRUE, mod = NA,df){
 
     ### Get the Rdev params
     ninit.idx <- grep('Early_Init', nms)
-    PSEL <- matrix(0,5, length(1991:max(df$years)))
+    PSEL <- matrix(0,5, length(1991:mod$endyr))
 
     fish_ages <- c('P3','P4', 'P5', 'P6', 'P7')
 

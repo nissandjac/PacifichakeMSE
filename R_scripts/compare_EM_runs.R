@@ -65,20 +65,20 @@ for(i in 1:length(p.files)){
 
 
 
-  SSB_EM <- processMSE(df.MSE.EM, id = 'SSB', idx = 1, spacenames = c('value'), runs = 500,nspace = 2)
+  SSB_EM <- processMSE(df.MSE.EM, id = 'SSB', idx = 1, spacenames = c('value'), runs = 100,nspace = 2)
 
   # Remove runs 101:500 for now
   SSB_EM <- filter(SSB_EM, run %in% paste('run',1:100, sep = ''))
 
 
-  SSB_p <- processMSE(df.MSE.p, id = 'SSB', idx = 1, spacenames = c('value'), runs = 100,nspace = 2)
+  SSB_p <- processMSE(df.MSE.p, id = 'SSB', idx = 1, spacenames = c('value'), runs = 1000,nspace = 2)
 
   SSB <- bind_rows(list(EM = SSB_EM,perfect = SSB_p), .id = "id")
 
   catch_EM <- processMSE(df.MSE.EM, 'Catch', idx = 2, spacenames = c('value'), runs = 500,nspace = 2)
   catch_EM <- filter(catch_EM, run %in% paste('run',1:100, sep = ''))
 
-  catch_p <- processMSE(df.MSE.p, 'Catch', idx = 2, spacenames = c('value'), runs = 100,nspace = 2)
+  catch_p <- processMSE(df.MSE.p, 'Catch', idx = 2, spacenames = c('value'), runs = 1000,nspace = 2)
 
   catch <- bind_rows(list(EM = catch_EM, perfect = catch_p), .id = 'id')
 
@@ -255,80 +255,33 @@ dev.off()
 
 
 
-# Plot the Unfished scenarios
+# Look at the risk from some of the individual runs
+
+
+xx <- risk.sum %>%
+  group_by(id, run, MP, HCR, climate) %>%
+  summarise(nclosed = sum(closed))
+
+idx <- unique(xx[order(xx$nclosed),]$run[1:30])
 
 
 
-
-p0 <- 'C:/Users/Nis/Dropbox/NOAA/Hake MSE/MSE results/no fishing/'
-
-p0.files <- dir(p0)[grep(dir(p0),pattern = '.Rdata')]
-# Recreate the violin pltos
-
-yrs <- 1966:2047
-
-perc <- c(0.05,0.95) # Percentiles for plotting
-
-
-# Just look at a couple of individual runs
-
-for(i in 1:length(p0.files)){
-
-  load(paste(p0,p0.files[i], sep = '')) # Prints as 'ls.save'
-  df.MSE <- flatten(ls.save) # Change the list a little bit
-
-  SSB <- processMSE(df.MSE, id = 'SSB', idx = 1, spacenames = c('value'), runs = 100,nspace = 2)
-  catch <- processMSE(df.MSE, 'Catch', idx = 2, spacenames = c('value'), runs = 100,nspace = 2)
-
-
-  catch.tot.tmp <- catch %>%
-    group_by(year) %>%
-    summarise(catchmean = median(value),
-              quants95 = quantile(value, probs =perc[2]),
-              quants5 = quantile(value, probs= perc[1]))
-
-
-  SSB_tot<- SSB  %>%
-    group_by(year) %>%
-    summarise(SSBmean = median(value),
-              quants95 = quantile(value, probs = perc[2]),
-              quants5 = quantile(value, probs= perc[1]))
-
-  strs <- strsplit(p0.files[i], split = '_')[[1]]
-
-  runname <- paste(strs[4],strs[6],strsplit(strs[8], split = '.Rdata')[[1]], sep = '_')
-
-  catch.tot.tmp$MP <- runname
-  SSB_tot$MP <- runname
-  SSB$MP <- runname
-  # HCR
-
-  catch.tot.tmp$climate <- strs[6]
-  SSB_tot$climate <- strs[6]
-  SSB$climate <- strs[6]
-
-
-  if(i == 1){
-    catch.tot <- catch.tot.tmp
-    SSB.tot <- SSB_tot
-    SSB_cdf <- SSB
-  }else{
-
-    catch.tot <- rbind(catch.tot,catch.tot.tmp)
-
-    SSB_cdf <- rbind(SSB_cdf, SSB)
-    SSB.tot <- rbind(SSB.tot, SSB_tot)
-  }
-
-}
-
-
-ggplot(SSB.tot, aes(x = year, y = SSBmean/sum(sim.data$SSB0), color = climate))+geom_line()+
-  geom_line(aes(y = quants5/sum(sim.data$SSB0)), linetype = 2)
+ggplot(risk.sum[risk.sum$run %in% idx & risk.sum$id == 'perfect',],
+       aes(x = year, y = rel, color = HCR, group = run))+
+  geom_line()+
+  facet_grid(HCR~climate)+
+  theme_bw()+coord_cartesian(ylim = c(0,2))+geom_hline(aes(yintercept = 0.1))
 
 
 
+# Look at the crashed years in perfect info
 
+tt <- filter(risk.sum, id == 'EM' & closed == 0)
+
+
+p1 <- ggplot(filter(risk.sum,run == 'run5' & id == 'perfect'), aes(x = year, y= rel, color = HCR))+geom_line()+theme_bw()+facet_wrap(~climate)
+
+p2 <- ca
 
 
 
