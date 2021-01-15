@@ -56,9 +56,9 @@ getParameters_ss <- function(mod = NA){
         logh = log(pars$Value[which(nms == "SR_BH_steep")]),
         logMinit = log(pars$Value[which(nms == "NatM_p_1_Fem_GP_1")]),
         logSDsurv = log(pars$Value[which(nms == "Q_extraSD_Acoustic_Survey(2)")]),
-        #logSDR = log(1.4),
+        logSDR = log(mod$parameters$Value[which(mod$parameters$Label == 'SR_sigmaR')]),
         logphi_catch = pars$Value[which(nms =="ln(EffN_mult)_1")],
-        #logphi_survey = log(10),
+        logphi_survey = pars$Value[which(nms =="ln(EffN_mult)_2")],
         # logSDF = log(0.1),
         # Selectivity parameters
         psel_fish = pars$Value[pselidx],

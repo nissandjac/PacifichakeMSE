@@ -6,11 +6,8 @@ devtools::load_all()
 
 mod <- SS_output(paste(getwd(),'/inst/extdata/SS32019', sep =''), printstats=FALSE, verbose = FALSE)
 
-
 # SSB from the assessment
 SSB.ss3 <- mod$derived_quants$Value[grep('SSB_1966', mod$derived_quants$Label):grep('SSB_2019', mod$derived_quants$Label)]
-
-
 
 parms <- getParameters_ss(mod)
 df <- load_data_ss(mod)
@@ -22,19 +19,6 @@ dyn.load(dynlib("src/runHakeassessment"))
 obj <-MakeADFun(df,parms,DLL="runHakeassessment")#, )
 
 vars <- obj$report()
-
-age_survey  <- obj$report()$age_survey_est
-age_catch <- obj$report()$age_catch
-# Compare the comps with ss3
-SSBass <- vars$SSB
-
-plot(df$years,SSBass)
-lines(df$years,SSB.ss3*0.5)
-
-# Compare selectivity in year 1993
-
-plot(df$years,df$Catchobs)
-lines(df$years,obj$report()$Catch)
 
 lower <- obj$par-Inf
 
@@ -53,12 +37,6 @@ system.time(opt<-nlminb(obj$par,obj$fn,obj$gr,lower=lower,upper=upper,
 system.time(rep<-sdreport(obj))
 rep
 
-xx<- Check_Identifiable_vs2(obj)
-#
-# tt <- TMBhelper::Optimize(obj,fn = obj$fn,obj$gr,lower=lower,upper=upper,
-#                            control = list(iter.max = 1e8, eval.max = 1e8,
-#                                           rel.tol = 1e-10))
-#rep
 sdrep <- summary(rep)
 rep.values<-rownames(sdrep)
 
