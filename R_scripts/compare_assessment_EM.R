@@ -5,16 +5,16 @@ library(reshape2)
 library(scales)
 library(PacifichakeMSE)
 # Read the assessment data
-mod <- SS_output('inst/extdata/SS32018/', printstats=FALSE, verbose = FALSE) # Read the true selectivity
+mod <- SS_output('inst/extdata/SS32019/', printstats=FALSE, verbose = FALSE) # Read the true selectivity
 
 df <- load_data_ss(mod, sum_zero = 0)
 
 years <- df$years
 
 #U[2,] <- 0.01
-parms.ss <- getParameters_ss(FALSE, mod)
+parms.ss <- getParameters_ss(mod)
 parms.ss$F0 <- parms.ss$F0*0
-parms.ss.true <- getParameters_ss(TRUE,mod)
+parms.ss.true <- getParameters_ss(mod)
 
 compile("src/runHakeassessment.cpp")
 dyn.load(dynlib("src/runHakeassessment"))

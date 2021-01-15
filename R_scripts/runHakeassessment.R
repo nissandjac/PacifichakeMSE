@@ -3,10 +3,16 @@ library(r4ss)
 library(PacifichakeMSE)
 # Read the assessment data
 
-mod <- SS_output(paste(getwd(),'/inst/extdata/', sep =''), printstats=FALSE, verbose = FALSE)
+mod <- SS_output(paste(getwd(),'/inst/extdata/SS32019', sep =''), printstats=FALSE, verbose = FALSE)
+
+
+# SSB from the assessment
+SSB.ss3 <- mod$derived_quants$Value[grep('SSB_1966', mod$derived_quants$Label):grep('SSB_2019', mod$derived_quants$Label)]
+
 
 
 parms <- getParameters_ss(mod)
+df <- load_data_ss(mod)
 
 
 compile("src/runHakeassessment.cpp")
@@ -21,8 +27,8 @@ age_catch <- obj$report()$age_catch
 # Compare the comps with ss3
 SSBass <- vars$SSB
 
-plot(df$years,SSBass*0.5)
-lines(assessment$year,assessment$SSB)
+plot(df$years,SSBass)
+lines(df$years,SSB.ss3*0.5)
 
 # Compare selectivity in year 1993
 
@@ -46,7 +52,7 @@ system.time(opt<-nlminb(obj$par,obj$fn,obj$gr,lower=lower,upper=upper,
 system.time(rep<-sdreport(obj))
 rep
 
-#xx<- Check_Identifiable_vs2(obj)
+xx<- Check_Identifiable_vs2(obj)
 #
 # tt <- TMBhelper::Optimize(obj,fn = obj$fn,obj$gr,lower=lower,upper=upper,
 #                            control = list(iter.max = 1e8, eval.max = 1e8,
@@ -56,18 +62,14 @@ sdrep <- summary(rep)
 rep.values<-rownames(sdrep)
 
 
-source('getUncertainty.R')
-df$nyear <- length(years)
-df$year <- years
-
-SSB <- getUncertainty('SSB',df)
-F0 <- getUncertainty('Fyear',df)
-Catch <- getUncertainty('Catch',df)
-Surveyobs <- getUncertainty('Surveyobs',df)
-R <- getUncertainty('R',df)
-surveyselec.est <- getUncertainty('surveyselc', df)
-catchselec.est <- getUncertainty('catchselec', df)
-SSB0 <- getUncertainty('SSBzero', df)
+SSB <- getUncertainty('SSB',df, sdrep)
+F0 <- getUncertainty('Fyear',df, sdrep)
+Catch <- getUncertainty('Catch',df, sdrep)
+Surveyobs <- getUncertainty('Surveyobs',df, sdrep)
+R <- getUncertainty('R',df, sdrep)
+surveyselec.est <- getUncertainty('surveyselc', df, sdrep)
+catchselec.est <- getUncertainty('catchselec', df, sdrep)
+SSB0 <- getUncertainty('SSBzero', df, sdrep)
 
 
 SSB$name <- SSB$name*1e-6
@@ -75,11 +77,8 @@ SSB$min <- SSB$min*1e-6
 SSB$max <- SSB$max*1e-6
 
 
-SSB.ss3 <- mod$derived_quants$Value[grep('SSB_1966', mod$derived_quants$Label):grep('SSB_2017', mod$derived_quants$Label)]*1e-6
-
-
 #png('Figures/SSB_survey_mid.png', width = 16, height = 12, unit = 'cm', res =400)
-plotValues(SSB, data.frame(x= assessment$year, y= SSB.ss3),'SSB')
+plotValues(SSB, data.frame(x= df$years, y= SSB.ss3*0.5),'SSB')
 #dev.off()
 
 
@@ -117,18 +116,18 @@ ggplot(LogLik, aes(y = -name, x= lik))+geom_point()+theme_classic()+scale_y_cont
 ages <- 1:15
 comp.year <- length(df$flag_catch[df$flag_catch == 1])
 
-age_catch_est <- getUncertainty('age_catch_est', df)
-age_catch <- getUncertainty('age_catch', df)
+age_catch_est <- getUncertainty('age_catch_est', df, sdrep)
+age_catch <- getUncertainty('age_catch', df, sdrep)
 
 age_catch_est$age <- rep(ages, df$nyear)
-age_catch_est$year <- rep(df$year, each = 15)
+age_catch_est$year <- rep(df$years, each = 15)
 
 head(age_catch_est)
 
-df.plot <- data.frame(comps = c(age_catch_est$name,age_catch$name),
-                      year = rep(age_catch_est$year,2), age = rep(age_catch_est$age,2), model = rep(c('estimated','data'), each = 780))
+df.plot <- data.frame(comps = c(age_catch_est$value,age_catch$value),
+                      year = rep(age_catch_est$year,2), age = rep(age_catch_est$age,2), model = rep(c('estimated','data'), each = nrow(age_survey)))
 
-df.plot <- df.plot[which(df.plot$year %in% df$year[df$flag_catch == 1]),]
+df.plot <- df.plot[which(df.plot$year %in% df$years[df$flag_catch == 1]),]
 
 #png('Figures/age_comps_catch.png', width = 16, height = 12, unit = 'cm', res =400)
 ggplot(data = df.plot, aes(x = age, y = comps, color = model))+geom_line()+facet_wrap(facets = ~year)+theme_bw()
@@ -137,18 +136,18 @@ dev.off()
 ages <- 1:15
 comp.year <- length(df$flag_survey[df$flag_survey == 1])
 
-age_survey_est <- getUncertainty('age_survey_est', df)
-age_survey <- getUncertainty('age_survey', df)
+age_survey_est <- getUncertainty('age_survey_est', df, sdrep)
+age_survey <- getUncertainty('age_survey', df, sdrep)
 
 age_survey_est$age <- rep(ages, df$nyear)
-age_survey_est$year <- rep(df$year, each = 15)
+age_survey_est$year <- rep(df$years, each = 15)
 
 head(age_survey_est)
 
-df.plot <- data.frame(comps = c(age_survey_est$name,age_survey$name),
-                      year = rep(age_survey_est$year,2), age = rep(age_survey_est$age,2), model = rep(c('estimated','data'), each = 780))
+df.plot <- data.frame(comps = c(age_survey_est$value,age_survey$value),
+                      year = rep(age_survey_est$year,2), age = rep(age_survey_est$age,2), model = rep(c('estimated','data'), each = nrow(age_survey)))
 
-df.plot <- df.plot[which(df.plot$year %in% df$year[df$flag_survey == 1]),]
+df.plot <- df.plot[which(df.plot$year %in% df$years[df$flag_survey == 1]),]
 
 #png('Figures/age_comps_survey.png', width = 16, height = 12, unit = 'cm', res =400)
 ggplot(data = df.plot, aes(x = age, y = comps, color = model))+geom_line()+facet_wrap(facets = ~year)+theme_bw()

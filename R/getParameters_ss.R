@@ -40,7 +40,7 @@ getParameters_ss <- function(mod = NA){
       surv.idx <- surv.idx[-grep('Q_ex', nms[surv.idx])]
 
 
-      PSEL <- matrix(0,length(pselidx), length(sel.tmp:df$years[length(df$years)]))
+      PSEL <- matrix(0,length(pselidx), length(sel.tmp:years[length(years)]))
 
       fish_ages <- c('P3','P4', 'P5', 'P6', 'P7')
 
