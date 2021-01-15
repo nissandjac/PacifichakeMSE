@@ -2,6 +2,7 @@
 library(r4ss)
 library(PacifichakeMSE)
 # Read the assessment data
+devtools::load_all()
 
 mod <- SS_output(paste(getwd(),'/inst/extdata/SS32019', sep =''), printstats=FALSE, verbose = FALSE)
 
@@ -72,43 +73,39 @@ catchselec.est <- getUncertainty('catchselec', df, sdrep)
 SSB0 <- getUncertainty('SSBzero', df, sdrep)
 
 
-SSB$name <- SSB$name*1e-6
+SSB$value <- SSB$value*1e-6
 SSB$min <- SSB$min*1e-6
 SSB$max <- SSB$max*1e-6
 
 
 #png('Figures/SSB_survey_mid.png', width = 16, height = 12, unit = 'cm', res =400)
-plotValues(SSB, data.frame(x= df$years, y= SSB.ss3*0.5),'SSB')
+plotValues(SSB, data.frame(x= df$years, y= SSB.ss3*0.5*1e-6),'SSB')
 #dev.off()
 
 
-## Do the same plot with
-df.plot <- data.frame(SSB = SSB$name/(SSB0$name*1e-6))
 
 plotValues(Catch, data.frame(x = df$years,y =df$Catchobs), 'Catch')
 
-#png('Figures/F0.png', width = 16, height = 12, unit = 'cm', res =400)
-plotValues(F0, data.frame(x = df$years,y =assessment$F0), 'F0')
-#dev.off()
-# yl <- ylimits(Biomass$name*1e-9,df$survey[df$survey > 1]*1e-9)
-# plot(years[df$survey>1],Biomass$name[df$survey>1]*1e-9, xlim = c(1990,2019), ylim = yl, xlab= 'survey')
-# points(years[df$survey > 1],df$survey[df$survey > 1]*1e-9, col = 'green')
+# Fishing mortality from ss3
+F0ass <- mod$derived_quants$Value[grep("F_",mod$derived_quants$Label)][1:length(df$years)]
+
+
+plotValues(F0, data.frame(x = df$years,y =F0ass), 'F0') # Not sure why these differ
+
 Surveyobs[Surveyobs$year < 1995,] <- NA
 
 plotValues(Surveyobs, data.frame(y = df$survey[df$flag_survey == 1], x = df$years[df$flag_survey == 1]), 'survey biomass')
 
 #png('estimated_F0.png', width = 16, height = 12, unit = 'cm', res =400)
-plotValues(F0, data.frame(y =assessment$F0, x= assessment$year), 'Fishing mortality')
-dev.off()
 # Likelihood contributions
 
 nms <- c('SDR','Selectivity','Catch','survey','survey comps','Catch comps','Priors')
 
-LogLik<- getUncertainty('ans_tot', df)
+LogLik<- getUncertainty('ans_tot', df, sdrep)
 LogLik$lik <- nms
 
 #png('Figures/LogLikelihoods.png', width = 16, height = 12, unit = 'cm', res =400)
-ggplot(LogLik, aes(y = -name, x= lik))+geom_point()+theme_classic()+scale_y_continuous('LogLikelihood')+scale_x_discrete(name = '')+
+ggplot(LogLik, aes(y = -value, x= lik))+geom_point()+theme_classic()+scale_y_continuous('LogLikelihood')+scale_x_discrete(name = '')+
   geom_errorbar(aes(x = lik, ymin = -min, ymax = -max), col = 'black')
 #dev.off()
 
@@ -119,18 +116,19 @@ comp.year <- length(df$flag_catch[df$flag_catch == 1])
 age_catch_est <- getUncertainty('age_catch_est', df, sdrep)
 age_catch <- getUncertainty('age_catch', df, sdrep)
 
-age_catch_est$age <- rep(ages, df$nyear)
+age_catch_est$age <- rep(ages, length(df$years))
 age_catch_est$year <- rep(df$years, each = 15)
 
 head(age_catch_est)
 
 df.plot <- data.frame(comps = c(age_catch_est$value,age_catch$value),
-                      year = rep(age_catch_est$year,2), age = rep(age_catch_est$age,2), model = rep(c('estimated','data'), each = nrow(age_survey)))
+                      year = rep(age_catch_est$year,2), age = rep(age_catch_est$age,2), model = rep(c('estimated','data'), each = nrow(age_catch)))
 
-df.plot <- df.plot[which(df.plot$year %in% df$years[df$flag_catch == 1]),]
+df.plot <- df.plot[df.plot$year %in% df$years[df$flag_catch == 1],]
 
 #png('Figures/age_comps_catch.png', width = 16, height = 12, unit = 'cm', res =400)
-ggplot(data = df.plot, aes(x = age, y = comps, color = model))+geom_line()+facet_wrap(facets = ~year)+theme_bw()
+ggplot(data = df.plot, aes(x = age, y = comps, color = model))+
+  geom_line()+facet_wrap(facets = ~year)+theme_bw()
 dev.off()
 
 ages <- 1:15
@@ -154,18 +152,18 @@ ggplot(data = df.plot, aes(x = age, y = comps, color = model))+geom_line()+facet
 #dev.off()
 
 ## Compare parameter estimations with the ones from the SS3 assessment
-parms.true <- getParameters(TRUE) # Parameters estimated in the SS3 model
+#parms.true <- getParameters_ss(TRUE,) # Parameters estimated in the SS3 model
 # Non related parameters
 
-nms <- unlist(strsplit(names(rep$par.fixed)[1:6],split ='log'))[2*(1:6)]
-vals <- exp(rep$par.fixed)[1:6]
-err <- sdrep[,2][1:6]
+nms <- unlist(strsplit(names(rep$par.fixed)[1:5],split ='log'))[2*(1:5)]
+vals <- exp(rep$par.fixed)[1:5]
+err <- sdrep[,2][1:5]
 
 SE <- vals*err
 
 df.plot.parms <- data.frame(value = vals, min = vals-2*SE, max = vals+2*SE, name =nms, model = 'TMB')
 
-df.assessment <- data.frame(value = exp(as.numeric(parms.true[1:6])), min = NA, max = NA, name = nms, model = 'SS3')
+df.assessment <- data.frame(value = exp(as.numeric(unlist(parms[1:5]))), min = NA, max = NA, name = nms, model = 'SS3')
 
 df.plot.parms <- rbind(df.plot.parms,df.assessment)
 
@@ -182,10 +180,10 @@ dev.off()
 # plot the base and survey selectivity
 source('getSelec.R')
 
-sel.ss3 <- getSelec(df$age,psel =parms.true['psel_fish'][[1]],Smin = df$Smin,df$Smax)
+sel.ss3 <- getSelec(df$age,psel =parms['psel_fish'][[1]],Smin = df$Smin,df$Smax)
 sel.tmb <- getSelec(df$age, psel = rep$par.fixed[names(rep$par.fixed) == 'psel_fish'], Smin = df$Smin, Smax = df$Smax)
 
-sel.survey.ss3 <- getSelec(df$age,psel =parms.true['psel_surv'][[1]],Smin = df$Smin_survey,df$Smax_survey)
+sel.survey.ss3 <- getSelec(df$age,psel =parms['psel_surv'][[1]],Smin = df$Smin_survey,df$Smax_survey)
 sel.survey.tmb <- getSelec(df$age,psel = rep$par.fixed[names(rep$par.fixed) == 'psel_surv'],Smin = df$Smin_survey,df$Smax_survey)
 
 df.plot <- data.frame(age = rep(df$age, 4), sel = c(sel.ss3,sel.tmb,sel.survey.ss3,sel.survey.tmb),
@@ -195,9 +193,4 @@ df.plot <- data.frame(age = rep(df$age, 4), sel = c(sel.ss3,sel.tmb,sel.survey.s
 png('Figures/selectivities.png', width = 16, height = 12, unit = 'cm', res =400)
 ggplot(df.plot, aes(x = age, y = sel, color = model))+geom_line()+facet_wrap(~fleet)
 dev.off()
-
-#
-# fit <- tmbstan(obj = obj, chains = 1, init = unlist(parms), lower = lower, upper = upper)
-# launch_shinystan(fit)
-
 
