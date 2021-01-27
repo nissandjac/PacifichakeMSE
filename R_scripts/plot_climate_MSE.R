@@ -668,7 +668,7 @@ ggplot(EE[EE$HCR == 'HCR0' & EE$year > 2010,], aes(x = as.factor(year), y = EE.s
 # summarize data
 EE.tot <- EE %>%
   group_by(year, MP, HCR, climate) %>%
-  summarise(Emedian = median(EE.ssb),
+  summarise(Emedian = mean(EE.ssb),
             Emin = quantile(EE.ssb, probs = 0.05),
             Emax = quantile(EE.ssb, probs = 0.95))
 
@@ -689,7 +689,9 @@ png('results/Climate/climate_EE.png', width = 8, height = 6, res = 400, units = 
 p.ee
 dev.off()
 
-
+# print uncertainty
+median(EE.tot[EE.tot$HCR == 'HCR0' & EE.tot$climate == '0',]$Emin)
+median(EE.tot[EE.tot$HCR == 'HCR0' & EE.tot$climate == '0',]$Emax)
 
 p.ee2 <- ggplot(EE.tot[EE.tot$year > 2018 & EE.tot$HCR == 'HCR0' ,], aes(x = year, y = Emedian))+
   geom_line(size = 1.2)+theme_classic()+
@@ -711,11 +713,16 @@ dev.off()
 ggplot(EE[EE$MP == 'climate_0_TAC1',], aes(x= year, y = EE.ssb, group = run))+geom_line(size = 0.2, alpha = 0.1)+coord_cartesian(ylim = c(-2,2))+
   theme_classic()
 
-median(EE$EE.ssb[EE$year>2018 & EE$climate == '0' & EE$HCR == 'HCR0'])
+median(EE$EE.ssb[EE$year>2018 & EE$climate == '0' & EE$HCR == 'HCR0'])*100
+median(EE$EE.ssb[EE$year>2018 & EE$climate == '02' & EE$HCR == 'HCR0'])*100
+median(EE$EE.ssb[EE$year>2018 & EE$climate == '04' & EE$HCR == 'HCR0'])*100
 
-median(EE$EE.ssb[EE$year>2018 & EE$climate == '02' & EE$HCR == 'HCR0'])
 
-median(EE$EE.ssb[EE$year>2018 & EE$climate == '04' & EE$HCR == 'HCR0'])
+# For the mins and maxes
+quantile(EE$EE.ssb[EE$year>2018 & EE$climate == '0' & EE$HCR == 'HCR0'], probs = 0.05)*100
+quantile(EE$EE.ssb[EE$year>2018 & EE$climate == '0' & EE$HCR == 'HCR0'], probs = 0.95)*100
+
+
 
 
 p.ee.all <- ggplot(EE.tot[EE.tot$year > 2018,], aes(x = year, y = Emedian, color = climate, fill = climate, linetype = climate))+

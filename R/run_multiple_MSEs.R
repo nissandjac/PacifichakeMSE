@@ -15,7 +15,7 @@
 #' @examples
 run_multiple_MSEs <- function(simyears = NULL,seeds = 12345, TAC = 1, df = NA,
                                       cincrease = 0, mincrease = 0,
-                              sel_change = 0, runOM = TRUE){
+                              sel_change = 0, runOM = TRUE, TACchange = 0){
 
 
 
@@ -183,34 +183,20 @@ run_multiple_MSEs <- function(simyears = NULL,seeds = 12345, TAC = 1, df = NA,
         df$parms$PSEL <- rbind(df$parms$PSEL,rep(0,nrow(df$parms$PSEL)))
       }
 
+      if(TACchange == 1){
+      Fspace <- as.numeric(sim.data$SSB[df$nyear,]/sum(sim.data$SSB[df$nyear,]))
+      df$Fspace <- Fspace
+      }
+
+      if(TACchange > 1){
+        'save this space for other options'
+      }
       #print(df$moveout)
       sim.data <- run.agebased.true.catch(df, seeds)
 
     }
 
-    # PSEL <- matrix(0,5, length(1991:years[length(years)]))
-    # initN <- rep(0,df$nage-1)
-    # F0 <- rep(0.01, df$nyear)
-    # Rdev <- rep(0, df$nyear-1) # Can't predict last year
-    #
-    # parms <- list( # Just start all the simluations with the same initial conditions
-    #   logRinit = 15,
-    #   logh = log(0.5),
-    #   logMinit = log(0.3),
-    #   logSDsurv = log(0.3),
-    #   logphi_catch = log(0.8276),
-    #   logphi_survey = log(11.33),
-    #   # Selectivity parameters
-    #   psel_fish = c(2.486490, 0.928255,0.392144,0.214365,0.475473),
-    #   psel_surv = c(0.568618,-0.216172,0.305286 ,0.373829),
-    #   initN = initN,
-    #   Rin = Rdev,
-    #   F0 = F0,
-    #   PSEL = PSEL
-    # )
-    #
 
-    #parms <- getParameters(trueparms = TRUE, mod,df = df)
     parms <- df$parms
     ##  Create a data frame to send to runHakeassessment
 
@@ -238,7 +224,10 @@ run_multiple_MSEs <- function(simyears = NULL,seeds = 12345, TAC = 1, df = NA,
 
 
     if(runOM == TRUE){
-    obj <-TMB::MakeADFun(df.new,parms.new,DLL="runHakeassessment", silent = TRUE) # Run the assessment
+    obj <-TMB::MakeADFun(df.new,parms.new,DLL="runHakeassessment", silent = TRUE,
+                         map = list('logSDR' = as.factor(NA),
+                                    'logphi_catch' = as.factor(NA))
+                         )# Run the assessment
 
     reps <- obj$report()
 

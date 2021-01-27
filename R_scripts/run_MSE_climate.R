@@ -101,7 +101,7 @@ for (i in 1:nruns){
 #
 # }
 # # # # #
-# save(ls.save,file = 'results/Climate/MSErun_move_JMC_climate_0_04_HYBR_TAC1_ix_156_500.Rdata')
+# save(ls.save,file = 'results/Climate/MSErun_move_JMC_climate_0_04_HYBR_TAC1.Rdata')
 #
 #
 ls.save <- list()
@@ -126,7 +126,7 @@ for (i in 203:473){
 }
 
 # # # #
-save(ls.save,file = 'results/Climate/MSErun_move_JMC_climate_0_HYBR_TAC2_474_1.Rdata')
+save(ls.save,file = 'results/Climate/MSErun_move_JMC_climate_0_HYBR_TAC2.Rdata')
 # #
 # ### Loop MSE's with different errors in future survey and recruitment
 # ls.save <- list()
@@ -151,7 +151,7 @@ save(ls.save,file = 'results/Climate/MSErun_move_JMC_climate_0_HYBR_TAC2_474_1.R
 #
 # }
 # # # # #
-# save(ls.save,file = 'results/Climate/MSErun_move_JMC_climate_0_02_HYBR_TAC2_130.Rdata')
+# save(ls.save,file = 'results/Climate/MSErun_move_JMC_climate_0_02_HYBR_TAC.Rdata')
 #
 #
 # #
@@ -177,7 +177,7 @@ save(ls.save,file = 'results/Climate/MSErun_move_JMC_climate_0_HYBR_TAC2_474_1.R
 #
 # }
 # # # # #
-# save(ls.save,file = 'results/Climate/MSErun_move_JMC_climate_0_04_HYBR_TAC2_285-500.Rdata')
+# save(ls.save,file = 'results/Climate/MSErun_move_JMC_climate_0_04_HYBR_TAC2.Rdata')
 
 
 ### Loop MSE's with different errors in future survey and recruitment
@@ -202,7 +202,7 @@ for (i in 292:396){
 
 }
    # # # #
-save(ls.save,file = 'results/Climate/MSErun_move_JMC_climate_0_HYBR_TAC3_292-396.Rdata')
+save(ls.save,file = 'results/Climate/MSErun_move_JMC_climate_0_HYBR_TAC3.Rdata')
 
 rm(ls.save)
 # # ### Loop MSE's with different errors in future survey and recruitment
@@ -228,7 +228,7 @@ rm(ls.save)
 #
 # }
 # # # # #
-# save(ls.save,file = 'results/Climate/MSErun_move_JMC_climate_0_02_HYBR_TAC3_284-500.Rdata')
+# save(ls.save,file = 'results/Climate/MSErun_move_JMC_climate_0_02_HYBR_TAC3.Rdata')
 
 # ### Loop ls.save <- list()
 ls.save <- list()
@@ -252,6 +252,42 @@ for (i in 271:nruns){
 
 }
 # # # #
-save(ls.save,file = 'results/Climate/MSErun_move_JMC_climate_0_04_HYBR_TAC3_271-500.Rdata')
+save(ls.save,file = 'results/Climate/MSErun_move_JMC_climate_0_04_HYBR_TAC3.Rdata')
+
+
+
+
+# ### Loop MSE's with different errors in future survey and recruitment
+ls.save <- list()
+ls.converge <- matrix(0, nruns)
+
+
+for (i in 1:nruns){
+  tmp <- run_multiple_MSEs(simyears = simyears,
+                                   seeds = seeds[i],
+                                   TAC = 3, df = df, cincrease = 0.02, mincrease = 0.005)
+  #tmp <- run_multiple_MSEs(simyears = 30, seeds[i])
+  print(i)
+
+  if(is.list(tmp)){
+    ls.save[[i]] <-tmp
+    ls.converge[i] <- 1
+  }else{
+    ls.save[[i]] <- NA
+    ls.converge[i] <- 0
+  }
+
+
+}
+# # # #
+save(ls.save,file = 'results/Climate/MSErun_move_JMC_climate_0_02_HYBR_TAC4.Rdata')
+
+
+
+
+
+
+
+
 
 
