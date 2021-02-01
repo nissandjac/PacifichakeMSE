@@ -1,17 +1,14 @@
-### Run MSE_all_OM ## 
+### Run MSE_all_OM ##
 
-### Re-run the operating models for the 100 simulations #### 
-
+### Re-run the operating models for the 100 simulations ####
+library(PacifichakeMSE)
 library(TMB)
 compile("runHakeassessment.cpp")
 dyn.load(dynlib("runHakeassessment"))
 
 seedz <- 12345
 set.seed(seedz)
-source('load_files.R')
-source('load_files_OM.R')
-source('run_multiple_OMs.R')
-# 
+#
 # assessment <- read.csv('asssessment_MLE.csv')
 # assessment <- assessment[assessment$year > 1965 &assessment$year < 2018 ,]
 
@@ -24,8 +21,8 @@ time <- 1
 yrinit <- df$nyear
 nruns <- 100
 seeds <- floor(runif(n = nruns, min = 1, max = 1e6))
-### Run the OM and the EM for x number of years in the MSE 
-### Set targets for harvesting etc 
+### Run the OM and the EM for x number of years in the MSE
+### Set targets for harvesting etc
 #
 # df$parms$Rin <- df$parms$Rin*0
 # df$F0 <- 0*df$F0
@@ -34,12 +31,12 @@ simyears <- 30 # Project 25 years into the future (2048 that year)
 year.future <- c(df$years,(df$years[length(df$years)]+1):(df$years[length(df$years)]+simyears))
 N0 <- NA
 sim.data <- run.agebased.true.catch(df)
-simdata0 <- sim.data # The other one is gonna get overwritten. 
+simdata0 <- sim.data # The other one is gonna get overwritten.
 
 # ### Loop MSE's with different errors in future survey and recruitment
 
 #######################################
- 
+
 ls.real.s <- list()
 for (i in 1:nruns){
   if(is.na(ls.Realized[[i]])){
@@ -63,7 +60,7 @@ for (i in 1:length(ls.move1)){
   }
 }
 save(ls.move1.s,file = 'results/Operating models/move1_OM.RData')
-# 
+#
 ls.move2.s <- list()
 df <- load_data_seasons(nseason = 4, nspace = 2,movemaxinit = 0.3, movefiftyinit = 5) # Prepare data for operating model
 
@@ -78,7 +75,7 @@ for (i in 1:length(ls.move2)){
   }
 }
 save(ls.move2.s,file = 'results/Operating models/move2_OM.RData')
-# 
+#
 
 ls.move3.s <- list()
 df <- load_data_seasons(nseason = 4, nspace = 2,movemaxinit = 0.05, movefiftyinit = 2) # Prepare data for operating model

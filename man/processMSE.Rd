@@ -8,7 +8,8 @@ processMSE(
   df.MSE,
   id,
   idx = 1,
-  spacenames = c("CAN", "USA"),
+  fn = "sums",
+  spacenames = NA,
   runs = 100,
   nspace = 2
 )
@@ -20,6 +21,8 @@ processMSE(
 
 \item{idx}{which indexes to save to}
 
+\item{fn}{function to summarize data sums; sums data over indices, rows extracts data}
+
 \item{spacenames}{naming convention for spatial areas}
 
 \item{runs}{number of runs in MSE}
@@ -27,7 +30,7 @@ processMSE(
 \item{nspace}{number of spaces}
 }
 \value{
-returns a concanated data frame
+returns a concatenated data frame
 }
 \description{
 Turn whole list into a concanated polished data frame

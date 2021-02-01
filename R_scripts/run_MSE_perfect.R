@@ -4,7 +4,6 @@ library(devtools)
 library(PacifichakeMSE)
 
 mod <- SS_output('inst/extdata/SS32018', printstats=FALSE, verbose = FALSE) # Read the true selectivity
-load_all()
 
 # Set the seed
 seedz <- 12345

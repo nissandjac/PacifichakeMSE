@@ -265,7 +265,7 @@ ls.converge <- matrix(0, nruns)
 for (i in 1:nruns){
   tmp <- run_multiple_MSEs(simyears = simyears,
                                    seeds = seeds[i],
-                                   TAC = 3, df = df, cincrease = 0.02, mincrease = 0.005)
+                                   TAC = 3, df = df, cincrease = 0.0, mincrease = 0.0)
   #tmp <- run_multiple_MSEs(simyears = 30, seeds[i])
   print(i)
 

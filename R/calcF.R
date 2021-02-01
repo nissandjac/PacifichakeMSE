@@ -12,14 +12,16 @@
 #' @export
 #'
 #' @examples
-#' calcF(Fmethod = 'hybrid') # Not a working example
-calcF <- function(Fmethod = 'hybrid', Etemp,Btmp, N, weight, M, Fsel){
+
+calcF <- function(Fmethod = 'hybrid', Etemp, Btmp, N, weight, M, Fsel){
 
   if(Etemp/Btmp > 1){
     stop(paste('Catch exceeds available biomass in year:',df$years[yr],' and season', season, 'area', space))
   }
 
-
+if(Fmethod != 'hybrid'){
+  stop('Only hybrid calculation of F currently used')
+}
 
 if(Etemp == 0){
   Fseason <- 0
@@ -60,22 +62,7 @@ if(Etemp == 0){
     }
 
   }
-  # if(Fmethod == 'optimization'){
-  #
-  #   getF <- function(par,data){
-  #     F0 <- par[1]
-  #     sel <- data$Fsel
-  #     Z <- M+Fsel
-  #
-  #     Ndot <-
-  #
-  #
-  #   }
-  #
-  #
-  #
-  #
-  # }
+
 
 }
 

@@ -7,7 +7,7 @@ library(purrr)
 library(dplyr)
 library(reshape2)
 library(patchwork)
-load_all()
+
 
 mod <- SS_output('inst/extdata/SS32018', printstats=FALSE, verbose = FALSE) # Read the true selectivity
 

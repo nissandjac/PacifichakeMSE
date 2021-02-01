@@ -1,5 +1,4 @@
 ## Compare perfect and EM-OM runs
-
 library(TMB)
 library(r4ss)
 library(devtools)
@@ -8,7 +7,7 @@ library(purrr)
 library(dplyr)
 library(reshape2)
 library(patchwork)
-load_all()
+
 mod <- SS_output('inst/extdata/SS32018', printstats=FALSE, verbose = FALSE) # Read the true selectivity
 
 # Set the seed
@@ -64,21 +63,20 @@ for(i in 1:length(p.files)){
   df.MSE.p <- flatten(ls.save) # Change the list a little bit
 
 
-
   SSB_EM <- processMSE(df.MSE.EM, id = 'SSB', idx = 1, spacenames = c('value'), runs = 100,nspace = 2)
 
   # Remove runs 101:500 for now
   SSB_EM <- filter(SSB_EM, run %in% paste('run',1:100, sep = ''))
 
 
-  SSB_p <- processMSE(df.MSE.p, id = 'SSB', idx = 1, spacenames = c('value'), runs = 1000,nspace = 2)
+  SSB_p <- processMSE(df.MSE.p, id = 'SSB', idx = 1, spacenames = c('value'), runs = 100,nspace = 2)
 
   SSB <- bind_rows(list(EM = SSB_EM,perfect = SSB_p), .id = "id")
 
   catch_EM <- processMSE(df.MSE.EM, 'Catch', idx = 2, spacenames = c('value'), runs = 500,nspace = 2)
   catch_EM <- filter(catch_EM, run %in% paste('run',1:100, sep = ''))
 
-  catch_p <- processMSE(df.MSE.p, 'Catch', idx = 2, spacenames = c('value'), runs = 1000,nspace = 2)
+  catch_p <- processMSE(df.MSE.p, 'Catch', idx = 2, spacenames = c('value'), runs = 100,nspace = 2)
 
   catch <- bind_rows(list(EM = catch_EM, perfect = catch_p), .id = 'id')
 
@@ -252,9 +250,6 @@ cplot/riskplot
 
 dev.off()
 
-
-
-
 # Look at the risk from some of the individual runs
 
 
@@ -281,8 +276,7 @@ tt <- filter(risk.sum, id == 'EM' & closed == 0)
 
 p1 <- ggplot(filter(risk.sum,run == 'run5' & id == 'perfect'), aes(x = year, y= rel, color = HCR))+geom_line()+theme_bw()+facet_wrap(~climate)
 
-p2 <- ca
-
+p1
 
 
 

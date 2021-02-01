@@ -4,7 +4,7 @@
 \alias{getParameters_OM}
 \title{Create a list of parameters for TMB}
 \usage{
-getParameters_OM(trueparms = TRUE, mod = NA, df)
+getParameters_OM(trueparms = TRUE, mod = NA, df = NA)
 }
 \arguments{
 \item{trueparms}{should the model use the assesment parameters}

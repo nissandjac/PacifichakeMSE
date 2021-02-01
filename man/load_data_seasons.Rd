@@ -19,7 +19,9 @@ load_data_seasons(
   moveslope = 0.9,
   selectivity_change = 0,
   yr_future = 0,
-  sel_hist = 1
+  catch.future = NA,
+  sel_hist = 1,
+  species = "hake"
 )
 }
 \arguments{

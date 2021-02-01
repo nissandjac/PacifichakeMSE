@@ -27,6 +27,3 @@ calcF(Fmethod = "hybrid", Etemp, Btmp, N, weight, M, Fsel)
 \description{
 Title
 }
-\examples{
-calcF(Fmethod = 'hybrid') # Not a working example
-}

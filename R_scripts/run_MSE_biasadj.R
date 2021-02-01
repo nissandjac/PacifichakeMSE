@@ -1,11 +1,10 @@
 library(TMB)
-compile("src/runHakeassessment.cpp")
-dyn.load(dynlib("src/runHakeassessment"))
 library(r4ss)
 library(PacifichakeMSE)
-source('R/run_multiple_OMs.R')
-mod <- SS_output('inst/extdata/SS32018/', printstats=FALSE, verbose = FALSE) # Read the true selectivity
 
+mod <- SS_output('inst/extdata/SS32018/', printstats=FALSE, verbose = FALSE) # Read the true selectivity
+compile("src/runHakeassessment.cpp")
+dyn.load(dynlib("src/runHakeassessment"))
 # Set the seed
 seedz <- 12345
 set.seed(seedz)
@@ -83,7 +82,7 @@ save(ls.save,file = 'results/bias adjustment/MSErun_move_nofishing_biasadj_med.R
 
 
 
-# Plot stuff 
+# Plot stuff
 
 df.MSE <- purrr::flatten(ls.save) # Change the list a little bit
 
