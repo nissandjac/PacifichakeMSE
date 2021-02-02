@@ -262,10 +262,10 @@ ls.save <- list()
 ls.converge <- matrix(0, nruns)
 
 
-for (i in 1:nruns){
+for (i in 1:100){
   tmp <- run_multiple_MSEs(simyears = simyears,
                                    seeds = seeds[i],
-                                   TAC = 3, df = df, cincrease = 0.0, mincrease = 0.0)
+                                   TAC = 4, df = df, cincrease = 0.04, mincrease = 0.02, TACchange = 2)
   #tmp <- run_multiple_MSEs(simyears = 30, seeds[i])
   print(i)
 

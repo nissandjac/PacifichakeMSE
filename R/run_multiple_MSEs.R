@@ -188,7 +188,14 @@ run_multiple_MSEs <- function(simyears = NULL,seeds = 12345, TAC = 1, df = NA,
       df$Fspace <- Fspace
       }
 
-      if(TACchange > 1){
+      if(TACchange == 2){
+        if(df$flag_survey[time] == 1){
+        Fspace <- as.numeric(sim.data$survey.true[,df$nyear]/sum(sim.data$survey.true[,df$nyear]))
+        df$Fspace <- Fspace
+        }
+      }
+
+      if(TACchange > 2){
         'save this space for other options'
       }
       #print(df$moveout)

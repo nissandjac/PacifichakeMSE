@@ -736,6 +736,6 @@ p.ee.all <- ggplot(EE.tot[EE.tot$year > 2018,], aes(x = year, y = Emedian, color
   guides(linetype = FALSE)+facet_wrap(~HCR)+
   geom_hline(aes(yintercept = 0), linetype = 2, color = 'black')
 
-png('results/climate_alternative_all.png', width = 16, height = 12, res = 400, units = 'cm')
+png('results/Climate/climate_alternative_all.png', width = 16, height = 12, res = 400, units = 'cm')
 p.ee.all
 dev.off()
