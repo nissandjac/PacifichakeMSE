@@ -57,14 +57,17 @@ for(i in 1:length(files)){
   load(paste(folder,files[i], sep = '')) # Prints as 'ls.save'
   df.MSE <- flatten(ls.save) # Change the list a little bit
 
+  nruns <- length(ls.save)
+
+
    # ProcessMSE is in the df_MSE function
-  catchcdf <- processMSE(df.MSE, 'Catch', idx = c(2,3), spacenames = c('CAN', 'USA'), runs = 500,nspace = 2)
-  catchdf <- processMSE(df.MSE, 'Catch', idx = 2, spacenames = c('value'), runs = 500,nspace = 2)
+  catchcdf <- processMSE(df.MSE, 'Catch', idx = c(2,3), spacenames = c('CAN', 'USA'), runs = nruns,nspace = 2)
+  catchdf <- processMSE(df.MSE, 'Catch', idx = 2, spacenames = c('value'), runs = nruns, nspace = 2)
 
-  SSB_mid <- processMSE(df.MSE, id = 'SSB.mid', idx = c(1,2), spacenames = c('CAN', 'USA'), runs = 500,nspace = 2)
-  SSB_tot <- processMSE(df.MSE, id = 'SSB', idx = 1, spacenames = c('value'), runs = 500,nspace = 2)
+  SSB_mid <- processMSE(df.MSE, id = 'SSB.mid', idx = c(1,2), spacenames = c('CAN', 'USA'), runs = nruns,nspace = 2)
+  SSB_tot <- processMSE(df.MSE, id = 'SSB', idx = 1, spacenames = c('value'), runs = nruns,nspace = 2)
 
-  SSB.om <- processMSE(df.MSE, id = 'SSB.hes', idx = 1, fn = 'rows', spacenames = c('value'), runs = 500,nspace = 2)
+  SSB.om <- processMSE(df.MSE, id = 'SSB.hes', idx = 1, fn = 'rows', spacenames = c('value'), runs = nruns,nspace = 2)
 
   # Calculate AAV
   AAVdf <- AAV(catchcdf, idx = 4)
@@ -210,7 +213,7 @@ risk.time <- risk.sum %>%
             # ymax = quantile(length(closed[closed ==1])/n(), probs = perc[2]))
 
 
-cols <- PNWColors::pnw_palette('Starfish',n = 3, type = 'discrete')
+cols <- PNWColors::pnw_palette('Starfish',n = length(unique(risk.time$HCR)), type = 'discrete')
 
 lsize <- 0.5
 usize <-  0.3
@@ -393,7 +396,7 @@ AAVtest <- AAVdfexp[AAVdfexp$year > 2030,] %>%
   summarise(mAAv = median(AAV))
 
 
-png(paste('results/Climate/','violin_publication.png', sep = ''), width = 16, height =12, res = 400, unit = 'cm')
+png(paste('results/Climate/','violin_publication_TAC4.png', sep = ''), width = 16, height =12, res = 400, unit = 'cm')
 
 vplot1/vplot2/vplot3+plot_annotation(tag_levels = 'a')
 
@@ -722,7 +725,11 @@ median(EE$EE.ssb[EE$year>2018 & EE$climate == '04' & EE$HCR == 'HCR0'])*100
 quantile(EE$EE.ssb[EE$year>2018 & EE$climate == '0' & EE$HCR == 'HCR0'], probs = 0.05)*100
 quantile(EE$EE.ssb[EE$year>2018 & EE$climate == '0' & EE$HCR == 'HCR0'], probs = 0.95)*100
 
+quantile(EE$EE.ssb[EE$year>2018 & EE$climate == '02' & EE$HCR == 'HCR0'], probs = 0.05)*100
+quantile(EE$EE.ssb[EE$year>2018 & EE$climate == '02' & EE$HCR == 'HCR0'], probs = 0.95)*100
 
+quantile(EE$EE.ssb[EE$year>2018 & EE$climate == '04' & EE$HCR == 'HCR0'], probs = 0.05)*100
+quantile(EE$EE.ssb[EE$year>2018 & EE$climate == '04' & EE$HCR == 'HCR0'], probs = 0.95)*100
 
 
 p.ee.all <- ggplot(EE.tot[EE.tot$year > 2018,], aes(x = year, y = Emedian, color = climate, fill = climate, linetype = climate))+
@@ -739,3 +746,37 @@ p.ee.all <- ggplot(EE.tot[EE.tot$year > 2018,], aes(x = year, y = Emedian, color
 png('results/Climate/climate_alternative_all.png', width = 16, height = 12, res = 400, units = 'cm')
 p.ee.all
 dev.off()
+
+
+
+
+
+# Plot the total catch as violin
+
+ptest <- ggplot(catch.tot[catch.tot$year>2018 & catch.tot$climate == "04",],
+       aes(x = HCR, y= catchmean, group = HCR, fill = HCR))+geom_violin()+
+  geom_boxplot(width = .10)+theme_bw()+scale_y_continuous('median catch')
+
+
+
+ptest2 <- ggplot(SSB.tot[SSB.tot$year>2018 & SSB.tot$climate == "04",],
+       aes(x = HCR, y= SSBmean, group = HCR, fill = HCR))+geom_violin()+
+  geom_boxplot(width = .10)+theme_bw()+scale_y_continuous('median SSB')+
+  theme(legend.position = 'none')
+
+
+ptest3 <- ggplot(AAV.tot[AAV.tot$year>2018 & AAV.tot$climate == "04",],
+                 aes(x = HCR, y= AAVmean, group = HCR, fill = HCR))+geom_violin()+
+  geom_boxplot(width = .10)+theme_bw()+scale_y_continuous('median AAV')+
+  theme(legend.position = 'none')
+
+
+
+png('results/Climate/summed_results_test.png', width = 16, height = 12, res = 400, units = 'cm')
+ptest/ptest2/ptest3
+dev.off()
+
+
+
+
+

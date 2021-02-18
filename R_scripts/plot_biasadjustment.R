@@ -5,7 +5,7 @@ library(PacifichakeMSE)
 
 compile("src/runHakeassessment.cpp")
 dyn.load(dynlib("src/runHakeassessment"))
-mod <- SS_output('inst/extdata/SS32018/', printstats=FALSE, verbose = FALSE) # Read the true selectivity
+mod <- SS_output('inst/extdata/SS32019/', printstats=FALSE, verbose = FALSE) # Read the true selectivity
 
 # Set the seed
 set.seed(123)
@@ -48,7 +48,8 @@ cols <- PNWColors::pnw_palette('Starfish', n = length(bs), type = 'discrete')
 p1 <- ggplot(SSB.tot, aes(x = years, y = SSBmed*1e-6, color = b))+geom_line(size = 1.2)+theme_classic()+
   geom_ribbon(aes(ymin = SSBmin*1e-6, ymax = SSBmax*1e-6), fill = 'gray', alpha = 0.2, linetype = 0)+
   geom_hline(aes(yintercept = sum(sim.tmp$SSB0)*1e-6), linetype = 2, color = 'black', size = 0.8)+
-  scale_color_manual(values = cols)+scale_y_continuous('SSB')+theme(legend.position = c(0.1,0.8))
+  #scale_color_manual(values = cols)+
+  scale_y_continuous('SSB')+theme(legend.position = c(0.1,0.8))
 
 
 

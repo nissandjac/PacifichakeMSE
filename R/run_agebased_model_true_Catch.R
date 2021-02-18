@@ -82,11 +82,11 @@ run.agebased.true.catch <- function(df, seeds = 100){
   }
   names(SSB_0) <- paste(rep('space',each = df$nspace),1:nspace)
 
-  
+
   # Recruitment per country
   R_0 <- R0*move.init
 
-  # Initialize for saving 
+  # Initialize for saving
   year_1 <- c(year,max(year)+1)
 
   SSB <- matrix(NA,nyear, nspace,
@@ -191,7 +191,7 @@ run.agebased.true.catch <- function(df, seeds = 100){
 
 
 
-  Fspace <- df$Fspace 
+  Fspace <- df$Fspace
 
   if(length(Fspace) != nspace){
     warning('specify distribution of catches - assuming equal distribution')
@@ -215,7 +215,7 @@ run.agebased.true.catch <- function(df, seeds = 100){
    # }else{
    #   psel <- df$parms$psel_fish+df$parms$PSEL[,yr-df$selYear+1]
    # }
-    if(year[yr] < 2019){
+    if(year[yr] <= (df$myear)){
       w_catch <- df$wage_catch[,yr]
       w_surv <- df$wage_survey[,yr]
       w_mid <- df$wage_mid[,yr]
@@ -249,40 +249,40 @@ run.agebased.true.catch <- function(df, seeds = 100){
     for(space in 1:nspace){
       SSB.weight[yr,space] <- sum(N.save.age[,yr,space,1]*as.numeric(w_ssb), na.rm = TRUE)*0.5
       SSB[yr,space] <- SSB.weight[yr,space] #sum(N.save.age[,yr,space,1]*Mat.sel, na.rm = TRUE)
-      
+
       SSB.all[1,space,1]<- sum(N.save.age[,1,space,1]*Mat.sel, na.rm = TRUE)*0.5
     }
-    
-    
+
+
     if(df$recspace == TRUE){
     # fix Ssb and recruitment in all areas
       for(space in 1:nspace){
     # Recruitment only in season 1
-        
-      if(R_0[space] != 0){  
+
+      if(R_0[space] != 0){
       R <- (4*h*R_0[space]*SSB[yr,space]/
             (SSB_0[space]*(1-h)+ SSB[yr,space]*(5*h-1)))*exp(-0.5*df$b[yr]*SDR^2+Ry)#*recruitmat[space]
       }else{
-      R <- 0  
+      R <- 0
       }
-      
+
       N.save.age[1,yr,space,1] <- R
       R.save[yr,space] <- R
       }
-      
+
     }else{
-      
+
       R <- (4*h*sum(R_0)*sum(SSB[yr,])/
               (sum(SSB_0)*(1-h)+ sum(SSB[yr,])*(5*h-1)))*exp(-0.5*df$b[yr]*SDR^2+Ry)#*recruitmat[space]
-      
+
       for(space in 1:nspace){
       N.save.age[1,yr,space,1] <- R*move.init
       R.save[yr,space] <- R*move.init
       }
-      
+
     }
 
-    
+
     for (season in 1:nseason){
       for (space in 1:nspace){
 
@@ -297,7 +297,7 @@ run.agebased.true.catch <- function(df, seeds = 100){
         }
 
 
-        if(year[yr] >2018){
+        if(year[yr] > df$myear){
 
           # if(df$selectivity_change == 0){
           #   if(space == 1){
@@ -329,7 +329,7 @@ run.agebased.true.catch <- function(df, seeds = 100){
         Fsel.save[,yr,space] <- Fsel
 
         if(nspace > 1){
-          if(df$years[yr]<= 2018){
+          if(df$years[yr]<= df$myear){
             Catch_space <- df$Catch.country[yr,space]
           }else{
             Catch_space <- df$Catch[yr]*Fspace[space]
@@ -346,7 +346,7 @@ run.agebased.true.catch <- function(df, seeds = 100){
         Catch.quota[yr,space,season] <- E.temp
 
         if(E.temp/B.tmp >= .75){
-          if(df$years[yr] < 2019){
+          if(df$years[yr] < (df$myear+1)){
             stop(paste('Catch exceeds available biomass in year:',year,' and season', season, 'area', space)) # Stop if in the past
           }
           #print(paste('Catch exceeds available biomass in year:',year,' and season', season, 'area', space))
@@ -537,7 +537,7 @@ run.agebased.true.catch <- function(df, seeds = 100){
     if (df$flag_survey[yr] == 1){
 
 
-        if(year[yr] > 2018){
+        if(year[yr] > df$myear){
         err <- exp(rnorm(n = 1,mean = 0, sd = surv.sd))
         surv <- sum(Nsurv*surv.sel*q*w_surv*err) # If the xtra factor is not included the mean is > 1
         }else{
