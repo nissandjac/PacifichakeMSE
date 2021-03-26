@@ -33,11 +33,11 @@ movefifty.parms <- seq(1,10, length.out = nparms)
 yr.future <- 2
 
 df <- load_data_seasons(nseason = 4, nspace = 2, bfuture = 0.5, movemaxinit = 0.35, movefiftyinit =6,
-                        yr_future = yr.future) # Prepare data for operating model
+                        yr_future = yr.future, myear = 2018) # Prepare data for operating model
 
 df.2 <- load_data_seasons(nseason = 4, nspace = 2, bfuture = 0.5, movemaxinit = 0.35, movefiftyinit =6,
                           yr_future = yr.future,
-                          sel_hist = 0) # Prepare data for operating model
+                          sel_hist = 0, myear = 2018) # Prepare data for operating model
 
 
 df$surveyseason <- 3
@@ -62,8 +62,8 @@ AC.survey <- data.frame(AC.mean = c(standard.move$survey.AC[,1],standard.move$su
                         country = rep(c('CAN','USA'), each = df$nyear), year = rep(df$years,2))
 
 
-p.AC.survey <- ggplot(AC.survey, aes(x = year, y= AC.mean, color = country))+geom_line(size = 1, linetype =2 )+theme_classic()+
-  geom_line(data = ac.survey.tot, linetype = 1, size = 1.2)+
+p.AC.survey <- ggplot(AC.survey, aes(x = year, y= AC.mean, color = country, linetype = country))+geom_line(size = 1.3)+theme_classic()+
+  geom_line(data = ac.survey.tot, size = .6)+
   geom_point(data = ac.survey.tot)+  scale_x_continuous(name = '',limit = c(1965,2018), breaks = seq(1970,2020, by = 10))+
   scale_color_manual(values = c('darkred','blue4'))+
   theme(legend.position = 'none',
@@ -95,8 +95,10 @@ df.obs <- data.frame(survey = c(survey.obs$survey[survey.obs$country == 'CAN'],s
 
 df.plot <- rbind(df.plot.sim,df.obs)
 
-p1 <- ggplot(df.plot.sim, aes( x=  years, y = survey*1e-6, color = country))+theme_classic()+geom_line(size = 1, linetype = 2)+
-  geom_line(data = df.obs, linetype = 1, size = 1.2)+geom_point(data = df.obs)+
+p1 <- ggplot(df.plot.sim, aes( x=  years, y = survey*1e-6, color = country, linetype = country))+
+  theme_classic()+geom_line(size = 1.3)+
+  geom_line(data = df.obs, size = 0.6, linetype = 1, show.legend = FALSE)+
+  geom_point(data = df.obs, size = 2.5, show.legend = FALSE)+
   scale_color_manual(values = c('darkred','blue4'))+scale_y_continuous('survey biomass \n(million tonnes)')+
   scale_x_continuous(limit = c(1965,2018), breaks = seq(1970, 2020, by = 10))+
   theme(legend.position = c(0.1,0.8),
@@ -146,9 +148,11 @@ catch.model <- data.frame(year = rep(df$years,2),
                           Country = rep(c('USA','CAN'), each = df$nyear),
                           am = c(standard.move$catch.AC[,2],standard.move$catch.AC[,1]))
 
+ac.df$Country[ac.df$Country == 'Can'] <- 'CAN'
 
-p.AC.catch <- ggplot(ac.df, aes(x = Year, y = ac, color = Country))+geom_line(size =0.8, linetype = 1)+geom_point()+
-  geom_line(data = catch.model, aes(x = year, y= am, color = Country), size = 1, linetype = 2)+
+p.AC.catch <- ggplot(ac.df, aes(x = Year, y = ac, color = Country, linetype = Country))+
+  geom_line(size =0.6, linetype = 1)+geom_point()+
+  geom_line(data = catch.model, aes(x = year, y= am, color = Country), size = 1.3)+theme_classic()+
   scale_x_continuous(limit = c(1965,2018), breaks = seq(1970, 2020, by = 10), minor_breaks = 1965)+
   scale_color_manual(values = rep(c('darkred','blue4'), each = 1))+
   scale_y_continuous('mean age \nin catch')+
@@ -173,6 +177,14 @@ if(plot.figures == TRUE){
   png(filename = 'results/Figs/condition_all.png', width = 16, height = 16, res = 400, units = 'cm')
   print((p.AC.survey / p.AC.catch / p1)+plot_annotation(tag_levels = 'A'))& theme(plot.tag = element_text(size = 8))
   dev.off()
+
+
+  pdf(file = 'results/Climate/Publication/Figure5.pdf', width = 16/cm(1), height = 16/cm(1))
+  print((p.AC.survey / p.AC.catch / p1)+plot_annotation(tag_levels = 'A'))& theme(plot.tag = element_text(size = 8))
+  dev.off()
+
+
+
 
 }
 
@@ -222,6 +234,13 @@ if(plot.figures == TRUE){
 png(filename = 'results/Climate/Movement.png', width = 16, height = 10, res = 400, units = 'cm')
 print(p.move)
 dev.off()
+
+pdf(file = 'results/Climate/Publication/Figure2.pdf', width = 16/cm(1), height = 10/cm(1))
+print(p.move)
+dev.off()
+
+
+
 
 }
 

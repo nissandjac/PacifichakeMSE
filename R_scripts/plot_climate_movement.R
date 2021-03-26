@@ -3,10 +3,11 @@ library(cowplot)
 library(RColorBrewer)
 library(PacifichakeMSE)
 library(patchwork)
+library(ggsci)
 
 simyears <- 30
 plot.figures <- FALSE
-df <- load_data_seasons()
+df <- load_data_seasons(myear = 2018)
 year.future <- c(df$years,(df$years[length(df$years)]+1):(df$years[length(df$years)]+simyears))
 
 cincrease <- 0
@@ -47,9 +48,10 @@ df.tmp$year <- year.future[year.future > 2018]
 
 df.plot <- melt(df.tmp, id.vars = 'year', measure.vars = 1:length(cincrease), value.name = 'movemax', variable.name = 'Scenario')
 
-p1 <- ggplot(df.plot, aes(x = year, y = movemax, color = Scenario))+theme_classic()+geom_line(size = 1.4)+
+p1 <- ggplot(df.plot, aes(x = year, y = movemax, color = Scenario, linetype = Scenario))+theme_classic()+geom_line(size = 1.4)+
   coord_cartesian(ylim = c(0.2,1))+
-  scale_color_manual(values = cols)+
+  scale_color_npg()+
+  scale_linetype_manual(values = c(1,2,3))+
   scale_y_continuous('max movement rate')+
   theme(legend.position = 'top', legend.title = element_blank(),
         axis.line.x = element_blank(),
@@ -66,14 +68,24 @@ names(df.tmp) <- c('base scenario', 'moderate increase','high increase')
 df.tmp$year <- year.future[year.future > 2018]
 
 df.plot <- melt(df.tmp, id.vars = 'year', measure.vars = 1:length(cincrease), value.name = 'moveout', variable.name = 'Scenario')
-p2 <- ggplot(df.plot, aes(x = year, y = moveout, color = Scenario))+theme_classic()+geom_line(size = 1.4)+coord_cartesian(ylim = c(0.3,0.9))+
-  scale_color_manual(values = cols)+scale_y_continuous('return rate')+
+p2 <- ggplot(df.plot, aes(x = year, y = moveout, color = Scenario, linetype = Scenario))+
+  theme_classic()+geom_line(size = 1.4)+coord_cartesian(ylim = c(0.3,0.9))+
+  scale_color_npg()+
+  scale_linetype_manual(values = c(1,2,3))+
+  scale_y_continuous('return rate')+
   theme(legend.position = 'none')
 
 if(plot.figures == TRUE){
 png('results/Figs/climate_movement.png', width= 8, height = 10, units = 'cm', res = 400)
 p1 / p2 + plot_annotation(tag_levels = 'a')
 dev.off()
+
+pdf('results/Climate/Publication/Figure4.pdf', width= 8/cm(1), height = 10/cm(1))
+p1 / p2 + plot_annotation(tag_levels = 'a')
+dev.off()
+
+
+
 }
 
 # Make additional figure of how the movement changes based on climate

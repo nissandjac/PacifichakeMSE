@@ -15,7 +15,7 @@ mod <- SS_output('inst/extdata/SS32018', printstats=FALSE, verbose = FALSE) # Re
 seedz <- 12345
 set.seed(seedz)
 
-df <- load_data_seasons(nseason = 4, nspace = 2, bfuture = 0.5) # Prepare data for operating model
+df <- load_data_seasons(nseason = 4, nspace = 2, bfuture = 0.5, myear = 2018) # Prepare data for operating model
 
 parms.true <- getParameters_OM(TRUE,mod, df) # Load parameters from assessment
 
@@ -214,6 +214,8 @@ risk.time <- risk.sum %>%
 
 
 cols <- PNWColors::pnw_palette('Starfish',n = length(unique(risk.time$HCR)), type = 'discrete')
+cols <- RColorBrewer::brewer.pal(n = length(unique(risk.time$HCR)), name = 'Accent')
+
 
 lsize <- 0.5
 usize <-  0.3
@@ -228,7 +230,7 @@ cplot <- ggplot(catch.tot[catch.tot$year>pyear,], aes(x = year, y = catchmean*1e
         axis.text.x = element_text(size = 5, angle = 90),
         plot.margin = unit(c(1,1,0,1), 'pt'),
         legend.margin = margin(c(0,0,0,0)))+
-  scale_color_manual(values = cols, labels = c('baseline', 'moderate', 'high'))+
+  scale_color_nejm(labels = c('baseline', 'moderate', 'high'))+
   geom_line(aes(y = quants5*1e-6), linetype = 2, size = usize)+
   geom_line(aes(y = quants95*1e-6), linetype = 2, size = usize)+
   scale_y_continuous('Catch/\n(million tonnes)')+
@@ -315,11 +317,12 @@ riskviolin
 
 #risk.time$climate <- levels()
 
-risklines <- ggplot(risk.time, aes(x = year, y = risk, color = climate))+
-  geom_line()+
+risklines <- ggplot(risk.time, aes(x = year, y = risk, color = climate, linetype = climate))+
+  geom_line(size = 1.2)+
   facet_wrap(~HCR)+
   theme_classic()+geom_hline(aes(yintercept = 0.05), linetype = 2)+
-  scale_color_manual(values = cols[1:3], labels = c("baseline", "moderate", "high"))+
+  scale_color_npg(labels = c("baseline", "moderate", "high"))+
+  scale_linetype_manual(values = 1:3, labels = c("baseline", "moderate", "high"))+
   coord_cartesian(ylim = c(0,0.2)) +
   theme(strip.background =element_rect(fill="white"))+theme(legend.position = 'top',
                                                             legend.title = element_blank(),
@@ -328,9 +331,15 @@ risklines <- ggplot(risk.time, aes(x = year, y = risk, color = climate))+
 
 risklines
 
-png('results/Climate/risklines.png', width = 16, height =6, res = 400, unit = 'cm')
+png('results/Climate/Publication/risklines.png', width = 16, height =6, res = 400, unit = 'cm')
 risklines
 dev.off()
+
+# Pdf for publication
+pdf('results/Climate/Publication/Figure7.pdf', width = 16/cm(1), height =6/cm(1))
+risklines
+dev.off()
+
 
 
 png('results/Climate/objectives_publication.png', width = 16, height =14, res = 400, unit = 'cm')
@@ -347,6 +356,7 @@ rmout <- quantile(catchcdfexp$value[catchdfexp$year>2019]*1e-6, probs = perc)
 vplot1 <- ggplot(catchcdfexp[catchcdfexp$year>2030,], aes(x = HCR,y = value*1e-6, group = MP, fill = climate))+
   geom_violin(position = dodge)+scale_y_continuous(name = 'Catch \n(million tonnes)')+geom_line()+
   theme_bw()+theme(legend.position = 'top',
+                   strip.background =element_rect(fill="white"),
                    text = element_text(size = 8),
                    legend.title = element_blank(),
                    legend.text = element_text(size =10),
@@ -357,7 +367,8 @@ vplot1 <- ggplot(catchcdfexp[catchcdfexp$year>2030,], aes(x = HCR,y = value*1e-6
                    legend.margin = margin(c(0,0,0,0)))+
   scale_x_discrete('')+
   geom_boxplot(width=0.2, col = 'black', outlier.shape = NA, position = dodge,
-                show.legend = FALSE)+scale_fill_manual(values= cols, labels = c('baseline', 'moderate', 'high'))+
+                show.legend = FALSE)+
+  scale_fill_npg(labels = c('baseline', 'moderate', 'high'))+
   guides(shape = guide_legend(override.aes = list(shape = 2)))+
   facet_wrap(~variable)+coord_cartesian(ylim = c(0,0.5))
 
@@ -372,7 +383,7 @@ vplot2 <- ggplot(SSBdf[SSBdf$year>2030,], aes(x = HCR,y = value*1e-6, group = MP
         axis.text.x = element_blank(),
         plot.margin = unit(c(1,1,0,1), 'pt'))+scale_x_discrete('')+
   geom_boxplot(width=0.2, col = 'black', outlier.shape = NA, position = dodge)+
-  scale_fill_manual(values= cols)+facet_wrap(~variable)+coord_cartesian(ylim = c(0,2))
+  scale_fill_npg()+facet_wrap(~variable)+coord_cartesian(ylim = c(0,2))
 
 # Remove stupid outliers
 rmout <- quantile(AAVdfexp$AAV[AAVdfexp$year>2019], probs = perc)
@@ -386,7 +397,8 @@ vplot3 <- ggplot(AAVdfexp[AAVdfexp$year>2030,], aes(x = HCR,y = AAV, group = MP,
         plot.margin = unit(c(1,1,0,1), 'pt'),
         strip.background = element_blank(),
         strip.text.x = element_blank())+
-  geom_boxplot(width=0.2, col = 'black', outlier.shape = NA, position = dodge)+scale_fill_manual(values= cols)+
+  geom_boxplot(width=0.2, col = 'black', outlier.shape = NA, position = dodge)+
+  scale_fill_npg()+
   facet_wrap(~variable, nrow =1)+coord_cartesian(ylim = c(0,3))
 
 
@@ -396,11 +408,15 @@ AAVtest <- AAVdfexp[AAVdfexp$year > 2030,] %>%
   summarise(mAAv = median(AAV))
 
 
-png(paste('results/Climate/','violin_publication_TAC4.png', sep = ''), width = 16, height =12, res = 400, unit = 'cm')
-
+png(paste('results/Climate/Publication/','violin_publication.png', sep = ''), width = 16, height =12, res = 400, unit = 'cm')
 vplot1/vplot2/vplot3+plot_annotation(tag_levels = 'a')
-
 dev.off()
+
+# Pdf for publication
+pdf('results/Climate/Publication/Figure8.pdf', width = 16/cm(1), height =12/cm(1))
+vplot1/vplot2/vplot3+plot_annotation(tag_levels = 'a')
+dev.off()
+
 
 # Minor calculations for manuscript
 
@@ -567,11 +583,12 @@ pdec.c <- ggplot(ctmp[ctmp$decade != 0,], aes(x = as.factor(decade), y= value*1e
   theme_bw()+geom_line()+
   geom_violin(position = dodge, show.legend = FALSE)+
   geom_boxplot(color = 'black', position = dodge, width = 0.2, show.legend = FALSE, outlier.alpha = 0)+
-  scale_fill_manual(values = cols)+
-  scale_color_manual(values = cols, labels = c('baseline', 'moderate', 'high'))+
+  scale_fill_npg()+
+  scale_color_npg(labels = c('baseline', 'moderate', 'high'))+
   scale_x_discrete(name = '',breaks = c(2020,2030,2040), labels = c("","",""))+
   scale_y_continuous('catch\n(million tonnes)') +
   theme(legend.position = 'top',
+        strip.background =element_rect(fill="white"),
         text = element_text(size = 8),
         legend.title = element_blank(),
         legend.text = element_text(size =10),
@@ -603,8 +620,8 @@ pdec.ssb <- ggplot(ssbtmp[ssbtmp$decade != 0,],
   theme_classic()+
   geom_violin(position = dodge)+
   geom_boxplot(color = 'black', position = dodge, width = 0.2, show.legend = FALSE, outlier.alpha = 0)+
-  scale_fill_manual(values = cols)+
-  scale_color_manual(values = cols)+
+  scale_fill_npg()+
+  scale_color_npg()+
   scale_x_discrete(name = '',breaks = c(2020,2030,2040), labels = c("","",""))+
   scale_y_continuous('SSB/SSB0')+
   theme(legend.position = 'none') +
@@ -637,8 +654,8 @@ pdec.aav <- ggplot(aavtmp[aavtmp$decade != 0,],
   theme_classic()+
   geom_violin(position = dodge)+
   geom_boxplot(color = 'black', position = dodge, width = 0.2, show.legend = FALSE, outlier.alpha = 0)+
-  scale_fill_manual(values = cols)+
-  scale_color_manual(values = cols)+
+  scale_fill_npg()+
+  scale_color_npg()+
   scale_x_discrete(name = '',breaks = c(2020,2030,2040), labels = c("2020s","2030s","2040s"))+
   scale_y_continuous('AAV')+
   theme(legend.position = 'none',
@@ -651,11 +668,14 @@ pdec.aav <- ggplot(aavtmp[aavtmp$decade != 0,],
 pdec.aav
 
 
-png(paste('results/Climate/','objectives_decade.png', sep = ''), width = 16, height =12, res = 400, unit = 'cm')
+png(paste('results/Climate/Publication/','objectives_decade.png', sep = ''), width = 16, height =12, res = 400, unit = 'cm')
 pdec.c/pdec.ssb/pdec.aav+plot_annotation(tag_levels = 'a')
 dev.off()
 
 
+pdf(paste('results/Climate/Publication/','Figure9.pdf', sep = ''), width = 16/cm(1), height =12/cm(1))
+pdec.c/pdec.ssb/pdec.aav+plot_annotation(tag_levels = 'a')
+dev.off()
 
 # Plot the performance of the operating model
 
@@ -679,18 +699,24 @@ p.ee <- ggplot(EE.tot[EE.tot$year > 2018 & EE.tot$HCR == 'HCR0',], aes(x = year,
   geom_line(size = 1.2)+theme_classic()+
   scale_y_continuous('relative\nerror')+
   geom_ribbon(aes(ymin = Emin, ymax = Emax), alpha = 0.2, linetype = 0,show.legend = FALSE)+coord_cartesian(ylim = c(-0.8,0.8))+
-  scale_color_manual(values = cols, labels = c('baseline', 'moderate', 'high'))+
-  scale_fill_manual(values = cols)+
+  scale_color_npg(labels = c('baseline', 'moderate', 'high'))+
+  scale_fill_npg()+
+  scale_linetype_manual(values = c(1,2,3), labels =  c('baseline', 'moderate', 'high'))+
   theme(legend.position = 'top', legend.direction = 'horizontal', legend.title = element_blank(),
         legend.text = element_text(size = 6))+
-  guides(linetype = FALSE)+
   geom_hline(aes(yintercept = 0), linetype = 2, color = 'black')
 
 p.ee
 
-png('results/Climate/climate_EE.png', width = 8, height = 6, res = 400, units = 'cm')
+png('results/Climate/Publication/climate_EE.png', width = 8, height = 6, res = 400, units = 'cm')
 p.ee
 dev.off()
+
+pdf('results/Climate/Publication/Figure6.pdf', width = 8/cm(1), height = 6/cm(1))
+p.ee
+dev.off()
+
+
 
 # print uncertainty
 median(EE.tot[EE.tot$HCR == 'HCR0' & EE.tot$climate == '0',]$Emin)
@@ -736,14 +762,15 @@ p.ee.all <- ggplot(EE.tot[EE.tot$year > 2018,], aes(x = year, y = Emedian, color
   geom_line(size = 1.2)+theme_classic()+
   scale_y_continuous('relative\nerror')+
   geom_ribbon(aes(ymin = Emin, ymax = Emax), alpha = 0.2, linetype = 0,show.legend = FALSE)+coord_cartesian(ylim = c(-0.8,0.8))+
-  scale_color_manual(values = cols, labels = c('baseline', 'moderate', 'high'))+
-  scale_fill_manual(values = cols)+
+  scale_color_npg(labels = c('baseline', 'moderate', 'high'))+
+  scale_fill_npg()+
+  scale_linetype_manual(values = c(1,2,3), labels = c('baseline', 'moderate', 'high'))+
   theme(legend.position = 'top', legend.direction = 'horizontal', legend.title = element_blank(),
         legend.text = element_text(size = 6))+
-  guides(linetype = FALSE)+facet_wrap(~HCR)+
+  facet_wrap(~HCR)+
   geom_hline(aes(yintercept = 0), linetype = 2, color = 'black')
 
-png('results/Climate/climate_alternative_all.png', width = 16, height = 12, res = 400, units = 'cm')
+png('results/Climate/publication/climate_alternative_all.png', width = 16, height = 12, res = 400, units = 'cm')
 p.ee.all
 dev.off()
 

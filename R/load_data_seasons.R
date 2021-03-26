@@ -131,7 +131,16 @@ load_data_seasons <- function(nseason = 4,
 
   wage_ssb <- wage_ss[wage_ss$Fleet == -2,paste('X',age, sep = '')]
   wage_ssb[[1]] <- unname(wage_ssb[[1]])
+  if(nrow(wage_ssb)<nyear){
+    wage_ssb <- rbind(wage_ssb, wage_ssb[nyear-1,])
+  }
+
+
+
   wage_catch <- wage_ss[wage_ss$Fleet == 1 ,paste('X',age, sep = '')]
+
+
+
   wage_survey <- wage_ss[wage_ss$Fleet == 2,paste('X',age, sep = '')]
   wage_mid <- wage_ss[wage_ss$Fleet == -1,paste('X',age, sep = '')]
 
