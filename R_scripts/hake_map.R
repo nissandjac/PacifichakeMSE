@@ -128,7 +128,7 @@ pmap
 dev.off()
 
 
-pdf(file = 'results/Climate/hakedistribution.pdf', width = 8/2.54, height = 16/2.54)
+pdf(file = 'results/Climate/Publication/Figure1.pdf', width = 8/2.54, height = 16/2.54)
 pmap
 dev.off()
-6
+
