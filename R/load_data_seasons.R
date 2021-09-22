@@ -24,7 +24,7 @@
 #'
 load_data_seasons <- function(nseason = 4,
                               nspace = 2,
-                              myear = 2019,
+                              myear = 2018,
                               movemaxinit = 0.35,
                               movefiftyinit = 6,
                               nsurvey = 2,
@@ -143,7 +143,14 @@ load_data_seasons <- function(nseason = 4,
 
   wage_survey <- wage_ss[wage_ss$Fleet == 2,paste('X',age, sep = '')]
   wage_mid <- wage_ss[wage_ss$Fleet == -1,paste('X',age, sep = '')]
-
+  
+  if(nrow(wage_mid)<nyear){
+    wage_mid <- rbind(wage_mid, wage_mid[nyear-1,])
+  }
+  
+  
+  
+  
   # if(yr_future>0){ // Namiong issues here, fix in later update
   #   tmp_ssb <- matrix(rep(wage_ssb[1,], each = yr_future), nrow = yr_future)
   #   wage_ssb <- cbind(wage_ssb,tmp_ssb)

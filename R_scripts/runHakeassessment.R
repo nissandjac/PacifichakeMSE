@@ -31,8 +31,11 @@ upper[names(upper) == 'F0'] <- 2
 
 
 system.time(opt<-nlminb(obj$par,obj$fn,obj$gr,lower=lower,upper=upper,
+                        map = list(logSDR = factor(NA)),
                         control = list(iter.max = 2000,
-                                       eval.max = 2000))) #
+                                       eval.max = 2000))
+)
+          
 
 system.time(rep<-sdreport(obj))
 rep

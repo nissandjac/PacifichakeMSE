@@ -2,6 +2,7 @@ library(TMB)
 library(r4ss)
 library(devtools)
 library(PacifichakeMSE)
+load_all()
 
 mod <- SS_output('inst/extdata/SS32018', printstats=FALSE, verbose = FALSE) # Read the true selectivity
 
@@ -30,179 +31,179 @@ sim.data <- run.agebased.true.catch(df) # Run the operating model until 2018
 simdata0 <- sim.data # The other one is gonna get overwritten.
 
 # ### Loop MSE's with different errors in future survey and recruitment
-# ls.save <- list()
-# ls.converge <- matrix(0, nruns)
-#
-# #
-# for (i in 1:nruns){
-#   tmp <- run_multiple_MSEs(simyears = simyears,
-#                            seeds = seeds[i],
-#                            TAC = 1, df = df, cincrease = 0, mincrease = 0)
-#   print(i)
-#
-#   if(is.list(tmp)){
-#     ls.save[[i]] <-tmp
-#     ls.converge[i] <- 1
-#   }else{
-#     ls.save[[i]] <- NA
-#     ls.converge[i] <- 0
-#   }
+ls.save <- list()
+ls.converge <- matrix(0, nruns)
 #
 #
-# }
-#
-# # # # # #
-# save(ls.save,file = 'results/Climate/MSErun_move_JMC_climate_0_HYBR_TAC1.Rdata')
-#
-# # ### Loop MSE's with different errors in future survey and recruitment
-# ls.save <- list()
-# ls.converge <- matrix(0, nruns)
-#
-#
-# for (i in 1:nruns){
-#   tmp <- run_multiple_MSEs(simyears = simyears,
-#                                    seeds = seeds[i],
-#                                    TAC = 1, df = df, cincrease = 0.02, mincrease = 0.005)
-#   #tmp <- run_multiple_MSEs(simyears = 30, seeds[i])
-#   print(i)
-#
-#   if(is.list(tmp)){
-#     ls.save[[i]] <-tmp
-#     ls.converge[i] <- 1
-#   }else{
-#     ls.save[[i]] <- NA
-#     ls.converge[i] <- 0
-#   }
-#
-#
-# }
+for (i in 1:nruns){
+  tmp <- run_multiple_MSEs(simyears = simyears,
+                           seeds = seeds[i],
+                           TAC = 1, df = df, cincrease = 0, mincrease = 0)
+  print(i)
+
+  if(is.list(tmp)){
+    ls.save[[i]] <-tmp
+    ls.converge[i] <- 1
+  }else{
+    ls.save[[i]] <- NA
+    ls.converge[i] <- 0
+  }
+
+
+}
+
 # # # # #
-# save(ls.save,file = 'results/Climate/MSErun_move_JMC_climate_0_02_HYBR_TAC1.Rdata')
-#
-# # # ### Loop ls.save <- list()
-# ls.save <- list()
-# ls.converge <- matrix(0, nruns)
-#
-# for (i in 156:nruns){
-#   tmp <- run_multiple_MSEs(simyears = simyears,
-#                                    seeds = seeds[i],
-#                                    TAC = 1, df = df, cincrease = 0.04, mincrease = 0.02)
-#   #tmp <- run_multiple_MSEs(simyears = 30, seeds[i])
-#   print(i)
-#
-#   if(is.list(tmp)){
-#     ls.save[[i]] <-tmp
-#     ls.converge[i] <- 1
-#   }else{
-#     ls.save[[i]] <- NA
-#     ls.converge[i] <- 0
-#   }
-#
-#
-# }
-# # # # #
-# save(ls.save,file = 'results/Climate/MSErun_move_JMC_climate_0_04_HYBR_TAC1.Rdata')
-# #
-# #
-# ls.save <- list()
-# ls.converge <- matrix(0, nruns)
-#
-#
-# for (i in 203:473){
-#   tmp <- run_multiple_MSEs(simyears = simyears,
-#                            seeds = seeds[i],
-#                            TAC = 2, df = df, cincrease = 0, mincrease = 0)
-#   print(i)
-#
-#   if(is.list(tmp)){
-#     ls.save[[i]] <-tmp
-#     ls.converge[i] <- 1
-#   }else{
-#     ls.save[[i]] <- NA
-#     ls.converge[i] <- 0
-#   }
-#
-#
-# }
-#
-# # # # #
-# save(ls.save,file = 'results/Climate/MSErun_move_JMC_climate_0_HYBR_TAC2.Rdata')
-# # #
-# # ### Loop MSE's with different errors in future survey and recruitment
-# ls.save <- list()
-# ls.converge <- matrix(0, nruns)
-#
-#
-# for (i in 1:130){
-# tmp <- run_multiple_MSEs(simyears = simyears,
-#                          seeds = seeds[i],
-#                          TAC = 2, df = df, cincrease = 0.02, mincrease = 0.005)
-# #tmp <- run_multiple_MSEs(simyears = 30, seeds[i])
-# print(i)
-#
-# if(is.list(tmp)){
-#   ls.save[[i]] <-tmp
-#   ls.converge[i] <- 1
-# }else{
-#   ls.save[[i]] <- NA
-#   ls.converge[i] <- 0
-# }
-#
-#
-# }
-# # # # #
-# save(ls.save,file = 'results/Climate/MSErun_move_JMC_climate_0_02_HYBR_TAC.Rdata')
-# #
-# #
-# # #
-# # # ### Loop ls.save <- list()
-# ls.save <- list()
-# ls.converge <- matrix(0, nruns)
-#
-# for (i in 1:nruns){
-#   tmp <- run_multiple_MSEs(simyears = simyears,
-#                                    seeds = seeds[i],
-#                                    TAC = 2, df = df, cincrease = 0.04, mincrease = 0.02)
-#   #tmp <- run_multiple_MSEs(simyears = 30, seeds[i])
-#   print(i)
-#
-#   if(is.list(tmp)){
-#     ls.save[[i]] <-tmp
-#     ls.converge[i] <- 1
-#   }else{
-#     ls.save[[i]] <- NA
-#     ls.converge[i] <- 0
-#   }
-#
-#
-# }
-# # # # #
-# save(ls.save,file = 'results/Climate/MSErun_move_JMC_climate_0_04_HYBR_TAC2.Rdata')
-#
-#
+save(ls.save,file = 'results/Climate/MSErun_move_JMC_climate_0_HYBR_TAC1.Rdata')
+
 # ### Loop MSE's with different errors in future survey and recruitment
-# ls.save <- list()
-# ls.converge <- matrix(0, nruns)
+ls.save <- list()
+ls.converge <- matrix(0, nruns)
+
+
+for (i in 1:nruns){
+  tmp <- run_multiple_MSEs(simyears = simyears,
+                                   seeds = seeds[i],
+                                   TAC = 1, df = df, cincrease = 0.02, mincrease = 0.005)
+  #tmp <- run_multiple_MSEs(simyears = 30, seeds[i])
+  print(i)
+
+  if(is.list(tmp)){
+    ls.save[[i]] <-tmp
+    ls.converge[i] <- 1
+  }else{
+    ls.save[[i]] <- NA
+    ls.converge[i] <- 0
+  }
+
+
+}
+# # # #
+save(ls.save,file = 'results/Climate/MSErun_move_JMC_climate_0_02_HYBR_TAC1.Rdata')
+
+# # ### Loop ls.save <- list()
+ls.save <- list()
+ls.converge <- matrix(0, nruns)
+
+for (i in 156:nruns){
+  tmp <- run_multiple_MSEs(simyears = simyears,
+                                   seeds = seeds[i],
+                                   TAC = 1, df = df, cincrease = 0.04, mincrease = 0.02)
+  #tmp <- run_multiple_MSEs(simyears = 30, seeds[i])
+  print(i)
+
+  if(is.list(tmp)){
+    ls.save[[i]] <-tmp
+    ls.converge[i] <- 1
+  }else{
+    ls.save[[i]] <- NA
+    ls.converge[i] <- 0
+  }
+
+
+}
+# # # #
+save(ls.save,file = 'results/Climate/MSErun_move_JMC_climate_0_04_HYBR_TAC1.Rdata')
 #
 #
-# for (i in 1:396){
-#   tmp <- run_multiple_MSEs(simyears = simyears,
-#                            seeds = seeds[i],
-#                            TAC = 3, df = df, cincrease = 0, mincrease = 0)
-#   print(i)
+ls.save <- list()
+ls.converge <- matrix(0, nruns)
+
+
+for (i in 203:473){
+  tmp <- run_multiple_MSEs(simyears = simyears,
+                           seeds = seeds[i],
+                           TAC = 2, df = df, cincrease = 0, mincrease = 0)
+  print(i)
+
+  if(is.list(tmp)){
+    ls.save[[i]] <-tmp
+    ls.converge[i] <- 1
+  }else{
+    ls.save[[i]] <- NA
+    ls.converge[i] <- 0
+  }
+
+
+}
+
+# # # #
+save(ls.save,file = 'results/Climate/MSErun_move_JMC_climate_0_HYBR_TAC2.Rdata')
+# #
+# ### Loop MSE's with different errors in future survey and recruitment
+ls.save <- list()
+ls.converge <- matrix(0, nruns)
+
+
+for (i in 1:130){
+tmp <- run_multiple_MSEs(simyears = simyears,
+                         seeds = seeds[i],
+                         TAC = 2, df = df, cincrease = 0.02, mincrease = 0.005)
+#tmp <- run_multiple_MSEs(simyears = 30, seeds[i])
+print(i)
+
+if(is.list(tmp)){
+  ls.save[[i]] <-tmp
+  ls.converge[i] <- 1
+}else{
+  ls.save[[i]] <- NA
+  ls.converge[i] <- 0
+}
+
+
+}
+# # # #
+save(ls.save,file = 'results/Climate/MSErun_move_JMC_climate_0_02_HYBR_TAC.Rdata')
 #
-#   if(is.list(tmp)){
-#     ls.save[[i]] <-tmp
-#     ls.converge[i] <- 1
-#   }else{
-#     ls.save[[i]] <- NA
-#     ls.converge[i] <- 0
-#   }
 #
-#
-# }
-#    # # # #
-# save(ls.save,file = 'results/Climate/MSErun_move_JMC_climate_0_HYBR_TAC3.Rdata')
+# #
+# # ### Loop ls.save <- list()
+ls.save <- list()
+ls.converge <- matrix(0, nruns)
+
+for (i in 1:nruns){
+  tmp <- run_multiple_MSEs(simyears = simyears,
+                                   seeds = seeds[i],
+                                   TAC = 2, df = df, cincrease = 0.04, mincrease = 0.02)
+  #tmp <- run_multiple_MSEs(simyears = 30, seeds[i])
+  print(i)
+
+  if(is.list(tmp)){
+    ls.save[[i]] <-tmp
+    ls.converge[i] <- 1
+  }else{
+    ls.save[[i]] <- NA
+    ls.converge[i] <- 0
+  }
+
+
+}
+# # # #
+save(ls.save,file = 'results/Climate/MSErun_move_JMC_climate_0_04_HYBR_TAC2.Rdata')
+
+
+### Loop MSE's with different errors in future survey and recruitment
+ls.save <- list()
+ls.converge <- matrix(0, nruns)
+
+
+for (i in 1:396){
+  tmp <- run_multiple_MSEs(simyears = simyears,
+                           seeds = seeds[i],
+                           TAC = 3, df = df, cincrease = 0, mincrease = 0)
+  print(i)
+
+  if(is.list(tmp)){
+    ls.save[[i]] <-tmp
+    ls.converge[i] <- 1
+  }else{
+    ls.save[[i]] <- NA
+    ls.converge[i] <- 0
+  }
+
+
+}
+   # # # #
+save(ls.save,file = 'results/Climate/MSErun_move_JMC_climate_0_HYBR_TAC3.Rdata')
 
 rm(ls.save)
 # # ### Loop MSE's with different errors in future survey and recruitment

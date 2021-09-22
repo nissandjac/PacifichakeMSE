@@ -7,7 +7,7 @@ library(purrr)
 library(dplyr)
 library(reshape2)
 library(patchwork)
-
+source('R/AAV.R')
 
 mod <- SS_output('inst/extdata/SS32018', printstats=FALSE, verbose = FALSE) # Read the true selectivity
 
@@ -38,9 +38,9 @@ simdata0 <- sim.data # The other one is gonna get overwritten.
 
 
 #
- folder <- 'C:/Users/Nis/Dropbox/NOAA/Hake MSE/MSE results/final results/'
+# folder <- 'C:/Users/Nis/Dropbox/NOAA/Hake MSE/MSE results/final results/'
 #
-#  folder <- 'C:/Users/nsja/Dropbox/NOAA/Hake MSE/MSE results/final results/'
+folder <- 'C:/Users/nsja/Dropbox/NOAA/Hake MSE/MSE results/final results/'
 # #
 
 
@@ -67,7 +67,7 @@ for(i in 1:length(files)){
   SSB_mid <- processMSE(df.MSE, id = 'SSB.mid', idx = c(1,2), spacenames = c('CAN', 'USA'), runs = nruns,nspace = 2)
   SSB_tot <- processMSE(df.MSE, id = 'SSB', idx = 1, spacenames = c('value'), runs = nruns,nspace = 2)
 
-  SSB.om <- processMSE(df.MSE, id = 'SSB.hes', idx = 1, fn = 'rows', spacenames = c('value'), runs = nruns,nspace = 2)
+  SSB.om <- processMSE(df.MSE, id = 'SSB.hes', idx = 1, spacenames = c('value'), runs = nruns,nspace = 2)
 
   # Calculate AAV
   AAVdf <- AAV(catchcdf, idx = 4)
@@ -322,8 +322,8 @@ risklines <- ggplot(risk.time, aes(x = year, y = risk, color = climate, linetype
   facet_wrap(~HCR)+
   theme_classic()+geom_hline(aes(yintercept = 0.05), linetype = 2)+
   scale_color_npg(labels = c("baseline", "moderate", "high"))+
-  scale_linetype_manual(values = 1:3, labels = c("baseline", "moderate", "high"))+
-  coord_cartesian(ylim = c(0,0.2)) +
+  scale_linetype_manual(values = c(1,2,4), labels = c("baseline", "moderate", "high"))+
+  coord_cartesian(ylim = c(0,0.2)) + scale_y_continuous('risk \n of fisheries closure')+
   theme(strip.background =element_rect(fill="white"))+theme(legend.position = 'top',
                                                             legend.title = element_blank(),
                                                             legend.background = element_blank())
