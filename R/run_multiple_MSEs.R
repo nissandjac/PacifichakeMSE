@@ -59,8 +59,7 @@ run_multiple_MSEs <- function(simyears = NULL,seeds = 12345, TAC = 1, df = NA,
   start.time <- Sys.time()
   df0 <- df # For debugging
   #mconverge <- rep(NA, simyears)
-  df0 <- df
-
+  
   for (time in 1:simyears){
 
     year <- yrinit+(time-1)
@@ -190,7 +189,7 @@ run_multiple_MSEs <- function(simyears = NULL,seeds = 12345, TAC = 1, df = NA,
 
       if(TACchange == 2){
         if(df$flag_survey[time] == 1){
-        Fspace <- as.numeric(sim.data$survey.true[,df$nyear]/sum(sim.data$survey.true[,df$nyear]))
+        Fspace <- as.numeric(sim.data$survey.true[,df$nyear-1]/sum(sim.data$survey.true[,df$nyear-1]))
         df$Fspace <- Fspace
         }
       }

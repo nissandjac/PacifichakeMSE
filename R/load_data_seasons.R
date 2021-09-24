@@ -44,12 +44,15 @@ load_data_seasons <- function(nseason = 4,
   #' Load data frame containing all the parameters from the hake operating model
 
 
-  if(is.na(moveinit)){
+  if(any(is.na(moveinit))){
     if(nspace == 2){
     moveinit <-  c(0.25,0.75)
     }
   }
-
+  
+  if(length(moveinit) != nspace){
+    stop('initial movement areas wrongly defined')
+  }
 
   if(length(moveinit) != nspace){
     warning('specify recruitment per space - will assume equal distribution')

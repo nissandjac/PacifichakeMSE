@@ -33,7 +33,8 @@ movefifty.parms <- seq(1,10, length.out = nparms)
 yr.future <- 2
 
 df <- load_data_seasons(nseason = 4, nspace = 2, bfuture = 0.5, movemaxinit = 0.35, movefiftyinit =6,
-                        yr_future = yr.future, myear = 2018) # Prepare data for operating model
+                        yr_future = yr.future, myear = 2018,
+                        moveinit = c(1,1)) # Prepare data for operating model
 
 df.2 <- load_data_seasons(nseason = 4, nspace = 2, bfuture = 0.5, movemaxinit = 0.35, movefiftyinit =6,
                           yr_future = yr.future,
@@ -364,4 +365,12 @@ if(plot.figures == TRUE){
 
 }
 
+
+# Youth distribution 
+smalliest <- survey.ac[survey.ac$age %in% 2,] %>% group_by(year, country) %>% summarise(bio = sum(survey))
+
+ggplot(smalliest, aes(x = year,  y = bio, color =country))+geom_line()+theme_bw()
+
+
+# Plot 
 
