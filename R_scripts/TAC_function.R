@@ -91,8 +91,8 @@ df.plot.w$HCR <- factor(df.plot.w$HCR, levels = c("TAC.HCR", "TAC.historical", "
 # cols <- RColorBrewer::brewer.pal(4, 'Accent')
 
 p1 <- ggplot(df.plot.w, aes(x= TAC*1e-3, y = Quota*1e-3, color = HCR))+geom_line(linetype = 2, size = 0.8)+
-  scale_y_continuous('Catch \n(thousand tonnes)')+scale_color_manual(values = cols,
-                                                                     labels = c('base scenario','historical','realized','floor'))+
+  scale_y_continuous('Catch \n(thousand tonnes)')+
+  scale_color_manual(values = cols, labels = c('base scenario','historical','realized','floor'))+
   scale_x_continuous('Harvest control rule')+ coord_cartesian(ylim=c(0, 800), xlim = c(0,1000))+
   geom_point(data = df.tac,aes(x=AssessTac*1e-3, y = Realized*1e-3), color = cols[3])+
   geom_point(data = df.tac,aes(x=AssessTac*1e-3,y = TAC*1e-3), color = cols[2])+
@@ -115,20 +115,23 @@ xcols <- pal_nejm('default')(3)
 # df.plot.w$HCR[df.plot.w$HCR == 'TAC.realized'] <- 'AC'
 lbs <- c(expression(paste('HCR'[0])),'MD','AC')
 
+neutcols <- c('black','grey54','lightgrey')
 
 p3 <- ggplot(df.plot.w[df.plot.w$HCR != 'Floor',], aes(x= TAC*1e-3, y = Quota*1e-3))+
-  geom_point(data = df.tac,aes(x=AssessTac*1e-3, y = Realized*1e-3), shape = 2, color = xcols[3], show.legend = FALSE)+
-  geom_point(data = df.tac,aes(x=AssessTac*1e-3,y = TAC*1e-3), shape = 3, color = xcols[2], show.legend = FALSE)+
+  geom_point(data = df.tac,aes(x=AssessTac*1e-3, y = Realized*1e-3), shape = 2, color = neutcols[3], show.legend = FALSE)+
+  geom_point(data = df.tac,aes(x=AssessTac*1e-3,y = TAC*1e-3), shape = 3, color = neutcols[2], show.legend = FALSE)+
     geom_line(size = 0.8, aes(linetype = HCR, color = HCR))+
-  scale_y_continuous('projected catch \n(thousand tonnes)')+
-  scale_color_nejm(alpha = 0.6, label = lbs)+
+  scale_y_continuous('projected TAC \n(thousand tonnes)')+
+  scale_color_manual(values = neutcols, label = lbs)+
+#  scale_color_nejm(alpha = 0.6, label = lbs)+
+#  scale_color_manual(values = c('black','grey','lightgrey'))+
   scale_linetype_manual(values = c(1,2,3), label = lbs)+
   scale_x_continuous('TAC from \ndefault HCR')+ coord_cartesian(ylim=c(0, 800), xlim = c(0,1000))+
   theme_classic()+
   #geom_point(data = df.tac[df.tac$Year >= 2012,],aes(x=AssessTac*1e-3,y = TAC*1e-3), color = alpha(cols[4],0.5))+
   theme(legend.title = element_blank(),
         legend.key.size =  unit(.5, "cm"),
-        legend.text=element_text(size=7),
+        legend.text=element_text(size=10),
         legend.position = c(0.2,0.8))
 p3
 
@@ -183,14 +186,14 @@ df.mplot$HCR[df.mplot$HCR == 'TAC.realized'] <- 'realized'
 
 #labels = c('base scenario','historical','realized')
 p4 <- ggplot(df.mplot, aes(x= SSB/ssb0, y = TAC/SSB, color = HCR))+geom_line(size = 0.8, aes(linetype = HCR))+theme_classic()+
-  scale_y_continuous('TAC/SSB0')+theme(legend.position = 'none', legend.title = element_blank())+
-  scale_x_continuous('SSB/SSB0')+scale_color_nejm()
+  scale_y_continuous(expression(paste('TAC/','SSB'['0'])))+theme(legend.position = 'none', legend.title = element_blank())+
+  scale_x_continuous(expression(paste('SSB/','SSB'['0'])))+scale_color_manual(values = neutcols)
+p4
 
-
-png('results/Climate/tacs.png', width = 8*2, height = 5, unit = 'cm', res =400)
-p3+p4+plot_annotation(tag_levels = 'a')
+png('results/Climate/Publication/Resubmission/Figure2.png', width = 8, height = 12, unit = 'cm', res =400)
+p3/p4+plot_annotation(tag_levels = 'a')
 dev.off()
 
-pdf(file = 'results/Climate/Publication/tacs.pdf', width = 8*2/cm(1), height = 5/cm(1))
+pdf(file = 'results/Climate/Publication/Resubmission/Figure2.pdf', width = 8*2/cm(1), height = 5/cm(1))
 p3+p4+plot_annotation(tag_levels = 'a')
 dev.off()

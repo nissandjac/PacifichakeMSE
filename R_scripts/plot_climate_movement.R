@@ -43,44 +43,55 @@ for(j in 1:length(cincrease)){
 cols <- PNWColors::pnw_palette('Starfish',n = 4, type = 'discrete')[2:4]
 
 df.tmp <- as.data.frame(t(movemax))
-names(df.tmp) <- c('base \nscenario', 'moderate \nincrease ','high \nincrease')
+names(df.tmp) <- c('base', 'moderate','high')
 df.tmp$year <- year.future[year.future > 2018]
+
+
+
+
 
 df.plot <- melt(df.tmp, id.vars = 'year', measure.vars = 1:length(cincrease), value.name = 'movemax', variable.name = 'Scenario')
 
-p1 <- ggplot(df.plot, aes(x = year, y = movemax, color = Scenario, linetype = Scenario))+theme_classic()+geom_line(size = 1.4)+
+p1 <- ggplot(df.plot, aes(x = year, y = movemax, color = Scenario, linetype = Scenario))+theme_classic()+
+  geom_line(size = 1.2)+
   coord_cartesian(ylim = c(0.2,1))+
   scale_color_npg()+
   scale_linetype_manual(values = c(1,2,3))+
-  scale_y_continuous('max movement rate')+
+  #scale_y_continuous(expression('max movement rate',paste(kappa)), breaks = seq(0.2,1, by = .2))+
+  scale_y_continuous(expression(paste(kappa)), breaks = seq(0.2,1, by = .2))+
   theme(legend.position = 'top', legend.title = element_blank(),
-        axis.line.x = element_blank(),
         axis.title.x.bottom = element_blank(),
         axis.ticks.x = element_blank(),
         axis.text.x = element_blank(),
         legend.text = element_text(size = 10),
-        legend.spacing.x =unit(0.001,'cm'))
+        legend.spacing.x =unit(0.001,'cm'))+
+        guides(linetype = guide_legend(override.aes = list(size = 0.6)))
 p1
 
 
 df.tmp <- as.data.frame(t(moveout))
-names(df.tmp) <- c('base scenario', 'moderate increase','high increase')
+names(df.tmp) <- c('base', 'moderate','high')
 df.tmp$year <- year.future[year.future > 2018]
 
 df.plot <- melt(df.tmp, id.vars = 'year', measure.vars = 1:length(cincrease), value.name = 'moveout', variable.name = 'Scenario')
 p2 <- ggplot(df.plot, aes(x = year, y = moveout, color = Scenario, linetype = Scenario))+
-  theme_classic()+geom_line(size = 1.4)+coord_cartesian(ylim = c(0.3,0.9))+
+  theme_classic()+geom_line(size = 1.2)+coord_cartesian(ylim = c(0.2,1))+
   scale_color_npg()+
   scale_linetype_manual(values = c(1,2,3))+
-  scale_y_continuous('return rate')+
-  theme(legend.position = 'none')
+  scale_y_continuous(expression(paste(kappa['return'])), breaks = seq(0.2,1, by = .2))+
+  scale_x_continuous(breaks = seq(2020, 2050, by = 5))+
+  theme(legend.position = 'none',
+        legend.text = element_text(size = 10),
+        legend.spacing.x =unit(0.001,'cm'))
 
+
+p2
 if(plot.figures == TRUE){
-png('results/Figs/climate_movement.png', width= 8, height = 10, units = 'cm', res = 400)
+png('results/Climate/Publication/Resubmission/Figure3.png', width= 8, height = 10, units = 'cm', res = 400)
 p1 / p2 + plot_annotation(tag_levels = 'a')
 dev.off()
 
-pdf('results/Climate/Publication/Figure4.pdf', width= 8/cm(1), height = 10/cm(1))
+pdf('results/Climate/Publication/Resubmission/Figure3.pdf', width= 8/cm(1), height = 10/cm(1))
 p1 / p2 + plot_annotation(tag_levels = 'a')
 dev.off()
 

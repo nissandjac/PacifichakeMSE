@@ -14,7 +14,7 @@ library(patchwork)
 mod <- SS_output('inst/extdata/SS32018/', printstats=FALSE, verbose = FALSE) # Read the true selectivity
 
 # Set true for printing to file
-plot.figures = FALSE
+plot.figures = TRUE
 
 # Load surveys per country (not available in SS3 file)
 survey.obs <- read.csv('inst/extdata/survey_country.csv')
@@ -33,8 +33,7 @@ movefifty.parms <- seq(1,10, length.out = nparms)
 yr.future <- 2
 
 df <- load_data_seasons(nseason = 4, nspace = 2, bfuture = 0.5, movemaxinit = 0.35, movefiftyinit =6,
-                        yr_future = yr.future, myear = 2018,
-                        moveinit = c(1,1)) # Prepare data for operating model
+                        yr_future = yr.future, myear = 2018) # Prepare data for operating model
 
 df.2 <- load_data_seasons(nseason = 4, nspace = 2, bfuture = 0.5, movemaxinit = 0.35, movefiftyinit =6,
                           yr_future = yr.future,
@@ -63,15 +62,24 @@ AC.survey <- data.frame(AC.mean = c(standard.move$survey.AC[,1],standard.move$su
                         country = rep(c('CAN','USA'), each = df$nyear), year = rep(df$years,2))
 
 
-p.AC.survey <- ggplot(AC.survey, aes(x = year, y= AC.mean, color = country, linetype = country))+geom_line(size = 1.3)+theme_classic()+
-  geom_line(data = ac.survey.tot, size = .6)+
-  geom_point(data = ac.survey.tot)+  scale_x_continuous(name = '',limit = c(1965,2018), breaks = seq(1970,2020, by = 10))+
+p.AC.survey <- ggplot(AC.survey, aes(x = year, y= AC.mean, color = country, linetype = country))+
+  geom_line(size = 1.2)+theme_classic()+
+  geom_line(data = ac.survey.tot, size = .6, show.legend = FALSE)+
+  geom_point(data = ac.survey.tot, show.legend = FALSE)+  
+  scale_x_continuous(
+    name = '',
+    limit = c(1965,2018), 
+    breaks = seq(1970,2020, by = 10))+
   scale_color_manual(values = c('darkred','blue4'))+
-  theme(legend.position = 'none',
-        axis.text.y = element_text(size = 12),
+  theme(
+        legend.position = 'top',
+        legend.title = element_blank(),
+        axis.text.y = element_text(size = 10),
         axis.text.x = element_blank(),
         axis.title.x =  element_blank(),
-        axis.title.y = element_text(size =12))+
+        axis.title.y = element_text(size =10),
+        legend.text = element_text(size = 10)
+        )+
   scale_y_continuous('mean age \nin survey')
 p.AC.survey
 
@@ -97,17 +105,21 @@ df.obs <- data.frame(survey = c(survey.obs$survey[survey.obs$country == 'CAN'],s
 df.plot <- rbind(df.plot.sim,df.obs)
 
 p1 <- ggplot(df.plot.sim, aes( x=  years, y = survey*1e-6, color = country, linetype = country))+
-  theme_classic()+geom_line(size = 1.3)+
+  theme_classic()+geom_line(size = 1.2)+
   geom_line(data = df.obs, size = 0.6, linetype = 1, show.legend = FALSE)+
-  geom_point(data = df.obs, size = 2.5, show.legend = FALSE)+
-  scale_color_manual(values = c('darkred','blue4'))+scale_y_continuous('survey biomass \n(million tonnes)')+
+  geom_point(data = df.obs, show.legend = FALSE)+
+  scale_color_manual(values = c('darkred','blue4'))+
+  scale_y_continuous('survey biomass \n(million tonnes)')+
   scale_x_continuous(limit = c(1965,2018), breaks = seq(1970, 2020, by = 10))+
-  theme(legend.position = c(0.1,0.8),
+  theme(legend.position = 'none',
         legend.background = element_rect(fill=NA),
         legend.title = element_blank(), axis.title.x = element_blank(),
-        axis.text.y = element_text(size = 12),
-        axis.text.x = element_text(size =12),
-        axis.title.y = element_text(size = 12))
+        axis.text.y = element_text(size = 10),
+        axis.text.x = element_text(size =10),
+        axis.title.y = element_text(size = 10),
+        legend.text = element_text(size = 10)
+        
+  )
 
 
 p1
@@ -159,9 +171,10 @@ p.AC.catch <- ggplot(ac.df, aes(x = Year, y = ac, color = Country, linetype = Co
   scale_y_continuous('mean age \nin catch')+
   theme(legend.position = 'none',
         axis.title.x = element_blank(),
-        axis.title.y = element_text(size = 12),
+        axis.title.y = element_text(size = 10),
         axis.text.x = element_blank(),
-        axis.text.y = element_text(size = 12))
+        legend.text = element_text(size = 10),
+        axis.text.y = element_text(size = 10))
 
 if(plot.figures == TRUE){
   png(filename = 'results/Figs/AC_catch.png', width = 16, height = 8, res = 400, units = 'cm')
@@ -175,13 +188,13 @@ if(plot.figures == TRUE){
 
 # Try using Patchwork
 if(plot.figures == TRUE){
-  png(filename = 'results/Figs/condition_all.png', width = 16, height = 16, res = 400, units = 'cm')
-  print((p.AC.survey / p.AC.catch / p1)+plot_annotation(tag_levels = 'A'))& theme(plot.tag = element_text(size = 8))
+  png(filename = 'results/Climate/Publication/Resubmission/Figure4.png', width = 8, height = 12, res = 400, units = 'cm')
+  print((p.AC.survey / p.AC.catch / p1)+plot_annotation(tag_levels = 'a'))& theme(plot.tag = element_text(size = 8))
   dev.off()
 
 
-  pdf(file = 'results/Climate/Publication/Figure5.pdf', width = 16/cm(1), height = 16/cm(1))
-  print((p.AC.survey / p.AC.catch / p1)+plot_annotation(tag_levels = 'A'))& theme(plot.tag = element_text(size = 8))
+  pdf(file = 'results/Climate/Publication/Resubmission/Figure4.pdf', width = 16/cm(1), height = 16/cm(1))
+  print((p.AC.survey / p.AC.catch / p1)+plot_annotation(tag_levels = 'a'))& theme(plot.tag = element_text(size = 8))
   dev.off()
 
 
@@ -201,8 +214,8 @@ for(i in 1:df$nseason){
 }
 
 # Text for publication
-ann_mm <- data.frame(age = 4,movement = 0.75, season = 1, country = 'USA')
-ann_return <- data.frame(age = 10,movement = 0.35, season = 4, country = 'USA')
+ann_mm <- data.frame(age = 6,movement = 0.55, season = 1, country = 'USA')
+ann_return <- data.frame(age = 10,movement = 0.50, season = 4, country = 'USA')
 
 # Rename for plot
 df.movement$country[df.movement$country == 'USA'] <- 'North movement'
@@ -218,13 +231,13 @@ p.move <-ggplot(df.movement, aes(x = age, y = movement, color = country))+
   geom_hline(data = data.frame(season = 1),
              aes(yintercept = max(df.movement$movement[df.movement$country == 'North movement' & df.movement$season == 1])),
              linetype = 2)+
-  geom_text(data = ann_mm, label = 'max\n movement', color = 'black')+
-  geom_text(data = ann_return, label = 'return\n rate', color = 'black')+
-  geom_segment(data = data.frame(x= 4, y= 0.57, xend = 4, yend = 0.38, season = 1),
+  geom_text(data = ann_mm, label = expression(paste('max movement rate, ',kappa)), color = 'black')+
+  geom_text(data = ann_return, label = expression(paste('return rate, ',kappa['return'])), color = 'black')+
+  geom_segment(data = data.frame(x= 4, y= 0.47, xend = 4, yend = 0.38, season = 1),
                aes(x=x,  y= y, xend = xend, yend=yend), color = 'black',
                 arrow = arrow(length = unit(0.1, "inches"))
                )+
-  geom_segment(data = data.frame(x= 10, y= 0.50, xend = 10, yend = 0.80, season = 4),
+  geom_segment(data = data.frame(x= 10, y= 0.55, xend = 10, yend = 0.80, season = 4),
                aes(x=x,  y= y, xend = xend, yend=yend), color = 'black',
                arrow = arrow(length = unit(0.1, "inches"))
   )
@@ -232,11 +245,11 @@ p.move <-ggplot(df.movement, aes(x = age, y = movement, color = country))+
 p.move
 
 if(plot.figures == TRUE){
-png(filename = 'results/Climate/Movement.png', width = 16, height = 10, res = 400, units = 'cm')
+png(filename = 'results/Climate/Publication/Resubmission/Figure1.png', width = 16, height = 10, res = 400, units = 'cm')
 print(p.move)
 dev.off()
 
-pdf(file = 'results/Climate/Publication/Figure2.pdf', width = 16/cm(1), height = 10/cm(1))
+pdf(file = 'results/Climate/Publication/Resubmission/Figure1.pdf', width = 16/cm(1), height = 10/cm(1))
 print(p.move)
 dev.off()
 

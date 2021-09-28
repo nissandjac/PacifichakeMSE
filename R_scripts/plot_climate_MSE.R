@@ -61,13 +61,14 @@ for(i in 1:length(files)){
 
 
    # ProcessMSE is in the df_MSE function
-  catchcdf <- processMSE(df.MSE, 'Catch', idx = c(2,3), spacenames = c('CAN', 'USA'), runs = nruns,nspace = 2)
+  catchcdf <- processMSE(df.MSE, 'Catch', idx = c(2,3), spacenames = c('CAN', 'USA'), runs = nruns,nspace = 2) # df_MSE.R calc
   catchdf <- processMSE(df.MSE, 'Catch', idx = 2, spacenames = c('value'), runs = nruns, nspace = 2)
 
   SSB_mid <- processMSE(df.MSE, id = 'SSB.mid', idx = c(1,2), spacenames = c('CAN', 'USA'), runs = nruns,nspace = 2)
   SSB_tot <- processMSE(df.MSE, id = 'SSB', idx = 1, spacenames = c('value'), runs = nruns,nspace = 2)
 
-  SSB.om <- processMSE(df.MSE, id = 'SSB.hes', idx = 1, spacenames = c('value'), runs = nruns,nspace = 2)
+  SSB.EM <- processMSE(df.MSE, id = 'SSB.hes', idx = 1, spacenames = c('value'), runs = nruns,nspace = 2,
+                      fn = 'rows')
 
   # Calculate AAV
   AAVdf <- AAV(catchcdf, idx = 4)
@@ -107,7 +108,7 @@ for(i in 1:length(files)){
   SSB_mid$MP <- runname
   SSB_tot$MP <- runname
   SSB.tot.tmp$MP <- runname
-  SSB.om$MP <- runname
+  SSB.EM$MP <- runname
 
 
   AAVdf$MP <- runname
@@ -133,7 +134,7 @@ for(i in 1:length(files)){
   SSB_mid$HCR <- HCRname
   SSB.tot.tmp$HCR <- HCRname
   SSB_tot$HCR <- HCRname
-  SSB.om$HCR <- HCRname
+  SSB.EM$HCR <- HCRname
 
   AAVdf$HCR <- HCRname
   AAV.tot.tmp$HCR <- HCRname
@@ -146,7 +147,7 @@ for(i in 1:length(files)){
   SSB_mid$climate <- strs[6]
   SSB.tot.tmp$climate <- strs[6]
   SSB_tot$climate <- strs[6]
-  SSB.om$climate <- strs[6]
+  SSB.EM$climate <- strs[6]
 
   AAV.tot.tmp$climate <- strs[6]
   AAVdf$climate <- strs[6]
@@ -160,7 +161,7 @@ for(i in 1:length(files)){
     SSBdf <- SSB_mid
     SSB.tot <- SSB.tot.tmp
     SSB_cdf <- SSB_tot
-    ssb.om <- SSB.om
+    ssb.EM <- SSB.EM
 
     AAVdfexp <- AAVdf
     AAV.tot <- AAV.tot.tmp
@@ -174,7 +175,7 @@ for(i in 1:length(files)){
     SSBdf <- rbind(SSBdf, SSB_mid)
     SSB.tot <- rbind(SSB.tot, SSB.tot.tmp)
     SSB_cdf <- rbind(SSB_cdf, SSB_tot)
-    ssb.om <- rbind(ssb.om,SSB.om)
+    ssb.EM <- rbind(ssb.EM,SSB.EM)
 
     AAVdfexp <- rbind(AAVdfexp, AAVdf)
     AAV.tot <- rbind(AAV.tot, AAV.tot.tmp)
@@ -322,7 +323,7 @@ risklines <- ggplot(risk.time, aes(x = year, y = risk, color = climate, linetype
   facet_wrap(~HCR)+
   theme_classic()+geom_hline(aes(yintercept = 0.05), linetype = 2)+
   scale_color_npg(labels = c("baseline", "moderate", "high"))+
-  scale_linetype_manual(values = c(1,2,4), labels = c("baseline", "moderate", "high"))+
+  scale_linetype_manual(values = c(1,2,3), labels = c("baseline", "moderate", "high"))+
   coord_cartesian(ylim = c(0,0.2)) + scale_y_continuous('risk \n of fisheries closure')+
   theme(strip.background =element_rect(fill="white"))+theme(legend.position = 'top',
                                                             legend.title = element_blank(),
@@ -331,12 +332,12 @@ risklines <- ggplot(risk.time, aes(x = year, y = risk, color = climate, linetype
 
 risklines
 
-png('results/Climate/Publication/risklines.png', width = 16, height =6, res = 400, unit = 'cm')
+png('results/Climate/Publication/Resubmission/Figure6.png', width = 16, height =8, res = 400, unit = 'cm')
 risklines
 dev.off()
 
 # Pdf for publication
-pdf('results/Climate/Publication/Figure7.pdf', width = 16/cm(1), height =6/cm(1))
+pdf('results/Climate/Publication/Resubmission/Figure6.pdf', width = 16/cm(1), height =8/cm(1))
 risklines
 dev.off()
 
@@ -355,11 +356,10 @@ rmout <- quantile(catchcdfexp$value[catchdfexp$year>2019]*1e-6, probs = perc)
 
 vplot1 <- ggplot(catchcdfexp[catchcdfexp$year>2030,], aes(x = HCR,y = value*1e-6, group = MP, fill = climate))+
   geom_violin(position = dodge)+scale_y_continuous(name = 'Catch \n(million tonnes)')+geom_line()+
-  theme_bw()+theme(legend.position = 'top',
+  theme_classic()+theme(legend.position = 'top',
                    strip.background =element_rect(fill="white"),
-                   text = element_text(size = 8),
+                   text = element_text(size = 10),
                    legend.title = element_blank(),
-                   legend.text = element_text(size =10),
                    strip.text = element_text(size=5),
                    legend.key.size = unit(0.5, 'lines'),
                    axis.text.x = element_blank(),
@@ -375,10 +375,11 @@ vplot1 <- ggplot(catchcdfexp[catchcdfexp$year>2030,], aes(x = HCR,y = value*1e-6
 rmout <- quantile(SSBdf$value[SSBdf$year>2019]*1e-6, probs = perc)
 
 vplot2 <- ggplot(SSBdf[SSBdf$year>2030,], aes(x = HCR,y = value*1e-6, group = MP, fill = climate))+
-  geom_violin(position = dodge)+scale_y_continuous(name = 'SSB  \n(million tonnes)')+geom_line()+theme_bw()+
+  geom_violin(position = dodge)+scale_y_continuous(name = 'SSB  \n(million tonnes)')+geom_line()+
+  theme_classic()+
   theme(legend.position = 'none',
-        text = element_text(size = 8),
-        strip.background = element_blank(),
+        text = element_text(size = 10),
+        strip.background =element_rect(fill="white"),
         strip.text.x = element_blank(),
         axis.text.x = element_blank(),
         plot.margin = unit(c(1,1,0,1), 'pt'))+scale_x_discrete('')+
@@ -390,10 +391,10 @@ rmout <- quantile(AAVdfexp$AAV[AAVdfexp$year>2019], probs = perc)
 rmout <- c(0,4)
 
 vplot3 <- ggplot(AAVdfexp[AAVdfexp$year>2030,], aes(x = HCR,y = AAV, group = MP, fill = climate))+
-  geom_violin(position = dodge)+scale_y_continuous(name = 'AAV')+geom_line()+theme_bw()+
+  geom_violin(position = dodge)+scale_y_continuous(name = 'AAV')+geom_line()+theme_classic()+
   theme(legend.position = 'none',
-        text = element_text(size = 8),
-        axis.text.x = element_text(size =6),
+        text = element_text(size = 10),
+        axis.text.x = element_text(size =8),
         plot.margin = unit(c(1,1,0,1), 'pt'),
         strip.background = element_blank(),
         strip.text.x = element_blank())+
@@ -408,12 +409,12 @@ AAVtest <- AAVdfexp[AAVdfexp$year > 2030,] %>%
   summarise(mAAv = median(AAV))
 
 
-png(paste('results/Climate/Publication/','violin_publication.png', sep = ''), width = 16, height =12, res = 400, unit = 'cm')
+png('results/Climate/Publication/Resubmission/Figure7.png', width = 16, height =12, res = 400, unit = 'cm')
 vplot1/vplot2/vplot3+plot_annotation(tag_levels = 'a')
 dev.off()
 
 # Pdf for publication
-pdf('results/Climate/Publication/Figure8.pdf', width = 16/cm(1), height =12/cm(1))
+pdf('results/Climate/Publication/Resubmission/Figure7.pdf', width = 16/cm(1), height =12/cm(1))
 vplot1/vplot2/vplot3+plot_annotation(tag_levels = 'a')
 dev.off()
 
@@ -679,9 +680,9 @@ dev.off()
 
 # Plot the performance of the operating model
 
-EE <- data.frame(EE.ssb = (ssb.om$value - SSB_cdf$value)/SSB_cdf$value, year = as.numeric(rownames(ls.save[[1]]$SSB)),
-                 run = ssb.om$run, MP = ssb.om$MP, HCR = ssb.om$HCR,
-                 climate = ssb.om$climate)
+EE <- data.frame(EE.ssb = (ssb.EM$value - SSB_cdf$value)/SSB_cdf$value, year = as.numeric(rownames(ls.save[[1]]$SSB)),
+                 run = ssb.EM$run, MP = ssb.EM$MP, HCR = ssb.EM$HCR,
+                 climate = ssb.EM$climate)
 
 ggplot(EE[EE$HCR == 'HCR0' & EE$year > 2010,], aes(x = as.factor(year), y = EE.ssb))+
   geom_boxplot(outlier.alpha = 0.1)+facet_wrap(~climate)+coord_cartesian(ylim = c(-2,2))+theme_classic()+
@@ -698,21 +699,23 @@ EE.tot <- EE %>%
 p.ee <- ggplot(EE.tot[EE.tot$year > 2018 & EE.tot$HCR == 'HCR0',], aes(x = year, y = Emedian, color = climate, fill = climate, linetype = climate))+
   geom_line(size = 1.2)+theme_classic()+
   scale_y_continuous('relative\nerror')+
-  geom_ribbon(aes(ymin = Emin, ymax = Emax), alpha = 0.2, linetype = 0,show.legend = FALSE)+coord_cartesian(ylim = c(-0.8,0.8))+
+  geom_ribbon(aes(ymin = Emin, ymax = Emax), alpha = 0.2, 
+              linetype = 0,show.legend = FALSE)+
+  coord_cartesian(ylim = c(-0.8,0.8))+
   scale_color_npg(labels = c('baseline', 'moderate', 'high'))+
   scale_fill_npg()+
   scale_linetype_manual(values = c(1,2,3), labels =  c('baseline', 'moderate', 'high'))+
   theme(legend.position = 'top', legend.direction = 'horizontal', legend.title = element_blank(),
-        legend.text = element_text(size = 6))+
+        legend.text = element_text(size = 10))+
   geom_hline(aes(yintercept = 0), linetype = 2, color = 'black')
 
 p.ee
 
-png('results/Climate/Publication/climate_EE.png', width = 8, height = 6, res = 400, units = 'cm')
+png('results/Climate/Publication/Resubmission/Figure5.png', width = 8, height = 6, res = 400, units = 'cm')
 p.ee
 dev.off()
 
-pdf('results/Climate/Publication/Figure6.pdf', width = 8/cm(1), height = 6/cm(1))
+pdf('results/Climate/Publication/Figure5.pdf', width = 8/cm(1), height = 6/cm(1))
 p.ee
 dev.off()
 
