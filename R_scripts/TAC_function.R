@@ -121,7 +121,7 @@ p3 <- ggplot(df.plot.w[df.plot.w$HCR != 'Floor',], aes(x= TAC*1e-3, y = Quota*1e
   geom_point(data = df.tac,aes(x=AssessTac*1e-3, y = Realized*1e-3), shape = 2, color = neutcols[3], show.legend = FALSE)+
   geom_point(data = df.tac,aes(x=AssessTac*1e-3,y = TAC*1e-3), shape = 3, color = neutcols[2], show.legend = FALSE)+
     geom_line(size = 0.8, aes(linetype = HCR, color = HCR))+
-  scale_y_continuous('projected TAC \n(thousand tonnes)')+
+  scale_y_continuous('TAC \n(thousand tonnes)')+
   scale_color_manual(values = neutcols, label = lbs)+
 #  scale_color_nejm(alpha = 0.6, label = lbs)+
 #  scale_color_manual(values = c('black','grey','lightgrey'))+
