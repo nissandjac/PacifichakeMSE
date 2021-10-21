@@ -121,12 +121,12 @@ p3 <- ggplot(df.plot.w[df.plot.w$HCR != 'Floor',], aes(x= TAC*1e-3, y = Quota*1e
   geom_point(data = df.tac,aes(x=AssessTac*1e-3, y = Realized*1e-3), shape = 2, color = neutcols[3], show.legend = FALSE)+
   geom_point(data = df.tac,aes(x=AssessTac*1e-3,y = TAC*1e-3), shape = 3, color = neutcols[2], show.legend = FALSE)+
     geom_line(size = 0.8, aes(linetype = HCR, color = HCR))+
-  scale_y_continuous('TAC \n(thousand tonnes)')+
+  scale_y_continuous('TAC')+
   scale_color_manual(values = neutcols, label = lbs)+
 #  scale_color_nejm(alpha = 0.6, label = lbs)+
 #  scale_color_manual(values = c('black','grey','lightgrey'))+
   scale_linetype_manual(values = c(1,2,3), label = lbs)+
-  scale_x_continuous('TAC from \ndefault HCR')+ coord_cartesian(ylim=c(0, 800), xlim = c(0,1000))+
+  scale_x_continuous(expression(paste('TAC (HCR'['0'],')')))+ coord_cartesian(ylim=c(0, 800), xlim = c(0,1000))+
   theme_classic()+
   #geom_point(data = df.tac[df.tac$Year >= 2012,],aes(x=AssessTac*1e-3,y = TAC*1e-3), color = alpha(cols[4],0.5))+
   theme(legend.title = element_blank(),
@@ -185,9 +185,11 @@ df.mplot$HCR[df.mplot$HCR == 'TAC.historical'] <- 'historical'
 df.mplot$HCR[df.mplot$HCR == 'TAC.realized'] <- 'realized'
 
 #labels = c('base scenario','historical','realized')
-p4 <- ggplot(df.mplot, aes(x= SSB/ssb0, y = TAC/SSB, color = HCR))+geom_line(size = 0.8, aes(linetype = HCR))+theme_classic()+
-  scale_y_continuous(expression(paste('TAC/','SSB'['0'])))+theme(legend.position = 'none', legend.title = element_blank())+
-  scale_x_continuous(expression(paste('SSB/','SSB'['0'])))+scale_color_manual(values = neutcols)
+p4 <- ggplot(df.mplot, aes(x= SSB/ssb0, y = TAC/SSB, color = HCR))+
+  geom_line(size = 0.8, aes(linetype = HCR))+theme_classic()+
+  scale_linetype_manual(values = c(1,2,3))+
+  scale_y_continuous(expression(paste('TAC/','S'['0'])))+theme(legend.position = 'none', legend.title = element_blank())+
+  scale_x_continuous(expression(paste('S/','S'['0'])))+scale_color_manual(values = neutcols)
 p4
 
 png('results/Climate/Publication/Resubmission/Figure2.png', width = 8, height = 12, unit = 'cm', res =400)
@@ -195,5 +197,5 @@ p3/p4+plot_annotation(tag_levels = 'a')
 dev.off()
 
 pdf(file = 'results/Climate/Publication/Resubmission/Figure2.pdf', width = 8*2/cm(1), height = 5/cm(1))
-p3+p4+plot_annotation(tag_levels = 'a')
+p3/p4+plot_annotation(tag_levels = 'a')
 dev.off()
