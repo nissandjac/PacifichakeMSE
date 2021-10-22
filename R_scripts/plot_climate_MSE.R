@@ -710,7 +710,7 @@ png('results/Climate/Publication/Resubmission/Figure5.png', width = 8, height = 
 p.ee
 dev.off()
 
-pdf('results/Climate/Publication/Figure5.pdf', width = 8/cm(1), height = 6/cm(1))
+pdf('results/Climate/Publication/Resubmission/Figure5.pdf', width = 8/cm(1), height = 6/cm(1))
 p.ee
 dev.off()
 
