@@ -21,7 +21,7 @@ parms.true <- getParameters_OM(TRUE,mod, df) # Load parameters from assessment
 
 time <- 1
 yrinit <- df$nyear
-nruns <- 500
+nruns <- 100
 
 seeds <- floor(runif(n = nruns, min = 1, max = 1e6))
 ### Run the OM and the EM for x number of years in the MSE
@@ -338,7 +338,9 @@ riskviolin
 
 risklines <- ggplot(risk.time, aes(x = year, y = risk, color = climate, linetype = climate))+
   geom_line(size = 1.2)+
-  facet_wrap(~HCR)+
+  facet_wrap(~HCR,labeller = labeller(HCR = 
+                                        c("TAC4" = "Time varying TAC",
+                                          "HCR0" = "HCR0")))+
   theme_classic()+geom_hline(aes(yintercept = 0.05), linetype = 2)+
   scale_color_npg(labels = c("baseline", "moderate", "high"))+
   scale_linetype_manual(values = c(1,2,3), labels = c("baseline", "moderate", "high"))+
@@ -350,7 +352,7 @@ risklines <- ggplot(risk.time, aes(x = year, y = risk, color = climate, linetype
 
 risklines
 
-png('results/Climate/Publication/Resubmission/sensitivity/risk.png', width = 16, height =8, res = 400, unit = 'cm')
+png('results/Climate/Publication/Resubmission/Supplementary/risk.png', width = 16, height =8, res = 400, unit = 'cm')
 risklines
 dev.off()
 
@@ -749,7 +751,7 @@ dev.off()
 pssb <- ggplot(SSB_cdf[SSB_cdf$year>2030,], aes(x = HCR, y = value/1e6, fill = HCR))+geom_violin()+
   theme_classic()+facet_wrap(~climate, labeller = 
                                labeller(climate = c('0' = 'baseline',
-                                                    '02' = 'medium',
+                                                    '02' = 'moderate',
                                                     '04' = 'high')))+
   coord_cartesian(ylim = c(0,2))+
   geom_boxplot(width = .10)+scale_y_continuous('S\n(million tonnes)')+
@@ -762,7 +764,7 @@ pssb
 
 pcatch <- ggplot(catchdfexp[catchdfexp$year>2030,], aes(x = HCR, y = value/1e6, fill = HCR))+geom_violin()+
   theme_classic()+facet_wrap(~climate)+coord_cartesian(ylim = c(0,1))+
-  geom_boxplot(width = .10)+scale_y_continuous('Catch\n(million tonnes)')+
+  geom_boxplot(width = .10)+scale_y_continuous('C\n(million tonnes)')+
   scale_x_discrete("", limits = c('HCR0','TAC4'))+
   theme(legend.position = 'none',
         strip.background = element_blank(),
@@ -789,8 +791,9 @@ pAAV <- ggplot(AAVcdf[AAVcdf$year>2030,],
 pAAV
 
 
-png('results/Climate/Publication/Resubmission/sensitivity/TVtac.png', width = 16, height = 12, res = 400, units = 'cm')
-pssb/pcatch/pAAV
+png('results/Climate/Publication/Resubmission/sensitivity/TVtac.png', 
+    width = 16, height = 12, res = 400, units = 'cm')
+pssb/pcatch/pAAV+plot_annotation(tag_levels = 'a')
 dev.off()
 
 

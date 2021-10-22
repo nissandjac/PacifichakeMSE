@@ -50,15 +50,15 @@ for(i in 1:nrun){
 SSBsave$move <- paste(SSBsave$movemax, SSBsave$moveout, sep = '-')
 
 p1 <- ggplot(SSBsave, aes(x=  years, y = SSB*1e-6, color = movemax, group = move))+
-  geom_line()+theme(legend.position = 'none')+theme_classic()+scale_y_continuous('SSB')+ 
-  labs(color='max movement\nrate')
+  geom_line()+theme(legend.position = 'none')+theme_classic()+scale_y_continuous('S')+ 
+  labs(color=expression(paste(kappa)))
 p1
 
 p2 <- ggplot(SSBsave, aes(x=  years, y = SSB*1e-6, color = moveout, group = move))+
-  geom_line()+theme(legend.position = 'none')+theme_classic()+scale_y_continuous('SSB')+
-  labs(color='return\nrate')
+  geom_line()+theme(legend.position = 'none')+theme_classic()+scale_y_continuous('S')+
+  labs(color=expression(paste(kappa['return'])))
 p2
 
-png(filename = 'results/Climate/movement_history.png', height = 12, width = 16, res = 400, units = 'cm')
-p1/p2
+png(filename = 'results/Climate/Publication/Resubmission/Supplementary/movement_history.png', height = 12, width = 16, res = 400, units = 'cm')
+p1/p2+plot_annotation(tag_levels = 'a')
 dev.off()

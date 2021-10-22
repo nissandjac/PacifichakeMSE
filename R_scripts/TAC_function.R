@@ -196,6 +196,6 @@ png('results/Climate/Publication/Resubmission/Figure2.png', width = 8, height = 
 p3/p4+plot_annotation(tag_levels = 'a')
 dev.off()
 
-pdf(file = 'results/Climate/Publication/Resubmission/Figure2.pdf', width = 8*2/cm(1), height = 5/cm(1))
+pdf(file = 'results/Climate/Publication/Resubmission/Figure2.pdf', width = 8/cm(1), height = 12/cm(1))
 p3/p4+plot_annotation(tag_levels = 'a')
 dev.off()
