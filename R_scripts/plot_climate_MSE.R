@@ -8,6 +8,7 @@ library(dplyr)
 library(reshape2)
 library(patchwork)
 source('R/AAV.R')
+load_all()
 
 mod <- SS_output('inst/extdata/SS32018', printstats=FALSE, verbose = FALSE) # Read the true selectivity
 
@@ -351,11 +352,18 @@ dev.off()
 
 dodge <- position_dodge(width = 0.5)
 perc <- c(0.1,0.90)
+tag.x <- .04
 
 rmout <- quantile(catchcdfexp$value[catchdfexp$year>2019]*1e-6, probs = perc)
 
 vplot1 <- ggplot(catchcdfexp[catchcdfexp$year>2030,], aes(x = HCR,y = value*1e-6, group = MP, fill = climate))+
   geom_violin(position = dodge)+scale_y_continuous(name = 'C \n(million tonnes)')+geom_line()+
+  scale_x_discrete('')+
+  geom_boxplot(width=0.2, col = 'black', outlier.shape = NA, position = dodge,
+               show.legend = FALSE)+
+  scale_fill_npg(labels = c('baseline', 'moderate', 'high'))+
+  guides(shape = guide_legend(override.aes = list(shape = 2)))+
+  facet_wrap(~variable)+coord_cartesian(ylim = c(0,0.5))+
   theme_classic()+theme(legend.position = 'top',
                    strip.background =element_rect(fill="white"),
                    text = element_text(size = 10),
@@ -364,55 +372,57 @@ vplot1 <- ggplot(catchcdfexp[catchcdfexp$year>2030,], aes(x = HCR,y = value*1e-6
                    legend.key.size = unit(0.5, 'lines'),
                    axis.text.x = element_blank(),
                    plot.margin = unit(c(1,1,0,1), 'pt'),
-                   legend.margin = margin(c(0,0,0,0)))+
-  scale_x_discrete('')+
-  geom_boxplot(width=0.2, col = 'black', outlier.shape = NA, position = dodge,
-                show.legend = FALSE)+
-  scale_fill_npg(labels = c('baseline', 'moderate', 'high'))+
-  guides(shape = guide_legend(override.aes = list(shape = 2)))+
-  facet_wrap(~variable)+coord_cartesian(ylim = c(0,0.5))
+                   legend.margin = margin(c(0,0,0,0)),
+                   plot.tag.position = c(tag.x, 0.90),
+                   plot.tag = element_text(size = 8)
+                   )+
+  labs(tag = "(A)")
 
 rmout <- quantile(SSBdf$value[SSBdf$year>2019]*1e-6, probs = perc)
 
 vplot2 <- ggplot(SSBdf[SSBdf$year>2030,], aes(x = HCR,y = value*1e-6, group = MP, fill = climate))+
   geom_violin(position = dodge)+scale_y_continuous(name = 'S\n(million tonnes)')+geom_line()+
-  theme_classic()+
+  theme_classic()+scale_x_discrete('')+
+  geom_boxplot(width=0.2, col = 'black', outlier.shape = NA, position = dodge)+
+  scale_fill_npg()+facet_wrap(~variable)+coord_cartesian(ylim = c(0,2))+
   theme(legend.position = 'none',
         text = element_text(size = 10),
         strip.background =element_rect(fill="white"),
         strip.text.x = element_blank(),
         axis.text.x = element_blank(),
-        plot.margin = unit(c(1,1,0,1), 'pt'))+scale_x_discrete('')+
-  geom_boxplot(width=0.2, col = 'black', outlier.shape = NA, position = dodge)+
-  scale_fill_npg()+facet_wrap(~variable)+coord_cartesian(ylim = c(0,2))
-
+        plot.margin = unit(c(1,1,0,1), 'pt'),
+        plot.tag.position = c(tag.x, 1.03),
+        plot.tag = element_text(size = 8)
+        )+
+  labs(tag = "(B)")
 # Remove stupid outliers
 rmout <- quantile(AAVdfexp$AAV[AAVdfexp$year>2019], probs = perc)
 rmout <- c(0,4)
 
 vplot3 <- ggplot(AAVdfexp[AAVdfexp$year>2030,], aes(x = HCR,y = AAV, group = MP, fill = climate))+
   geom_violin(position = dodge)+scale_y_continuous(name = 'AAV')+geom_line()+theme_classic()+
+  geom_boxplot(width=0.2, col = 'black', outlier.shape = NA, position = dodge)+
+  scale_fill_npg()+
+  facet_wrap(~variable, nrow =1)+coord_cartesian(ylim = c(0,3))+
   theme(legend.position = 'none',
         text = element_text(size = 10),
         axis.text.x = element_text(size =8),
         plot.margin = unit(c(1,1,0,1), 'pt'),
         strip.background = element_blank(),
-        strip.text.x = element_blank())+
-  geom_boxplot(width=0.2, col = 'black', outlier.shape = NA, position = dodge)+
-  scale_fill_npg()+
-  facet_wrap(~variable, nrow =1)+coord_cartesian(ylim = c(0,3))
-
-
+        strip.text.x = element_blank(),
+        plot.tag.position = c(tag.x, 1.03),
+        plot.tag = element_text(size = 8)
+        )+
+  labs(tag = "(C)")
 # Test differe
 AAVtest <- AAVdfexp[AAVdfexp$year > 2030,] %>%
   group_by(MP,HCR,climate, variable) %>%
   summarise(mAAv = median(AAV))
 
-197
 
 # Pdf for publication
 pdf('results/Climate/Publication/Resubmission/Figure7.pdf', width = 16/cm(1), height =12/cm(1))
-vplot1/vplot2/vplot3+plot_annotation(tag_levels = 'a')
+vplot1/vplot2/vplot3
 dev.off()
 
 
@@ -700,17 +710,23 @@ p.ee <- ggplot(EE.tot[EE.tot$year > 2018 & EE.tot$HCR == 'HCR0',], aes(x = year,
   scale_color_npg(labels = c('baseline', 'moderate', 'high'))+
   scale_fill_npg()+
   scale_linetype_manual(values = c(1,2,3), labels =  c('baseline', 'moderate', 'high'))+
-  theme(legend.position = 'top', legend.direction = 'horizontal', legend.title = element_blank(),
-        legend.text = element_text(size = 10))+
-  geom_hline(aes(yintercept = 0), linetype = 2, color = 'black')
+  geom_hline(aes(yintercept = 0), linetype = 2, color = 'black')+
+    theme(legend.position = c(0.45,0.94), legend.direction = 'horizontal', legend.title = element_blank(),
+          legend.text = element_text(size = 8))
 
 p.ee
+
+
+windows(width = 8/cm(1), height = 8/cm(1))
+p.ee
+
+dev.off()
 
 png('results/Climate/Publication/Resubmission/Figure5.png', width = 8, height = 6, res = 400, units = 'cm')
 p.ee
 dev.off()
 
-pdf('results/Climate/Publication/Resubmission/Figure5.pdf', width = 8/cm(1), height = 6/cm(1))
+pdf('results/Climate/Publication/Resubmission/Figure5.pdf', width = 8/cm(1), height = 8/cm(1))
 p.ee
 dev.off()
 

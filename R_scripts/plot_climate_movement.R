@@ -64,8 +64,13 @@ p1 <- ggplot(df.plot, aes(x = year, y = movemax, color = Scenario, linetype = Sc
         axis.ticks.x = element_blank(),
         axis.text.x = element_blank(),
         legend.text = element_text(size = 10),
-        legend.spacing.x =unit(0.001,'cm'))+
-        guides(linetype = guide_legend(override.aes = list(size = 0.6)))
+        legend.spacing.x =unit(0.001,'cm'),
+        axis.text.y = element_text(size =8),
+        axis.text.x = element_text(size =8),
+        plot.tag.position = c(.02, 0.91),
+        plot.tag = element_text(size = 8))+
+        guides(linetype = guide_legend(override.aes = list(size = 0.6)))+
+  labs(tag = '(A)')
 p1
 
 
@@ -82,17 +87,22 @@ p2 <- ggplot(df.plot, aes(x = year, y = moveout, color = Scenario, linetype = Sc
   scale_x_continuous(breaks = seq(2020, 2050, by = 5))+
   theme(legend.position = 'none',
         legend.text = element_text(size = 10),
-        legend.spacing.x =unit(0.001,'cm'))
+        legend.spacing.x =unit(0.001,'cm'),
+        axis.text.y = element_text(size =8),
+        axis.text.x = element_text(size =8),
+        plot.tag.position = c(.02, 0.98),
+        plot.tag = element_text(size = 8))+
+  labs(tag = '(B)')
 
 
 p2
 if(plot.figures == TRUE){
 png('results/Climate/Publication/Resubmission/Figure3.png', width= 8, height = 10, units = 'cm', res = 400)
-p1 / p2 + plot_annotation(tag_levels = 'a')
+p1 / p2
 dev.off()
 
 pdf('results/Climate/Publication/Resubmission/Figure3.pdf', width= 8/cm(1), height = 10/cm(1))
-p1 / p2 + plot_annotation(tag_levels = 'a')
+p1 / p2
 dev.off()
 
 

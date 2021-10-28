@@ -62,25 +62,37 @@ AC.survey <- data.frame(AC.mean = c(standard.move$survey.AC[,1],standard.move$su
                         country = rep(c('CAN','USA'), each = df$nyear), year = rep(df$years,2))
 
 
+tag.x <- .07
+
 p.AC.survey <- ggplot(AC.survey, aes(x = year, y= AC.mean, color = country, linetype = country))+
-  geom_line(size = 1.2)+theme_classic()+
-  geom_line(data = ac.survey.tot, size = .6, show.legend = FALSE)+
+  geom_line(size = 1)+theme_classic()+
+  geom_line(data = ac.survey.tot, size = .5, show.legend = FALSE, linetype = 1)+
   geom_point(data = ac.survey.tot, show.legend = FALSE)+  
   scale_x_continuous(
     name = '',
     limit = c(1965,2018), 
     breaks = seq(1970,2020, by = 10))+
-  scale_color_manual(values = c('darkred','blue4'))+
+  scale_color_manual(values = c('darkred','blue4'), labels = c('CAN','US'))+
+  scale_linetype_manual(values = c(1,2), labels = c('CAN',"US"))+
   theme(
         legend.position = 'top',
         legend.title = element_blank(),
-        axis.text.y = element_text(size = 10),
+        axis.text.y = element_text(size = 8),
         axis.text.x = element_blank(),
         axis.title.x =  element_blank(),
         axis.title.y = element_text(size =10),
-        legend.text = element_text(size = 10)
-        )+
-  scale_y_continuous('mean age \nin survey')
+        legend.text = element_text(size = 10),
+        legend.key.width = unit(1.1,"cm"),
+        legend.background = element_blank(),
+        plot.tag.position = c(tag.x, 0.90),
+        plot.tag = element_text(size = 8),
+        legend.direction="horizontal"
+  )+
+  scale_y_continuous('Mean age \nin survey')+
+  labs(tag = "(A)")
+  
+  # annotate('text',x =  1965, y= 10, label = '(A)')+
+  # geom_text(aes(x =))
 p.AC.survey
 
 #
@@ -104,22 +116,25 @@ df.obs <- data.frame(survey = c(survey.obs$survey[survey.obs$country == 'CAN'],s
 
 df.plot <- rbind(df.plot.sim,df.obs)
 
-p1 <- ggplot(df.plot.sim, aes( x=  years, y = survey*1e-6, color = country, linetype = country))+
-  theme_classic()+geom_line(size = 1.2)+
-  geom_line(data = df.obs, size = 0.6, linetype = 1, show.legend = FALSE)+
+p1 <- ggplot(df.plot.sim, aes( x=  years, y = survey*1e-4, color = country, linetype = country))+
+  theme_classic()+geom_line(size = 1)+
+  geom_line(data = df.obs, size = 0.5, show.legend = FALSE, linetype = 1)+
   geom_point(data = df.obs, show.legend = FALSE)+
+  scale_linetype_manual(values = c(1,2))+
   scale_color_manual(values = c('darkred','blue4'))+
-  scale_y_continuous('survey biomass \n(million tonnes)')+
-  scale_x_continuous(limit = c(1965,2018), breaks = seq(1970, 2020, by = 10))+
+  scale_y_continuous('Survey biomass \n(thousand tons)')+
+  scale_x_continuous('year',limit = c(1965,2018), breaks = seq(1970, 2020, by = 10))+
   theme(legend.position = 'none',
         legend.background = element_rect(fill=NA),
-        legend.title = element_blank(), axis.title.x = element_blank(),
-        axis.text.y = element_text(size = 10),
-        axis.text.x = element_text(size =10),
+        legend.title = element_blank(),
+        axis.text.y = element_text(size = 8),
+        axis.text.x = element_text(size =8),
         axis.title.y = element_text(size = 10),
-        legend.text = element_text(size = 10)
-        
-  )
+        legend.text = element_text(size = 10),
+        plot.tag.position = c(tag.x, 0.98),
+        plot.tag = element_text(size = 8)
+  )+
+  labs(tag = "(C)")
 
 
 p1
@@ -164,17 +179,24 @@ catch.model <- data.frame(year = rep(df$years,2),
 ac.df$Country[ac.df$Country == 'Can'] <- 'CAN'
 
 p.AC.catch <- ggplot(ac.df, aes(x = Year, y = ac, color = Country, linetype = Country))+
-  geom_line(size =0.6, linetype = 1)+geom_point()+
-  geom_line(data = catch.model, aes(x = year, y= am, color = Country), size = 1.3)+theme_classic()+
+  geom_line(size =0.5, linetype = 1)+
+  geom_point()+
+  geom_line(data = catch.model, aes(x = year, y= am, color = Country), size = 1)+theme_classic()+
   scale_x_continuous(limit = c(1965,2018), breaks = seq(1970, 2020, by = 10), minor_breaks = 1965)+
   scale_color_manual(values = rep(c('darkred','blue4'), each = 1))+
-  scale_y_continuous('mean age \nin catch')+
+  scale_y_continuous('Mean age \nin catch')+
+  scale_linetype_manual(values = c(1,2))+
   theme(legend.position = 'none',
         axis.title.x = element_blank(),
         axis.title.y = element_text(size = 10),
         axis.text.x = element_blank(),
         legend.text = element_text(size = 10),
-        axis.text.y = element_text(size = 10))
+        axis.text.y = element_text(size = 8),
+        plot.tag.position = c(tag.x, 0.98),
+        plot.tag = element_text(size = 8)
+        )+
+  #annotate('text',x =  1965, y= 10, label = '(B)')
+  labs(tag = "(B)")
 
 if(plot.figures == TRUE){
   png(filename = 'results/Figs/AC_catch.png', width = 16, height = 8, res = 400, units = 'cm')
@@ -189,12 +211,14 @@ if(plot.figures == TRUE){
 # Try using Patchwork
 if(plot.figures == TRUE){
   png(filename = 'results/Climate/Publication/Resubmission/Figure4.png', width = 8, height = 12, res = 400, units = 'cm')
-  print((p.AC.survey / p.AC.catch / p1)+plot_annotation(tag_levels = 'a'))& theme(plot.tag = element_text(size = 8))
+  print((p.AC.survey / p.AC.catch / p1))
   dev.off()
 
 
-  pdf(file = 'results/Climate/Publication/Resubmission/Figure4.pdf', width = 16/cm(1), height = 16/cm(1))
-  print((p.AC.survey / p.AC.catch / p1)+plot_annotation(tag_levels = 'a'))& theme(plot.tag = element_text(size = 8))
+  pdf(file = 'results/Climate/Publication/Resubmission/Figure45.pdf', width = 8/cm(1), height = 14/cm(1))
+  print((p.AC.survey / p.AC.catch / p1))
+  #   )
+  # 
   dev.off()
 
 
@@ -223,14 +247,17 @@ df.movement$country[df.movement$country == 'CAN'] <- 'South movement'
 
 #png('survey_comps.png', width = 16, height = 10, res= 400, unit = 'cm')
 p.move <-ggplot(df.movement, aes(x = age, y = movement, color = country))+
-  facet_wrap(~season)+theme_classic()+
-  geom_line(size = 1.45, aes(linetype = country))+scale_y_continuous(limit = c(0,1),name = 'movement rate')+
+  facet_wrap(~season)+theme_classic()+ 
+  geom_hline(data = data.frame(season = 1),aes(yintercept = max(df.movement$movement[df.movement$country == 'North movement' & 
+                                                                                              df.movement$season == 1])),
+                                                  linetype = 2)+
+  geom_line(size = 1.45, aes(linetype = country))+
+  scale_y_continuous(limit = c(0,1),name = expression(paste('movement rate, ',omega)))+
   scale_color_manual(values = c('darkred','blue4'))+
   theme(legend.title = element_blank(),legend.position = c(0.15,0.35), legend.direction = 'vertical',
         legend.background = element_rect(fill=NA))+
-  geom_hline(data = data.frame(season = 1),
-             aes(yintercept = max(df.movement$movement[df.movement$country == 'North movement' & df.movement$season == 1])),
-             linetype = 2)+
+  scale_x_continuous(limits = c(0,20))+
+ 
   geom_text(data = ann_mm, label = expression(paste('max movement rate, ',kappa)), color = 'black')+
   geom_text(data = ann_return, label = expression(paste('return rate, ',kappa['return'])), color = 'black')+
   geom_segment(data = data.frame(x= 4, y= 0.47, xend = 4, yend = 0.38, season = 1),
