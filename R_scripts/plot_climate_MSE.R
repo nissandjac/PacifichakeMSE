@@ -8,8 +8,6 @@ library(purrr)
 library(dplyr)
 library(reshape2)
 library(patchwork)
-source('R/AAV.R')
-load_all()
 
 mod <- SS_output('inst/extdata/SS32018', printstats=FALSE, verbose = FALSE) # Read the true selectivity
 
@@ -40,9 +38,9 @@ simdata0 <- sim.data # The other one is gonna get overwritten.
 
 
 #
-# folder <- 'C:/Users/Nis/Dropbox/NOAA/Hake MSE/MSE results/final results/'
+# Insert results folder here (files are big )
 #
-folder <- 'C:/Users/nsja/Dropbox/NOAA/Hake MSE/MSE results/final results/'
+# folder <- 'C:/Users/nsja/Dropbox/NOAA/Hake MSE/MSE results/final results/'
 # #
 
 
