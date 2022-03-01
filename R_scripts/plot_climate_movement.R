@@ -1,3 +1,7 @@
+# Plot figure 3 in the paper # 
+
+
+
 library(reshape2)
 library(cowplot)
 library(RColorBrewer)
@@ -50,7 +54,8 @@ df.tmp$year <- year.future[year.future > 2018]
 
 
 
-df.plot <- melt(df.tmp, id.vars = 'year', measure.vars = 1:length(cincrease), value.name = 'movemax', variable.name = 'Scenario')
+df.plot <- melt(df.tmp, id.vars = 'year', measure.vars = 1:length(cincrease), 
+                value.name = 'movemax', variable.name = 'Scenario')
 
 p1 <- ggplot(df.plot, aes(x = year, y = movemax, color = Scenario, linetype = Scenario))+theme_classic()+
   geom_line(size = 1.2)+
@@ -66,7 +71,6 @@ p1 <- ggplot(df.plot, aes(x = year, y = movemax, color = Scenario, linetype = Sc
         legend.text = element_text(size = 10),
         legend.spacing.x =unit(0.001,'cm'),
         axis.text.y = element_text(size =8),
-        axis.text.x = element_text(size =8),
         plot.tag.position = c(.02, 0.91),
         plot.tag = element_text(size = 8))+
         guides(linetype = guide_legend(override.aes = list(size = 0.6)))+
