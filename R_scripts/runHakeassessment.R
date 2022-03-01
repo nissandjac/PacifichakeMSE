@@ -62,23 +62,20 @@ SSB$max <- SSB$max*1e-6
 #png('Figures/SSB_survey_mid.png', width = 16, height = 12, unit = 'cm', res =400)
 plotValues(SSB, data.frame(x= df$years, y= SSB.ss3*0.5*1e-6),'SSB')
 #dev.off()
-
-
-
 plotValues(Catch, data.frame(x = df$years,y =df$Catchobs), 'Catch')
 
 # Fishing mortality from ss3
 F0ass <- mod$derived_quants$Value[grep("F_",mod$derived_quants$Label)][1:length(df$years)]
 
 
-plotValues(F0, data.frame(x = df$years,y =F0ass), 'F0') # Not sure why these differ
+p3 < -plotValues(F0, data.frame(x = df$years,y =rep(NA,df$tEnd)), 'F0') # Not sure why these differ
+
+#png('es
 
 Surveyobs[Surveyobs$year < 1995,] <- NA
 
-plotValues(Surveyobs, data.frame(y = df$survey[df$flag_survey == 1], x = df$years[df$flag_survey == 1]), 'survey biomass')
-
-#png('estimated_F0.png', width = 16, height = 12, unit = 'cm', res =400)
-# Likelihood contributions
+p1 <- plotValues(Surveyobs, data.frame(y = df$survey[df$flag_survey == 1], x = df$years[df$flag_survey == 1]), 'survey biomass')
+p1
 
 nms <- c('SDR','Selectivity','Catch','survey','survey comps','Catch comps','Priors')
 
@@ -100,17 +97,15 @@ age_catch <- getUncertainty('age_catch', df, sdrep)
 age_catch_est$age <- rep(ages, length(df$years))
 age_catch_est$year <- rep(df$years, each = 15)
 
-head(age_catch_est)
-
 df.plot <- data.frame(comps = c(age_catch_est$value,age_catch$value),
                       year = rep(age_catch_est$year,2), age = rep(age_catch_est$age,2), model = rep(c('estimated','data'), each = nrow(age_catch)))
 
 df.plot <- df.plot[df.plot$year %in% df$years[df$flag_catch == 1],]
 
 #png('Figures/age_comps_catch.png', width = 16, height = 12, unit = 'cm', res =400)
-ggplot(data = df.plot, aes(x = age, y = comps, color = model))+
+p2 <- ggplot(data = df.plot, aes(x = age, y = comps, color = model))+
   geom_line()+facet_wrap(facets = ~year)+theme_bw()
-dev.off()
+p2
 
 ages <- 1:15
 comp.year <- length(df$flag_survey[df$flag_survey == 1])
@@ -128,9 +123,8 @@ df.plot <- data.frame(comps = c(age_survey_est$value,age_survey$value),
 
 df.plot <- df.plot[which(df.plot$year %in% df$years[df$flag_survey == 1]),]
 
-#png('Figures/age_comps_survey.png', width = 16, height = 12, unit = 'cm', res =400)
-ggplot(data = df.plot, aes(x = age, y = comps, color = model))+geom_line()+facet_wrap(facets = ~year)+theme_bw()
-#dev.off()
+p2 <- ggplot(data = df.plot, aes(x = age, y = comps, color = model))+geom_line()+facet_wrap(facets = ~year)+theme_bw()
+p2
 
 ## Compare parameter estimations with the ones from the SS3 assessment
 #parms.true <- getParameters_ss(TRUE,) # Parameters estimated in the SS3 model
@@ -153,13 +147,12 @@ ggplot(df.plot.parms, aes(x = name, y = value, colour = model))+
   geom_point(size = 2)+geom_linerange(aes(ymin = min, ymax = max))+theme_classic()+facet_wrap(~name, scale = 'free')+
   theme(strip.text.x = element_blank())+scale_x_discrete('')
 #dev.off()
-png('Figures/parameters_estimated.png', width = 16, height = 12, unit = 'cm', res =400)
+#png('Figures/parameters_estimated.png', width = 16, height = 12, unit = 'cm', res =400)
 ggplot(df.plot.parms[df.plot.parms$name %in% c('Rinit', 'h', 'Minit', 'SDsurv'),], aes(x = name, y = value, colour = model))+
   geom_point(size = 2)+geom_linerange(aes(ymin = min, ymax = max))+theme_classic()+facet_wrap(~name, scale = 'free')+
   theme(strip.text.x = element_blank())+scale_x_discrete('')
 dev.off()
 # plot the base and survey selectivity
-source('getSelec.R')
 
 sel.ss3 <- getSelec(df$age,psel =parms['psel_fish'][[1]],Smin = df$Smin,df$Smax)
 sel.tmb <- getSelec(df$age, psel = rep$par.fixed[names(rep$par.fixed) == 'psel_fish'], Smin = df$Smin, Smax = df$Smax)
@@ -171,7 +164,6 @@ df.plot <- data.frame(age = rep(df$age, 4), sel = c(sel.ss3,sel.tmb,sel.survey.s
                       fleet = rep(c('fishery','survey'), each = length(df$age)*2),
                       model = rep(c('ss3','TMB'), each = length(df$age)))
 
-png('Figures/selectivities.png', width = 16, height = 12, unit = 'cm', res =400)
-ggplot(df.plot, aes(x = age, y = sel, color = model))+geom_line()+facet_wrap(~fleet)
-dev.off()
+p4 <- ggplot(df.plot, aes(x = age, y = sel, color = model))+geom_line()+facet_wrap(~fleet)
 
+p4

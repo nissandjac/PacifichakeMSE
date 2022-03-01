@@ -1,4 +1,12 @@
-### Calculate the estimated vs realized TAC
+##############################################
+##############################################
+### Plot the Harvest control rules ###########
+##############################################
+##############################################
+##############################################
+
+
+
 library(ggplot2)
 library(scales)
 library(reshape2)
@@ -7,10 +15,7 @@ library(patchwork)
 library(PNWColors) # remotes::install_github('jakelawlor/PNWColors')
 library(tidyverse)
 library(ggsci)
-# source('load_data_seasons.R')
-# source('getSelec.R')
-# source('load_files.R')
-# source('load_files_OM.R')
+
 
 df.tac <- read.csv('inst/extdata/TAC.csv')
 
@@ -22,8 +27,8 @@ SSB_0 <- sum(sim.data$SSB0)
 
 TAC <- matrix(NA, dim(df.tac)[1])
 
-TAC[(SSB/SSB_0)< 0.1]<- 0 # add a very low catch (fix later)
-TAC[(SSB/SSB_0)> 0.4]<- 0.4*SSB[(SSB/SSB_0)> 0.4] # For simplicity assume SSB is the same as V (it's close)
+TAC[(SSB/SSB_0)< 0.1]<- 0 #
+TAC[(SSB/SSB_0)> 0.4]<- 0.4*SSB[(SSB/SSB_0)> 0.4] 
 
 ix <- (SSB/SSB_0)<= 0.4 & (SSB/SSB_0) >= 0.1
 TAC[ix]<- 0.4*SSB[ix]*((SSB[ix]-0.1*SSB_0)*((0.4*SSB_0/SSB[ix])/(0.4*SSB_0-0.1*SSB_0)))
@@ -37,31 +42,18 @@ ggplot(data = df.plot, aes(x = SSB*1e-6, y = TAC*1e-6/(SSB*1e-6)))+geom_line()+
 df.tac$theotac <- TAC
 
 
-### Do a regression on the difference between
+### Do a regression on the difference between HCR and other management strategies 
 
-#lm.JMC <- lm(TAC ~ AssessTac, data = df.tac[df.tac$Year >= 2012,])
-#lm.STAR <- lm(TAC ~ AssessTac, data = df.tac[df.tac$Year < 2012,])
 lm.historical <- lm(TAC ~ AssessTac, data = df.tac)
 lm.realized <- lm(Realized ~ AssessTac, data = df.tac)
 
 
 #### Print the TAC calc adjustment ####
-#
-# df.adjTAC <- data.frame(incpt = c(lm.JMC$coefficients[1],lm.realized$coefficients[1], lm.STAR$coefficients[1]),
-#                         slp = c(lm.JMC$coefficients[2],lm.realized$coefficients[2], lm.STAR$coefficients[2]),
-#                         adj = c('JMC','Realized','STAR'))
 
 df.adjTAC <- data.frame(incpt = c(lm.historical$coefficients[1],lm.realized$coefficients[1]),
                         slp = c(lm.historical$coefficients[2],lm.realized$coefficients[2]),
                         adj = c('historical','realized'))
 
-#write.csv(df.adjTAC, 'adjusted_tac_fn.csv', row.names = FALSE)
-#
-# df.plot <- data.frame(TAC = TAC,
-#                       TAC.JMC = predict(lm.JMC, newdata = data.frame(AssessTac = TAC)),
-#                       TAC.realized = predict(lm.realized, newdata = data.frame(AssessTac = TAC)),
-#                       TAC.STAR = predict(lm.STAR, newdata = data.frame(AssessTac = TAC)),
-#                       SSB = SSB)
 
 # finer-scale sequence of values spanning range of TAC
 TAC.fine <- seq(0, max(TAC), length = 100)
@@ -72,7 +64,6 @@ df.plot <- data.frame(TAC = TAC.fine,
 
 df.plot$TAC.historical[df.plot$TAC.historical > df.plot$TAC] <- df.plot$TAC[df.plot$TAC.historical > df.plot$TAC]
 df.plot$TAC.realized[df.plot$TAC.realized > df.plot$TAC] <- df.plot$TAC[df.plot$TAC.realized > df.plot$TAC]
-#df.plot$TAC.STAR[df.plot$TAC.STAR > df.plot$TAC] <-df.plot$TAC[df.plot$TAC.STAR >TAC]
 # Floor data
 df.plot$Floor <- df.plot$TAC*0.5
 df.plot$Floor[df.plot$Floor<= 180000] <- 180000

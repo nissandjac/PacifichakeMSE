@@ -70,7 +70,7 @@ Type objective_function<Type>::operator() ()
   PARAMETER(logh); // Steepness
   PARAMETER(logMinit); // Natural mortality
   PARAMETER(logSDsurv); // Survey uncertainty
-  PARAMETER(logSDR); //
+  DATA_SCALAR(logSDR); //
 
   PARAMETER(logphi_catch);
   PARAMETER(logphi_survey);

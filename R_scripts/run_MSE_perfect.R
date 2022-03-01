@@ -1,3 +1,8 @@
+##############################################
+#### Run the hake scenarios (no EM) ##########
+##############################################
+
+
 library(TMB)
 library(r4ss)
 library(devtools)
