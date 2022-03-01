@@ -16,4 +16,4 @@ See Jacobsen et al 2022 and supplementary for a detailed description of the mode
 ### Disclaimer
 All code by Nis Sand Jacobsen nissandjac@gmail.com . Please do not use in specific management scenarios without first consulting the author.  
 ### Reference
-Nis S Jacobsen, Kristin N Marshall, Aaron M Berger, Chris Grandin, Ian G Taylor, Climate-mediated stock redistribution causes increased risk and challenges for fisheries management, ICES Journal of Marine Science, 2022;, fsac029, https://doi.org/10.1093/icesjms/fsac029
+Nis S Jacobsen, Kristin N Marshall, Aaron M Berger, Chris Grandin, Ian G Taylor, Climate-mediated stock redistribution causes increased risk and challenges for fisheries management, ICES Journal of Marine Science, 2022; https://doi.org/10.1093/icesjms/fsac029
